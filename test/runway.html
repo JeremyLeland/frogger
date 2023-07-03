@@ -1,0 +1,137 @@
+<title>Runway</title>
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+  
+
+  const canvas = new AnimatedCanvas();
+
+  canvas.draw = ( ctx ) => {
+  
+    // Grass
+    // ctx.fillStyle = 'darkgreen';
+    // ctx.fillRect( 0, 0, 640, 640 );
+
+    // Bush
+
+    // Road
+    // drawRoad( ctx, new Path2D( 'M 32,32 L 320,32 Q 352,32 352,64 L 352,320' ) );
+
+    // Sidewalk
+
+    // Car
+
+    // Water
+    // ctx.fillStyle = 'darkblue';
+    // ctx.fillRect( 32, 128, 256, 320 );
+
+    // // Log
+    // drawLog( ctx, new Path2D( 'M 32,128 L 160,128' ) );
+
+    // Turtle
+
+    // Lilypad
+
+    // Frog
+    drawFrog( ctx );
+  };
+
+  canvas.redraw();
+
+  function drawRoad( ctx, path ) {
+    ctx.save();
+
+    ctx.strokeStyle = 'gray';
+    ctx.lineWidth = 64;
+    ctx.lineCap = 'square';
+    ctx.stroke( path );
+
+    ctx.strokeStyle = 'yellow';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'butt';
+    ctx.setLineDash( [ 16, 16 ] );
+    ctx.stroke( path );
+
+    ctx.restore();
+  }
+
+  function drawLog( ctx, path ) {
+    ctx.save();
+
+    ctx.strokeStyle = 'brown';
+    ctx.lineWidth = 32;
+    ctx.lineCap = 'round';
+    ctx.stroke( path );
+
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1;
+    ctx.lineCap = 'butt';
+    ctx.setLineDash( [ 8, 16, 8, 32, 8, 64 ] );
+    ctx.stroke( path );
+
+    ctx.restore();
+  }
+
+  function drawFrog( ctx ) {
+    ctx.save();
+    ctx.translate( 320, 160 );
+    ctx.scale( 128, 128 );
+
+    
+    ctx.fillStyle = 'green';
+    ctx.beginPath();
+    ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
+    ctx.fill();
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1 / 32;
+    ctx.stroke();
+
+    ctx.save(); {
+      ctx.translate( -0.2, -0.2 );
+      ctx.scale( 0.25, 0.25 );
+      
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
+      ctx.fill();
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 1 / 8;
+      ctx.stroke();
+
+      ctx.translate( 0, -0.25 );
+      ctx.scale( 0.75, 0.5 );
+
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
+      ctx.fill();
+    }
+    ctx.restore();
+
+    ctx.save(); {
+      ctx.translate( 0.2, -0.2 );
+      ctx.scale( 0.25, 0.25 );
+      
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
+      ctx.fill();
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 1 / 8;
+      ctx.stroke();
+
+      ctx.translate( 0, -0.25 );
+      ctx.scale( 0.75, 0.5 );
+
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
+      ctx.fill();
+    }
+    ctx.restore();
+
+    ctx.restore();
+  }
+  
+</script>
