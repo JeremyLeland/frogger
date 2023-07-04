@@ -3,6 +3,46 @@
 
 <script type="module">
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+
+  const circlePath = new Path2D( 'M -0.5,0 A 0.5,0.5 0,0,1 0.5,0 A 0.5,0.5 0,0,1 -0.5,0' );
+  const pupilPath = new Path2D( 'M -0.3,-0.3 A 0.3,0.2 0,0,1 0.3,-0.3 A 0.3,0.2 0,0,1 -0.3,-0.3' );
+
+  const frog = {
+    leftFoot: {
+      t: [ -0.5, -0.5 ],
+      s: 0.2,
+      f: 'green',
+      p: new Path2D( 'M -0.2,0.4 L -0.5,0 A 0.5,0.3 0,0,1 0.5,0 L 0.2,0.4 Z' ),
+    },
+    body: {
+      f: 'green',
+      p: circlePath,
+    },
+    leftEye: {
+      t: [ -0.2, -0.2 ],
+      s: 0.25,
+      f: 'white',
+      p: circlePath,
+    },
+    leftPupil: {
+      t: [ -0.2, -0.2 ],
+      s: 0.25,
+      f: 'black',
+      p: pupilPath,
+    },
+    rightEye: {
+      t: [ 0.2, -0.2 ],
+      s: 0.25,
+      f: 'white',
+      p: circlePath,
+    },
+    rightPupil: {
+      t: [ 0.2, -0.2 ],
+      s: 0.25,
+      f: 'black',
+      p: pupilPath,
+    },
+  };
   
 
   const canvas = new AnimatedCanvas();
@@ -35,6 +75,11 @@
 
     // Frog
     drawFrog( ctx );
+
+    ctx.translate( 620, 160 );
+    ctx.scale( 128, 128 );
+
+    drawEntity( ctx, frog );
   };
 
   canvas.redraw();
@@ -73,18 +118,54 @@
     ctx.restore();
   }
 
+  
+
+  function drawEntity( ctx, info ) {
+    for ( const name in info ) {
+      const item = info[ name ];
+
+      ctx.save();
+
+      if ( item.t )   ctx.translate( ...item.t );
+      if ( item.s )   ctx.scale( item.s, item.s );
+
+      if ( item.f )   ctx.fillStyle = item.f;
+      if ( item.p ) {
+        ctx.fill( item.p );
+        ctx.lineWidth = 1 / ctx.getTransform().m11;
+        ctx.stroke( item.p );
+      }
+
+      // TODO: children?
+        
+      ctx.restore();
+    }
+  }
+
   function drawFrog( ctx ) {
     ctx.save();
     ctx.translate( 320, 160 );
     ctx.scale( 128, 128 );
 
+    ctx.save(); {
+      ctx.translate( -0.5, -0.5 );
+      ctx.scale( 0.2, 0.2 );
+      
+      ctx.fillStyle = 'green';
+      const path = new Path2D( 'M -0.2,0.4 L -0.5,0 A 0.5,0.3 0,0,1 0.5,0 L 0.2,0.4 Z' );
+      ctx.fill( path );
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 1 / ctx.getTransform().m11;
+      ctx.stroke( path );
+    }
+    ctx.restore();
     
     ctx.fillStyle = 'green';
     ctx.beginPath();
     ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
     ctx.fill();
     ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1 / 32;
+    ctx.lineWidth = 1 / ctx.getTransform().m11;
     ctx.stroke();
 
     ctx.save(); {
@@ -96,7 +177,7 @@
       ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
       ctx.fill();
       ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1 / 8;
+      ctx.lineWidth = 1 / ctx.getTransform().m11;
       ctx.stroke();
 
       ctx.translate( 0, -0.25 );
@@ -118,7 +199,7 @@
       ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
       ctx.fill();
       ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1 / 8;
+      ctx.lineWidth = 1 / ctx.getTransform().m11;
       ctx.stroke();
 
       ctx.translate( 0, -0.25 );
