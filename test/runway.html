@@ -147,72 +147,53 @@
     ctx.translate( 320, 160 );
     ctx.scale( 128, 128 );
 
-    ctx.save(); {
-      ctx.translate( -0.5, -0.5 );
-      ctx.scale( 0.2, 0.2 );
-      
-      ctx.fillStyle = 'green';
-      const path = new Path2D( 'M -0.2,0.4 L -0.5,0 A 0.5,0.3 0,0,1 0.5,0 L 0.2,0.4 Z' );
-      ctx.fill( path );
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1 / ctx.getTransform().m11;
-      ctx.stroke( path );
-    }
-    ctx.restore();
+    const body = new Path2D();
+    body.arc( 0, 0, 0.5, 0, Math.PI * 2 );
+
+    drawPath( ctx, body, 'green' );
+
+    const sclera = new Path2D();
+    sclera.arc( -0.2, -0.2, 0.125, 0, Math.PI * 2 );
+    sclera.moveTo( 0.2 + 0.125, -0.2 );
+    sclera.arc(  0.2, -0.2, 0.125, 0, Math.PI * 2 );
+
+    drawPath( ctx, sclera, 'white' );
+
+    const pupils = new Path2D();
+    pupils.ellipse( -0.2, -0.27, 0.1, 0.06, 0, 0, Math.PI * 2 );
+    pupils.moveTo(  0.2 + 0.1, -0.27 );
+    pupils.ellipse(  0.2, -0.27, 0.1, 0.06, 0, 0, Math.PI * 2 );
     
-    ctx.fillStyle = 'green';
+    drawPath( ctx, pupils, 'black' );
+
+    const leg = new Path2D();
+    
+    // TODO: Animate!
+
+    [ -1, 1 ].forEach( side => {
+      leg.lineTo( side * 0.3, 0 );
+      leg.quadraticCurveTo( side * 0.5, 0, side * 0.55, -0.4 );
+      leg.lineTo( side * 0.6, -0.5 );
+      leg.quadraticCurveTo( side * 0.5, -0.6, side * 0.4, -0.5 );
+      leg.lineTo( side * 0.45, -0.4 );
+      leg.quadraticCurveTo( side * 0.4, -0.1, side * 0.3, -0.2 );
+    } );
+
+    leg.closePath();
+
+    drawPath( ctx, leg, 'green' );
+
+    ctx.restore();
+  }
+
+  function drawPath( ctx, path, fillStyle = 'red', strokeStyle = 'black' ) {
+    ctx.fillStyle = fillStyle;
     ctx.beginPath();
     ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
-    ctx.fill();
-    ctx.strokeStyle = 'black';
+    ctx.fill( path );
+    ctx.strokeStyle = strokeStyle;
     ctx.lineWidth = 1 / ctx.getTransform().m11;
-    ctx.stroke();
-
-    ctx.save(); {
-      ctx.translate( -0.2, -0.2 );
-      ctx.scale( 0.25, 0.25 );
-      
-      ctx.fillStyle = 'white';
-      ctx.beginPath();
-      ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
-      ctx.fill();
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1 / ctx.getTransform().m11;
-      ctx.stroke();
-
-      ctx.translate( 0, -0.25 );
-      ctx.scale( 0.75, 0.5 );
-
-      ctx.fillStyle = 'black';
-      ctx.beginPath();
-      ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
-      ctx.fill();
-    }
-    ctx.restore();
-
-    ctx.save(); {
-      ctx.translate( 0.2, -0.2 );
-      ctx.scale( 0.25, 0.25 );
-      
-      ctx.fillStyle = 'white';
-      ctx.beginPath();
-      ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
-      ctx.fill();
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1 / ctx.getTransform().m11;
-      ctx.stroke();
-
-      ctx.translate( 0, -0.25 );
-      ctx.scale( 0.75, 0.5 );
-
-      ctx.fillStyle = 'black';
-      ctx.beginPath();
-      ctx.arc( 0, 0, 0.5, 0, Math.PI * 2 );
-      ctx.fill();
-    }
-    ctx.restore();
-
-    ctx.restore();
+    ctx.stroke( path );
   }
   
 </script>
