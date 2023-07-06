@@ -1,20 +1,22 @@
-const FOOT_X_OFFSET = 0.5, FOOT_Y_OFFSET = 0.4;
-const BODY_SIZE = 0.5;
-const EYE_SIZE = 0.125;
-const PUPIL_W = 0.1, PUPIL_H = 0.06;
+const FOOT_OFFSET_X = 0.4, FOOT_OFFSET_Y = 0.4;
+const BODY_SIZE = 0.4;
+const EYE_OFFSET_X = 0.17, EYE_OFFSET_Y = -0.18;
+const EYE_SIZE = 0.1;
+const PUPIL_OFFSET_X = 0.17, PUPIL_OFFSET_Y = -0.23;
+const PUPIL_W = 0.08, PUPIL_H = 0.05;
 
 const feet = new Path2D();
 
 [ -1, 1 ].forEach( dir => {
   [ -1, 1 ].forEach( side => {
-    feet.moveTo( side * ( FOOT_X_OFFSET + 0.05 ), dir * FOOT_Y_OFFSET + 0.1 );
-    feet.lineTo( side * ( FOOT_X_OFFSET + 0.10 ), dir * FOOT_Y_OFFSET );
+    feet.moveTo( side * ( FOOT_OFFSET_X + 0.05 ), dir * FOOT_OFFSET_Y + 0.1 );
+    feet.lineTo( side * ( FOOT_OFFSET_X + 0.10 ), dir * FOOT_OFFSET_Y );
     feet.quadraticCurveTo( 
-      side * FOOT_X_OFFSET, dir * FOOT_Y_OFFSET - 0.1, 
-      side * ( FOOT_X_OFFSET - 0.10 ), dir * FOOT_Y_OFFSET
+      side * FOOT_OFFSET_X, dir * FOOT_OFFSET_Y - 0.1, 
+      side * ( FOOT_OFFSET_X - 0.10 ), dir * FOOT_OFFSET_Y
     );
-    feet.lineTo( side * ( FOOT_X_OFFSET - 0.05 ), dir * FOOT_Y_OFFSET + 0.1 );
-    feet.lineTo( side * ( FOOT_X_OFFSET + 0.05 ), dir * FOOT_Y_OFFSET + 0.1 );
+    feet.lineTo( side * ( FOOT_OFFSET_X - 0.05 ), dir * FOOT_OFFSET_Y + 0.1 );
+    feet.lineTo( side * ( FOOT_OFFSET_X + 0.05 ), dir * FOOT_OFFSET_Y + 0.1 );
   } );
 } );
 
@@ -22,14 +24,14 @@ const body = new Path2D();
 body.arc( 0, 0, BODY_SIZE, 0, Math.PI * 2 );
 
 const sclera = new Path2D();
-sclera.arc( -0.2, -0.2, EYE_SIZE, 0, Math.PI * 2 );
-sclera.moveTo( 0.2 + EYE_SIZE, -0.2 );
-sclera.arc(  0.2, -0.2, EYE_SIZE, 0, Math.PI * 2 );
+sclera.arc( -EYE_OFFSET_X, EYE_OFFSET_Y, EYE_SIZE, 0, Math.PI * 2 );
+sclera.moveTo( EYE_OFFSET_X + EYE_SIZE, EYE_OFFSET_Y );
+sclera.arc(  EYE_OFFSET_X, EYE_OFFSET_Y, EYE_SIZE, 0, Math.PI * 2 );
 
 const pupils = new Path2D();
-pupils.ellipse( -0.2, -0.27, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
-pupils.moveTo(  0.2 + PUPIL_W, -0.27 );
-pupils.ellipse(  0.2, -0.27, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
+pupils.ellipse( -PUPIL_OFFSET_X, PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
+pupils.moveTo(  PUPIL_OFFSET_X + PUPIL_W, PUPIL_OFFSET_Y );
+pupils.ellipse(  PUPIL_OFFSET_X, PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
 
 export class Frog {
   x = 0;
@@ -70,10 +72,13 @@ export class Frog {
 
     [ -1, 1 ].forEach( dir => {
       [ -1, 1 ].forEach( side => {
-        legs.moveTo( side * 0.3, 0 );
-        legs.quadraticCurveTo( side * 0.5, 0, side * 0.55, dir * FOOT_Y_OFFSET + 0.1 + footOffset );
-        legs.lineTo( side * 0.45, dir * FOOT_Y_OFFSET + 0.1 + footOffset );
-        legs.quadraticCurveTo( side * 0.4, dir * 0.1, side * 0.3, dir * 0.2 );
+        legs.moveTo( side * ( FOOT_OFFSET_X - 0.2 ), 0 );
+        legs.quadraticCurveTo(
+          side * FOOT_OFFSET_X, 0,
+          side * ( FOOT_OFFSET_X + 0.05 ), dir * FOOT_OFFSET_Y + 0.1 + footOffset 
+        );
+        legs.lineTo( side * ( FOOT_OFFSET_X - 0.05 ), dir * FOOT_OFFSET_Y + 0.1 + footOffset );
+        legs.quadraticCurveTo( side * ( FOOT_OFFSET_X - 0.1 ), dir * 0.1, side * ( FOOT_OFFSET_X - 0.2 ), dir * 0.2 );
       } );
     } );
 
