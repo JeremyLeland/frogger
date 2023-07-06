@@ -1,0 +1,83 @@
+<title>Draw Entity from JSON</title>
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+
+  const circlePath = new Path2D( 'M -0.5,0 A 0.5,0.5 0,0,1 0.5,0 A 0.5,0.5 0,0,1 -0.5,0' );
+  const pupilPath = new Path2D( 'M -0.3,-0.3 A 0.3,0.2 0,0,1 0.3,-0.3 A 0.3,0.2 0,0,1 -0.3,-0.3' );
+
+  const frog = {
+    leftFoot: {
+      t: [ -0.5, -0.5 ],
+      s: 0.2,
+      f: 'green',
+      p: new Path2D( 'M -0.2,0.4 L -0.5,0 A 0.5,0.3 0,0,1 0.5,0 L 0.2,0.4 Z' ),
+    },
+    body: {
+      f: 'green',
+      p: circlePath,
+    },
+    leftEye: {
+      t: [ -0.2, -0.2 ],
+      s: 0.25,
+      f: 'white',
+      p: circlePath,
+    },
+    leftPupil: {
+      t: [ -0.2, -0.2 ],
+      s: 0.25,
+      f: 'black',
+      p: pupilPath,
+    },
+    rightEye: {
+      t: [ 0.2, -0.2 ],
+      s: 0.25,
+      f: 'white',
+      p: circlePath,
+    },
+    rightPupil: {
+      t: [ 0.2, -0.2 ],
+      s: 0.25,
+      f: 'black',
+      p: pupilPath,
+    },
+  };
+
+
+  const canvas = new AnimatedCanvas();
+
+  canvas.draw = ( ctx ) => {
+
+    ctx.translate( 620, 160 );
+    ctx.scale( 128, 128 );
+
+    drawEntity( ctx, frog );
+  };
+
+  canvas.redraw();
+  
+
+  function drawEntity( ctx, info ) {
+    for ( const name in info ) {
+      const item = info[ name ];
+
+      ctx.save();
+
+      if ( item.t )   ctx.translate( ...item.t );
+      if ( item.s )   ctx.scale( item.s, item.s );
+
+      if ( item.f )   ctx.fillStyle = item.f;
+      if ( item.p ) {
+        ctx.fill( item.p );
+        ctx.lineWidth = 1 / ctx.getTransform().m11;
+        ctx.stroke( item.p );
+      }
+
+      // TODO: children?
+
+      ctx.restore();
+    }
+  }
+
+</script>
