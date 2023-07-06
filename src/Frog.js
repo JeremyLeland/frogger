@@ -30,14 +30,16 @@ pupils.moveTo(  0.2 + PUPIL_W, -0.27 );
 pupils.ellipse(  0.2, -0.27, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
 
 export class Frog {
-  x = 320;
-  y = 160;
-
-  size = 128;
-
-  color = 'green';
+  x = 0;
+  y = 0;
+  size = 1;
+  color = 'red';
 
   animationTime = 0;
+
+  constructor( values ) {
+    Object.assign( this, values );
+  }
 
   draw( ctx ) {
     ctx.save();

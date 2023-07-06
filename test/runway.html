@@ -5,12 +5,18 @@
   import { Frog } from '../src/Frog.js';
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
 
-  const frog = new Frog();
+  const TILE_SIZE = 64;
+
+  const entities = [];
+
+  const frogs = [ 'red', 'orange', 'yellow', 'lime', 'blue', 'purple' ].map( ( color, i ) =>
+    new Frog( { x: ( i + 1.5 ) * TILE_SIZE, y: ( 1.5 ) * TILE_SIZE, size: TILE_SIZE, color: color } )
+  );
 
   const canvas = new AnimatedCanvas();
 
   canvas.update = ( dt ) => {
-    frog.animationTime += dt;
+    frogs.forEach( e => e.animationTime += dt );
   }
 
   canvas.draw = ( ctx ) => {
@@ -40,7 +46,7 @@
     // Lilypad
 
     // Frog
-    frog.draw( ctx );
+    frogs.forEach( e => e.draw( ctx ) );
   };
 
   // canvas.redraw();
