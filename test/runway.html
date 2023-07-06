@@ -154,6 +154,41 @@
     ctx.translate( 320, 160 );
     ctx.scale( 128, 128 );
 
+    const FOOT_DIST = 0.4;
+    const footOffset = 0.1 * Math.cos( 0.01 * frogTime );
+
+    const feet = new Path2D();
+
+    [ -1, 1 ].forEach( dir => {
+      [ -1, 1 ].forEach( side => {
+        feet.moveTo( side * 0.55, dir * FOOT_DIST + 0.1 );
+        feet.lineTo( side * 0.6, dir * FOOT_DIST );
+        feet.quadraticCurveTo( side * 0.5, dir * FOOT_DIST - 0.1, side * 0.4, dir * FOOT_DIST );
+        feet.lineTo( side * 0.45, dir * FOOT_DIST + 0.1 );
+        feet.lineTo( side * 0.55, dir * FOOT_DIST + 0.1 );
+      } );
+    } );
+
+    ctx.save();
+    ctx.translate( 0, footOffset );    
+    drawPath( ctx, feet, 'green' );
+    ctx.restore();
+
+    const legs = new Path2D();
+
+    [ -1, 1 ].forEach( dir => {
+      [ -1, 1 ].forEach( side => {
+        legs.moveTo( side * 0.3, 0 );
+        legs.quadraticCurveTo( side * 0.5, 0, side * 0.55, dir * FOOT_DIST + 0.1 + footOffset );
+        legs.lineTo( side * 0.45, dir * FOOT_DIST + 0.1 + footOffset );
+        legs.quadraticCurveTo( side * 0.4, dir * 0.1, side * 0.3, dir * 0.2 );
+      } );
+    } );
+
+    legs.closePath();
+
+    drawPath( ctx, legs, 'green' );
+
     const body = new Path2D();
     body.arc( 0, 0, 0.5, 0, Math.PI * 2 );
 
@@ -172,25 +207,6 @@
     pupils.ellipse(  0.2, -0.27, 0.1, 0.06, 0, 0, Math.PI * 2 );
 
     drawPath( ctx, pupils, 'black' );
-
-    const leg = new Path2D();
-
-    // TODO: Animate!
-
-    const footDist = -0.4 - 0.1 * Math.cos( 0.01 * frogTime );
-
-    [ -1, 1 ].forEach( side => {
-      leg.lineTo( side * 0.3, 0 );
-      leg.quadraticCurveTo( side * 0.5, 0, side * 0.55, footDist );
-      leg.lineTo( side * 0.6, footDist - 0.1 );
-      leg.quadraticCurveTo( side * 0.5, footDist - 0.2, side * 0.4, footDist - 0.1 );
-      leg.lineTo( side * 0.45, footDist );
-      leg.quadraticCurveTo( side * 0.4, -0.1, side * 0.3, -0.2 );
-    } );
-
-    leg.closePath();
-
-    drawPath( ctx, leg, 'green' );
 
     ctx.restore();
   }
