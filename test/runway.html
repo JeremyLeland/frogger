@@ -43,12 +43,18 @@
       p: pupilPath,
     },
   };
-  
+
 
   const canvas = new AnimatedCanvas();
 
+  let frogTime = 0;
+
+  canvas.update = ( dt ) => {
+    frogTime += dt;
+  }
+
   canvas.draw = ( ctx ) => {
-  
+
     // Grass
     // ctx.fillStyle = 'darkgreen';
     // ctx.fillRect( 0, 0, 640, 640 );
@@ -82,7 +88,8 @@
     drawEntity( ctx, frog );
   };
 
-  canvas.redraw();
+  // canvas.redraw();
+  canvas.start();
 
   function drawRoad( ctx, path ) {
     ctx.save();
@@ -118,7 +125,7 @@
     ctx.restore();
   }
 
-  
+
 
   function drawEntity( ctx, info ) {
     for ( const name in info ) {
@@ -137,7 +144,7 @@
       }
 
       // TODO: children?
-        
+
       ctx.restore();
     }
   }
@@ -163,19 +170,21 @@
     pupils.ellipse( -0.2, -0.27, 0.1, 0.06, 0, 0, Math.PI * 2 );
     pupils.moveTo(  0.2 + 0.1, -0.27 );
     pupils.ellipse(  0.2, -0.27, 0.1, 0.06, 0, 0, Math.PI * 2 );
-    
+
     drawPath( ctx, pupils, 'black' );
 
     const leg = new Path2D();
-    
+
     // TODO: Animate!
+
+    const footDist = -0.4 - 0.1 * Math.cos( 0.01 * frogTime );
 
     [ -1, 1 ].forEach( side => {
       leg.lineTo( side * 0.3, 0 );
-      leg.quadraticCurveTo( side * 0.5, 0, side * 0.55, -0.4 );
-      leg.lineTo( side * 0.6, -0.5 );
-      leg.quadraticCurveTo( side * 0.5, -0.6, side * 0.4, -0.5 );
-      leg.lineTo( side * 0.45, -0.4 );
+      leg.quadraticCurveTo( side * 0.5, 0, side * 0.55, footDist );
+      leg.lineTo( side * 0.6, footDist - 0.1 );
+      leg.quadraticCurveTo( side * 0.5, footDist - 0.2, side * 0.4, footDist - 0.1 );
+      leg.lineTo( side * 0.45, footDist );
       leg.quadraticCurveTo( side * 0.4, -0.1, side * 0.3, -0.2 );
     } );
 
@@ -195,5 +204,5 @@
     ctx.lineWidth = 1 / ctx.getTransform().m11;
     ctx.stroke( path );
   }
-  
+
 </script>
