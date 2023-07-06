@@ -6,7 +6,7 @@ export class AnimatedCanvas {
     const canvas = document.createElement( 'canvas' );
     document.body.appendChild( canvas );
     
-    this.#ctx = canvas.getContext( '2d' );
+    this.#ctx = canvas.getContext( '2d' /*, { alpha: false }*/ );
 
     canvas.oncontextmenu = () => { return false };
     window.onresize = () => {

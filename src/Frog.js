@@ -1,28 +1,30 @@
-const FOOT_DIST = 0.4;
+const FOOT_X_OFFSET = 0.5, FOOT_Y_OFFSET = 0.4;
+const BODY_SIZE = 0.5;
+const EYE_SIZE = 0.125;
+const PUPIL_W = 0.1, PUPIL_H = 0.06;
 
 const feet = new Path2D();
 
 [ -1, 1 ].forEach( dir => {
   [ -1, 1 ].forEach( side => {
-    feet.moveTo( side * 0.55, dir * FOOT_DIST + 0.1 );
-    feet.lineTo( side * 0.6, dir * FOOT_DIST );
-    feet.quadraticCurveTo( side * 0.5, dir * FOOT_DIST - 0.1, side * 0.4, dir * FOOT_DIST );
-    feet.lineTo( side * 0.45, dir * FOOT_DIST + 0.1 );
-    feet.lineTo( side * 0.55, dir * FOOT_DIST + 0.1 );
+    feet.moveTo( side * ( FOOT_X_OFFSET + 0.05 ), dir * FOOT_Y_OFFSET + 0.1 );
+    feet.lineTo( side * ( FOOT_X_OFFSET + 0.10 ), dir * FOOT_Y_OFFSET );
+    feet.quadraticCurveTo( 
+      side * FOOT_X_OFFSET, dir * FOOT_Y_OFFSET - 0.1, 
+      side * ( FOOT_X_OFFSET - 0.10 ), dir * FOOT_Y_OFFSET
+    );
+    feet.lineTo( side * ( FOOT_X_OFFSET - 0.05 ), dir * FOOT_Y_OFFSET + 0.1 );
+    feet.lineTo( side * ( FOOT_X_OFFSET + 0.05 ), dir * FOOT_Y_OFFSET + 0.1 );
   } );
 } );
 
 const body = new Path2D();
-body.arc( 0, 0, 0.5, 0, Math.PI * 2 );
-
-const EYE_SIZE = 0.125;
+body.arc( 0, 0, BODY_SIZE, 0, Math.PI * 2 );
 
 const sclera = new Path2D();
 sclera.arc( -0.2, -0.2, EYE_SIZE, 0, Math.PI * 2 );
 sclera.moveTo( 0.2 + EYE_SIZE, -0.2 );
 sclera.arc(  0.2, -0.2, EYE_SIZE, 0, Math.PI * 2 );
-
-const PUPIL_W = 0.1, PUPIL_H = 0.06;
 
 const pupils = new Path2D();
 pupils.ellipse( -0.2, -0.27, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
@@ -49,8 +51,12 @@ export class Frog {
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 1 / this.size;
 
-    
-    ctx.fillStyle = this.color;
+    // TODO: Is there a way to reuse this? Is it worth it performance-wise?
+    const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
+    gradient.addColorStop( 0, this.color );
+    gradient.addColorStop( 1, 'black' );
+
+    ctx.fillStyle = gradient;
     
     const footOffset = 0.1 * Math.cos( 0.01 * this.animationTime );
 
@@ -65,8 +71,8 @@ export class Frog {
     [ -1, 1 ].forEach( dir => {
       [ -1, 1 ].forEach( side => {
         legs.moveTo( side * 0.3, 0 );
-        legs.quadraticCurveTo( side * 0.5, 0, side * 0.55, dir * FOOT_DIST + 0.1 + footOffset );
-        legs.lineTo( side * 0.45, dir * FOOT_DIST + 0.1 + footOffset );
+        legs.quadraticCurveTo( side * 0.5, 0, side * 0.55, dir * FOOT_Y_OFFSET + 0.1 + footOffset );
+        legs.lineTo( side * 0.45, dir * FOOT_Y_OFFSET + 0.1 + footOffset );
         legs.quadraticCurveTo( side * 0.4, dir * 0.1, side * 0.3, dir * 0.2 );
       } );
     } );
