@@ -3,6 +3,7 @@
 
 <script type="module">
   import { Frog } from '../src/Frog.js';
+  import { Turtle } from '../src/Turtle.js';
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
 
   const TILE_SIZE = 64;
@@ -13,9 +14,12 @@
     new Frog( { x: ( i + 1.5 ) * TILE_SIZE, y: ( 1.5 ) * TILE_SIZE, size: TILE_SIZE, color: color } )
   );
 
+  const turtle = new Turtle( { x: 128, y: 320, size: TILE_SIZE } );
+
   const canvas = new AnimatedCanvas();
 
   canvas.update = ( dt ) => {
+    turtle.animationTime += dt;
     frogs.forEach( e => e.animationTime += dt );
   }
 
@@ -32,6 +36,10 @@
 
     // Sidewalk
 
+    // Snake
+    // (yellow, red, black stripes, or whatever the deadly order is...)
+    // slither across the screen
+
     // Car
 
     // Water
@@ -42,6 +50,7 @@
     // drawLog( ctx, new Path2D( 'M 32,128 L 160,128' ) );
 
     // Turtle
+    turtle.draw( ctx );
 
     // Lilypad
 
