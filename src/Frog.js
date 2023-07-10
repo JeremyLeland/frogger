@@ -60,7 +60,7 @@ export class Frog {
 
     ctx.fillStyle = gradient;
     
-    const footOffset = 0.1 * Math.cos( 0.01 * this.animationTime );
+    const footOffset = 0.1 * Math.sin( 0.01 * this.animationTime );
 
     ctx.save();
     ctx.translate( 0, footOffset );    

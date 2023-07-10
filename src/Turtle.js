@@ -72,7 +72,7 @@ export class Turtle {
 
     ctx.fillStyle = bodyGrad;
     
-    const legAngleOffset = 0.3 * Math.cos( 0.005 * this.animationTime );
+    const legAngleOffset = 0.3 * Math.sin( 0.005 * this.animationTime );
 
     [ -1, 1 ].forEach( side => {
       [ 0.4, 0.75 ].forEach( angle => {
@@ -96,7 +96,6 @@ export class Turtle {
     ctx.fill( shell );
     ctx.stroke( shell );
 
-    ctx.strokeStyle = 'black';
     ctx.stroke( detail );
 
     ctx.restore();

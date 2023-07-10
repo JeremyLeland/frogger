@@ -4,6 +4,7 @@
 <script type="module">
   import { Frog } from '../src/Frog.js';
   import { Turtle } from '../src/Turtle.js';
+  import { Log } from '../src/Log.js';
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
 
   const TILE_SIZE = 64;
@@ -11,10 +12,14 @@
   const entities = [];
 
   const frogs = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'purple' ].map( ( color, i ) =>
-    new Frog( { x: ( i + 1.5 ) * TILE_SIZE, y: ( 1.5 ) * TILE_SIZE, size: TILE_SIZE, color: color } )
+    new Frog( { x: ( i + 1.5 ) * TILE_SIZE, y: ( 1.5 ) * TILE_SIZE, size: TILE_SIZE * 0.6, color: color } )
   );
 
-  const turtle = new Turtle( { x: 128, y: 320, size: TILE_SIZE * 2 } );
+  const player = new Frog( { x: 1.5 * TILE_SIZE, y: 2.5 * TILE_SIZE, size: TILE_SIZE, color: 'green' } );
+
+  const turtle = new Turtle( { x: 1.5 * TILE_SIZE, y: 320, size: TILE_SIZE } );
+
+  const log = new Log( { x: 1.5 * TILE_SIZE, y: 3.5 * TILE_SIZE, size: TILE_SIZE, length: 2 } );
 
   const canvas = new AnimatedCanvas();
 
@@ -47,7 +52,7 @@
     // ctx.fillRect( 32, 128, 256, 320 );
 
     // // Log
-    // drawLog( ctx, new Path2D( 'M 32,128 L 160,128' ) );
+    log.draw( ctx );
 
     // Turtle
     turtle.draw( ctx );
@@ -56,6 +61,7 @@
 
     // Frog
     frogs.forEach( e => e.draw( ctx ) );
+    player.draw( ctx );
   };
 
   canvas.redraw();
