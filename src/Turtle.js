@@ -14,6 +14,26 @@ head.arc( SHELL_SIZE + HEAD_SIZE / 2, 0, HEAD_SIZE, 0, Math.PI * 2 );
 const shell = new Path2D();
 shell.arc( 0, 0, SHELL_SIZE, 0, Math.PI * 2 );
 
+// const detail = new Path2D();
+
+// detail.moveTo( 0.1, 0 );
+// for ( let i = 1; i <= 6; i ++ ) {
+//   const angle = i * Math.PI * 2 / 6;
+//   detail.lineTo( Math.cos( angle ) * 0.1, Math.sin( angle ) * 0.1 );
+// }
+
+// for ( let i = 1; i <= 6; i ++ ) {
+//   const angle = i * Math.PI * 2 / 6;
+//   detail.moveTo( Math.cos( angle ) * 0.1, Math.sin( angle ) * 0.1 );
+//   detail.lineTo( Math.cos( angle ) * 0.2, Math.sin( angle ) * 0.2 );
+// }
+
+// for ( let i = 1; i <= 6; i ++ ) {
+//   const angle = i * Math.PI * 2 / 6;
+//   detail.moveTo( Math.cos( angle ) * 0.1, Math.sin( angle ) * 0.2 );
+//   detail.lineTo( Math.cos( angle ) * 0.2, Math.sin( angle ) * 0.1 );
+// }
+
 
 export class Turtle {
   x = 0;
@@ -63,6 +83,27 @@ export class Turtle {
 
     ctx.fill( shell );
     ctx.stroke( shell );
+
+    ctx.strokeStyle = 'black';
+    // ctx.stroke( detail );
+
+    for ( let i = 0; i < 6; i ++ ) {
+      const angle = i * Math.PI * 2 / 6;
+
+      const HEX_SIZE = SHELL_SIZE / Math.sqrt( 3 ) / 1.5;
+
+      const radius = Math.sqrt( 3 ) * HEX_SIZE;
+      const cx = Math.sin( angle ) * radius;
+      const cy = Math.cos( angle ) * radius;
+
+      ctx.beginPath();
+      for ( let j = 0; j < 6; j ++ ) {
+        const jAngle = j * Math.PI * 2 / 6;
+        ctx.lineTo( cx + Math.cos( jAngle ) * HEX_SIZE, cy + Math.sin( jAngle ) * HEX_SIZE );
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
 
     ctx.restore();
   }

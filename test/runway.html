@@ -14,7 +14,7 @@
     new Frog( { x: ( i + 1.5 ) * TILE_SIZE, y: ( 1.5 ) * TILE_SIZE, size: TILE_SIZE, color: color } )
   );
 
-  const turtle = new Turtle( { x: 128, y: 320, size: TILE_SIZE } );
+  const turtle = new Turtle( { x: 128, y: 320, size: TILE_SIZE * 2 } );
 
   const canvas = new AnimatedCanvas();
 
@@ -58,8 +58,8 @@
     frogs.forEach( e => e.draw( ctx ) );
   };
 
-  // canvas.redraw();
-  canvas.start();
+  canvas.redraw();
+  // canvas.start();
 
   function drawRoad( ctx, path ) {
     ctx.save();
