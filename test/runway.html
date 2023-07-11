@@ -5,6 +5,8 @@
   import { Frog } from '../src/Frog.js';
   import { Turtle } from '../src/Turtle.js';
   import { Log } from '../src/Log.js';
+  import { Tiles } from '../src/Tiles.js';
+
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
 
   const TILE_SIZE = 64;
@@ -12,14 +14,12 @@
   const entities = [];
 
   const frogs = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].map( ( color, i ) =>
-    new Frog( { x: 1.5 + i, y: 1.5, size: 0.6, color: color } )
+    new Frog( { x: i, y: 0, size: 0.6, color: color } )
   );
 
-  const player = new Frog( { x: 1.5, y: 2.5, color: 'green' } );
-
-  const turtle = new Turtle( { x: 1.5, y: 4.5 } );
-
-  const log = new Log( { x: 1.5, y: 3.5, length: 2 } );
+  const player = new Frog( { x: 1, y: 2, color: 'green' } );
+  const turtle = new Turtle( { x: 1, y: 4 } );
+  const log = new Log( { x: 1, y: 3, length: 2 } );
 
   const canvas = new AnimatedCanvas();
 
@@ -33,6 +33,26 @@
 
     ctx.save();
     ctx.scale( TILE_SIZE, TILE_SIZE );
+    ctx.translate( 0.5, 0.5 );
+
+    ctx.save();
+    
+    ctx.translate( 0, 1 );
+    Tiles.drawGrass( ctx );
+
+    ctx.translate( 1, 0 );
+    Tiles.drawBush( ctx );
+
+    ctx.translate( 1, 0 );
+    Tiles.drawSidewalk( ctx );
+    
+    ctx.translate( 1, 0 );
+    Tiles.drawWater( ctx );
+    
+    ctx.translate( 1, 0 );
+    Tiles.drawStreet( ctx );
+
+    ctx.restore();
 
     // Grass
     // ctx.fillStyle = 'darkgreen';
@@ -70,8 +90,8 @@
     ctx.restore();
   };
 
-  // canvas.redraw();
-  canvas.start();
+  canvas.redraw();
+  // canvas.start();
 
   function drawRoad( ctx, path ) {
     ctx.save();
