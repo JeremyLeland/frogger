@@ -33,26 +33,10 @@ pupils.ellipse( -PUPIL_OFFSET_X, PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI
 pupils.moveTo(  PUPIL_OFFSET_X + PUPIL_W, PUPIL_OFFSET_Y );
 pupils.ellipse(  PUPIL_OFFSET_X, PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
 
-export class Frog {
-  x = 0;
-  y = 0;
-  size = 1;
-  color = 'red';
+import { Entity } from './Entity.js';
 
-  animationTime = 0;
-
-  constructor( values ) {
-    Object.assign( this, values );
-  }
-
-  draw( ctx ) {
-    ctx.save();
-    ctx.translate( this.x, this.y );
-    ctx.scale( this.size, this.size );
-
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1 / this.size;
-
+export class Frog extends Entity {
+  drawEntity( ctx ) {
     // TODO: Is there a way to reuse this? Is it worth it performance-wise?
     const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
     gradient.addColorStop( 0, this.color );
@@ -96,7 +80,5 @@ export class Frog {
 
     ctx.fillStyle = 'black';
     ctx.fill( pupils );
-
-    ctx.restore();
   }
 }

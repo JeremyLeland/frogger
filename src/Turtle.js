@@ -46,26 +46,11 @@ for ( let i = 0; i < 6; i ++ ) {
 
 detail.lineTo( DETAIL_W_1, 0 );
 
+import { Entity } from './Entity.js';
 
-export class Turtle {
-  x = 0;
-  y = 0;
-  size = 1;
+export class Turtle extends Entity {
 
-  animationTime = 0;
-
-  constructor( values ) {
-    Object.assign( this, values );
-  }
-
-  draw( ctx ) {
-    ctx.save();
-    ctx.translate( this.x, this.y );
-    ctx.scale( this.size, this.size );
-
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1 / this.size;
-
+  drawEntity( ctx ) {
     const bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
     bodyGrad.addColorStop( 0, 'green' );
     bodyGrad.addColorStop( 1, 'black' );
@@ -97,7 +82,5 @@ export class Turtle {
     ctx.stroke( shell );
 
     ctx.stroke( detail );
-
-    ctx.restore();
   }
 }

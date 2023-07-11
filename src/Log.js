@@ -2,20 +2,15 @@ const WIDTH = 0.8;  // as opposed to length (not necessarily in x axis)
 const CORNER_RADIUS = 0.3;
 const DETAIL_ROWS = 8;
 
-export class Log {
-  x = 0;
-  y = 0;
-  size = 1;
+import { Entity } from './Entity.js';
 
-  length = 1;
-
-  animationTime = 0;
+export class Log extends Entity {
 
   #body;
   #detail;
 
   constructor( values ) {
-    Object.assign( this, values );
+    super( values );
 
     this.#body = new Path2D();
     this.#body.roundRect( -0.5, -0.5 * WIDTH, this.length, WIDTH, CORNER_RADIUS );
@@ -32,14 +27,7 @@ export class Log {
     }
   }
 
-  draw( ctx ) {
-    ctx.save();
-    ctx.translate( this.x, this.y );
-    ctx.scale( this.size, this.size );
-
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1 / this.size;
-
+  drawEntity( ctx ) {
     const bodyGrad = ctx.createLinearGradient( 0, -1, 0, 1 );
     bodyGrad.addColorStop( 0, 'black' );
     bodyGrad.addColorStop( 0.5, '#884400' );
@@ -51,7 +39,5 @@ export class Log {
     ctx.stroke( this.#body );
 
     ctx.stroke( this.#detail );
-
-    ctx.restore();
   }
 }

@@ -11,24 +11,28 @@
 
   const entities = [];
 
-  const frogs = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'purple' ].map( ( color, i ) =>
-    new Frog( { x: ( i + 1.5 ) * TILE_SIZE, y: ( 1.5 ) * TILE_SIZE, size: TILE_SIZE * 0.6, color: color } )
+  const frogs = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].map( ( color, i ) =>
+    new Frog( { x: 1.5 + i, y: 1.5, size: 0.6, color: color } )
   );
 
-  const player = new Frog( { x: 1.5 * TILE_SIZE, y: 2.5 * TILE_SIZE, size: TILE_SIZE, color: 'green' } );
+  const player = new Frog( { x: 1.5, y: 2.5, color: 'green' } );
 
-  const turtle = new Turtle( { x: 1.5 * TILE_SIZE, y: 320, size: TILE_SIZE } );
+  const turtle = new Turtle( { x: 1.5, y: 4.5 } );
 
-  const log = new Log( { x: 1.5 * TILE_SIZE, y: 3.5 * TILE_SIZE, size: TILE_SIZE, length: 2 } );
+  const log = new Log( { x: 1.5, y: 3.5, length: 2 } );
 
   const canvas = new AnimatedCanvas();
 
   canvas.update = ( dt ) => {
     turtle.animationTime += dt;
     frogs.forEach( e => e.animationTime += dt );
+    player.animationTime += dt;
   }
 
   canvas.draw = ( ctx ) => {
+
+    ctx.save();
+    ctx.scale( TILE_SIZE, TILE_SIZE );
 
     // Grass
     // ctx.fillStyle = 'darkgreen';
@@ -62,10 +66,12 @@
     // Frog
     frogs.forEach( e => e.draw( ctx ) );
     player.draw( ctx );
+
+    ctx.restore();
   };
 
-  canvas.redraw();
-  // canvas.start();
+  // canvas.redraw();
+  canvas.start();
 
   function drawRoad( ctx, path ) {
     ctx.save();
