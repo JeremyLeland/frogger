@@ -30,7 +30,7 @@ export class Log extends Entity {
   drawEntity( ctx ) {
     const bodyGrad = ctx.createLinearGradient( 0, -1, 0, 1 );
     bodyGrad.addColorStop( 0, 'black' );
-    bodyGrad.addColorStop( 0.5, '#884400' );
+    bodyGrad.addColorStop( 0.5, 'saddlebrown' );
     bodyGrad.addColorStop( 1, 'black' );
 
     ctx.fillStyle = bodyGrad;
