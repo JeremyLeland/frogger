@@ -14,6 +14,8 @@
 
   canvas.update = ( dt ) => {
     player.animationTime += dt;
+
+    player.update( dt );
   }
 
   canvas.draw = ( ctx ) => {
@@ -28,10 +30,10 @@
 
   canvas.start();
 
-  const moveUp =    () => player.angle = -Math.PI / 2;
-  const moveDown =  () => player.angle =  Math.PI / 2;
-  const moveLeft =  () => player.angle = Math.PI;
-  const moveRight = () => player.angle = 0;
+  const moveUp =    () => player.moveUp();
+  const moveDown =  () => player.moveDown();
+  const moveLeft =  () => player.moveLeft();
+  const moveRight = () => player.moveRight();
 
   const KeyBindings = {
     KeyW: moveUp,

@@ -12,19 +12,6 @@ const PUPIL_W = 0.05, PUPIL_H = 0.08;
 
 const feet = new Path2D();
 
-// [ -1, 1 ].forEach( dir => {
-//   [ -1, 1 ].forEach( side => {
-//     feet.moveTo( side * ( FOOT_OFFSET_X + 0.05 ), dir * FOOT_OFFSET_Y + 0.1 );
-//     feet.lineTo( side * ( FOOT_OFFSET_X + 0.10 ), dir * FOOT_OFFSET_Y );
-//     feet.quadraticCurveTo( 
-//       side * FOOT_OFFSET_X, dir * FOOT_OFFSET_Y - 0.1, 
-//       side * ( FOOT_OFFSET_X - 0.10 ), dir * FOOT_OFFSET_Y
-//     );
-//     feet.lineTo( side * ( FOOT_OFFSET_X - 0.05 ), dir * FOOT_OFFSET_Y + 0.1 );
-//     feet.lineTo( side * ( FOOT_OFFSET_X + 0.05 ), dir * FOOT_OFFSET_Y + 0.1 );
-//   } );
-// } );
-
 [ -1, 1 ].forEach( dir => {
   [ -1, 1 ].forEach( side => {
     const x = dir * FOOT_OFFSET_X + FOOT_SHIFT;
@@ -54,9 +41,62 @@ pupils.ellipse( PUPIL_OFFSET_X, -PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI
 pupils.moveTo(  PUPIL_OFFSET_X, PUPIL_OFFSET_Y + PUPIL_H );
 pupils.ellipse( PUPIL_OFFSET_X,  PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
 
-import { Entity } from './Entity.js';
+import { Direction, Entity } from './Entity.js';
+
+const MOVE_SPEED = 0.002;
+
+function getMove( have, want, dt ) {
+  const goalMove = want - have;
+  return Math.sign( goalMove ) * Math.min( MOVE_SPEED * dt, Math.abs( goalMove ) );
+}
 
 export class Frog extends Entity {
+
+  constructor( values ) {
+    super( values );
+
+    this.goalX = this.x;
+    this.goalY = this.y;
+  }
+
+  
+  moveUp() {
+    if ( this.x == this.goalX && this.y == this.goalY ) {
+      this.angle = Direction.Up;
+      this.goalY = this.y - 1;
+    }
+  }
+
+  moveLeft() {
+    if ( this.x == this.goalX && this.y == this.goalY ) {
+      this.angle = Direction.Left;
+      this.goalX = this.x - 1;
+    }
+  }
+
+  moveDown() {
+    if ( this.x == this.goalX && this.y == this.goalY ) {
+      this.angle = Direction.Down;
+      this.goalY = this.y + 1;
+    }
+  }
+
+  moveRight() {
+    if ( this.x == this.goalX && this.y == this.goalY ) {
+      this.angle = Direction.Right;
+      this.goalX = this.x + 1;
+    }
+  }
+
+  update( dt ) {
+    if ( this.x != this.goalX ) {
+      this.x += getMove( this.x, this.goalX, dt );
+    }
+    if ( this.y != this.goalY ) {
+      this.y += getMove( this.y, this.goalY, dt );
+    }
+  }
+
   drawEntity( ctx ) {
     // TODO: Is there a way to reuse this? Is it worth it performance-wise?
     const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );

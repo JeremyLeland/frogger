@@ -1,3 +1,11 @@
+
+export const Direction = {
+  Up: -Math.PI / 2,
+  Left: Math.PI,
+  Down: Math.PI / 2,
+  Right: 0
+};
+
 export class Entity {
   x = 0;
   y = 0;
@@ -9,6 +17,8 @@ export class Entity {
   constructor( values ) {
     Object.assign( this, values );
   }
+
+  update( dt ) {}
 
   draw( ctx ) {
     ctx.save();
