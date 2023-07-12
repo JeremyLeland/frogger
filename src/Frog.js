@@ -43,7 +43,7 @@ pupils.ellipse( PUPIL_OFFSET_X,  PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI
 
 import { Direction, Entity } from './Entity.js';
 
-const MOVE_SPEED = 0.002;
+const MOVE_SPEED = 0.003;
 
 function getMove( have, want, dt ) {
   const goalMove = want - have;
@@ -51,6 +51,7 @@ function getMove( have, want, dt ) {
 }
 
 export class Frog extends Entity {
+  #isJumping = false;
 
   constructor( values ) {
     super( values );
@@ -64,15 +65,22 @@ export class Frog extends Entity {
       this.goalX = this.x + dir.x;
       this.goalY = this.y + dir.y;
       this.angle = dir.angle;
+      this.#isJumping = true;
     }
   }
 
   update( dt ) {
-    if ( this.x != this.goalX ) {
+    if ( this.#isJumping ) {
       this.x += getMove( this.x, this.goalX, dt );
-    }
-    if ( this.y != this.goalY ) {
       this.y += getMove( this.y, this.goalY, dt );
+
+      if ( this.x == this.goalX && this.y == this.goalY ) {
+        this.#isJumping = false;
+        this.animationTime = 0;
+      }
+      else {
+        this.animationTime += dt;
+      }
     }
   }
 
@@ -84,7 +92,7 @@ export class Frog extends Entity {
 
     ctx.fillStyle = gradient;
     
-    const footOffset = 0.1 * Math.sin( 0.01 * this.animationTime );
+    const footOffset = -0.1 * Math.sin( this.animationTime * Math.PI * MOVE_SPEED );
 
     ctx.save();
     ctx.translate( footOffset, 0 );    
