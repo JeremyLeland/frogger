@@ -52,6 +52,7 @@ function getMove( have, want, dt ) {
 
 export class Frog extends Entity {
   #isJumping = false;
+  #jumpQueue = [];
 
   constructor( values ) {
     super( values );
@@ -61,12 +62,7 @@ export class Frog extends Entity {
   }
 
   move( dir ) {
-    if ( this.x == this.goalX && this.y == this.goalY ) {
-      this.goalX = this.x + dir.x;
-      this.goalY = this.y + dir.y;
-      this.angle = dir.angle;
-      this.#isJumping = true;
-    }
+    this.#jumpQueue.push( dir );
   }
 
   update( dt ) {
@@ -81,6 +77,14 @@ export class Frog extends Entity {
       else {
         this.animationTime += dt;
       }
+    }
+    else if ( this.#jumpQueue.length > 0 ) {
+      const dir = this.#jumpQueue.shift();
+
+      this.goalX = this.x + dir.x;
+      this.goalY = this.y + dir.y;
+      this.angle = dir.angle;
+      this.#isJumping = true;
     }
   }
 
