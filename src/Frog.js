@@ -59,32 +59,11 @@ export class Frog extends Entity {
     this.goalY = this.y;
   }
 
-  
-  moveUp() {
+  move( dir ) {
     if ( this.x == this.goalX && this.y == this.goalY ) {
-      this.angle = Direction.Up;
-      this.goalY = this.y - 1;
-    }
-  }
-
-  moveLeft() {
-    if ( this.x == this.goalX && this.y == this.goalY ) {
-      this.angle = Direction.Left;
-      this.goalX = this.x - 1;
-    }
-  }
-
-  moveDown() {
-    if ( this.x == this.goalX && this.y == this.goalY ) {
-      this.angle = Direction.Down;
-      this.goalY = this.y + 1;
-    }
-  }
-
-  moveRight() {
-    if ( this.x == this.goalX && this.y == this.goalY ) {
-      this.angle = Direction.Right;
-      this.goalX = this.x + 1;
+      this.goalX = this.x + dir.x;
+      this.goalY = this.y + dir.y;
+      this.angle = dir.angle;
     }
   }
 

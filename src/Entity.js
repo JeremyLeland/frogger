@@ -1,9 +1,9 @@
 
 export const Direction = {
-  Up: -Math.PI / 2,
-  Left: Math.PI,
-  Down: Math.PI / 2,
-  Right: 0
+  Up:     { x:  0, y: -1, angle: -Math.PI / 2 },
+  Left:   { x: -1, y:  0, angle:  Math.PI     },
+  Down:   { x:  0, y:  1, angle:  Math.PI / 2 },
+  Right:  { x:  1, y:  0, angle:  0           },
 };
 
 export class Entity {

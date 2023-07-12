@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="../grid.css">
 
 <script type="module">
+  import { Direction } from '../src/Entity.js';
   import { Frog } from '../src/Frog.js';
   
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
@@ -30,10 +31,10 @@
 
   canvas.start();
 
-  const moveUp =    () => player.moveUp();
-  const moveDown =  () => player.moveDown();
-  const moveLeft =  () => player.moveLeft();
-  const moveRight = () => player.moveRight();
+  const moveUp =    () => player.move( Direction.Up );
+  const moveDown =  () => player.move( Direction.Down );
+  const moveLeft =  () => player.move( Direction.Left );
+  const moveRight = () => player.move( Direction.Right );
 
   const KeyBindings = {
     KeyW: moveUp,
