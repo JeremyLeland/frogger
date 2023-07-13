@@ -50,12 +50,31 @@ import { Entity } from './Entity.js';
 
 export class Turtle extends Entity {
 
-  moveSpeed = 0.002;  // TODO: Get from tile (for faster/slower water?)
+  moveSpeed = 0.001;  // TODO: Get from tile (for faster/slower water?)
 
   move( dir ) {
-    this.goalX = this.x + dir.x;
-    this.goalY = this.y + dir.y;
+    this.goalX = Math.floor( this.x ) + dir.x;
+    this.goalY = Math.floor( this.y ) + dir.y;
     this.angle = dir.angle;
+  }
+
+  update( dt, tiles ) {
+    super.update( dt );
+
+    if ( this.x == this.goalX && this.y == this.goalY ) {
+      let tile = tiles[ Math.floor( this.x ) ][ Math.floor( this.y ) ];
+
+      if ( tile.warp ) {
+        this.x = tile.warp.c;
+        this.y = tile.warp.r;
+
+        tile = tiles[ tile.warp.c ][ tile.warp.r ];
+      }
+
+      if ( tile.dir ) {
+        this.move( tile.dir );
+      }
+    }
   }
   
   drawEntity( ctx ) {

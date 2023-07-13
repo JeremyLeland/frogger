@@ -30,7 +30,7 @@
     ],
     [
       {
-        dir: Direction.Right,
+        dir: Direction.Down,
       },
       {
         dir: Direction.Left,
@@ -44,7 +44,7 @@
         dir: Direction.Right,
       },
       {
-        dir: Direction.Left,
+        dir: Direction.Up,
       },
       {
         dir: Direction.Right,
@@ -77,21 +77,7 @@
   const canvas = new AnimatedCanvas();
 
   canvas.update = ( dt ) => {
-
-    let tile = tiles[ Math.floor( turtle.x ) ][ Math.floor( turtle.y ) ];
-
-    if ( tile.warp ) {
-      turtle.x = tile.warp.c;
-      turtle.y = tile.warp.r;
-
-      tile = tiles[ tile.warp.c ][ tile.warp.r ];
-    }
-
-    if ( tile.dir ) {
-      turtle.move( tile.dir );
-    }
-
-    turtle.update( dt );
+    turtle.update( dt, tiles );
   }
   
   const BASE_W = 0.1, HEAD_W = 0.3, NECK = 0, LEN = 0.3;
