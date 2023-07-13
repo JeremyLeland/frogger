@@ -1,0 +1,158 @@
+<title>Follow tile directions</title>
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import { Direction } from '../src/Entity.js';
+  import { Turtle } from '../src/Turtle.js';
+  
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+
+  const TILE_SIZE = 64;
+
+  const turtle = new Turtle( { x: 0, y: 0 } );
+
+  // 0 - Up
+  // 1 - Left
+  // 2 - Down
+  // 3 - Right
+
+  const tiles = [
+    [
+      {
+        dir: Direction.Right,
+      },
+      {
+        warp: { c: 4, r: 1 },
+      },
+      {
+        dir: Direction.Right,
+      },
+    ],
+    [
+      {
+        dir: Direction.Right,
+      },
+      {
+        dir: Direction.Left,
+      },
+      {
+        dir: Direction.Right,
+      },
+    ],
+    [
+      {
+        dir: Direction.Right,
+      },
+      {
+        dir: Direction.Left,
+      },
+      {
+        dir: Direction.Right,
+      },
+    ],
+    [
+      {
+        dir: Direction.Right,
+      },
+      {
+        dir: Direction.Left,
+      },
+      {
+        dir: Direction.Right,
+      },
+    ],
+    [
+      {
+        warp: { c: 0, r: 0 },
+      },
+      {
+        dir: Direction.Left,
+      },
+      {
+        warp: { c: 0, r: 2 },
+      },
+    ],
+  ];
+
+  const canvas = new AnimatedCanvas();
+
+  canvas.update = ( dt ) => {
+
+    let tile = tiles[ Math.floor( turtle.x ) ][ Math.floor( turtle.y ) ];
+
+    if ( tile.warp ) {
+      turtle.x = tile.warp.c;
+      turtle.y = tile.warp.r;
+
+      tile = tiles[ tile.warp.c ][ tile.warp.r ];
+    }
+
+    if ( tile.dir ) {
+      turtle.move( tile.dir );
+    }
+
+    turtle.update( dt );
+  }
+  
+  const BASE_W = 0.1, HEAD_W = 0.3, NECK = 0, LEN = 0.3;
+  const arrow = new Path2D();
+  arrow.moveTo( -LEN,  -BASE_W );
+  arrow.lineTo(  NECK, -BASE_W );
+  arrow.lineTo(  NECK, -HEAD_W );
+  arrow.lineTo(  LEN,   0 );
+  arrow.lineTo(  NECK,  HEAD_W );
+  arrow.lineTo(  NECK,  BASE_W );
+  arrow.lineTo( -LEN,   BASE_W );
+  arrow.closePath();
+
+  canvas.draw = ( ctx ) => {
+    ctx.save();
+    ctx.scale( TILE_SIZE, TILE_SIZE );
+    ctx.translate( 0.5, 0.5 );
+
+    turtle.draw( ctx );
+
+    ctx.fillStyle = ctx.strokeStyle = '#ff05';
+    ctx.lineWidth = 1 / TILE_SIZE;
+
+    for ( let r = 0; r < tiles[ 0 ].length; r ++ ) {
+      for ( let c = 0; c < tiles.length; c ++ ) {
+        const tile = tiles[ c ][ r ];
+        ctx.strokeRect( c - 0.5, r - 0.5, 1, 1 );
+
+        if ( tile.dir ) {
+          ctx.save();
+          ctx.translate( c, r );
+          ctx.rotate( tile.dir.angle );
+          ctx.fill( arrow );
+          ctx.restore();
+        }
+        else if ( tile.warp ) {
+          drawDashedArrow( ctx, c, r, tile.warp.c, tile.warp.r );
+        }
+      }
+    }
+
+    ctx.restore();
+  };
+
+  canvas.start();
+
+  function drawDashedArrow( ctx, x1, y1, x2, y2 ) {
+    ctx.beginPath();
+    ctx.moveTo( x1, y1 );
+    ctx.lineTo( x2, y2 );
+    ctx.setLineDash( [ 0.1, 0.1 ] );
+    ctx.stroke();
+    ctx.setLineDash( [] );
+
+    const HEAD = 0.5;
+    const angle = Math.atan2( y1 - y2, x1 - x2 );
+    ctx.beginPath();
+    ctx.moveTo( x2, y2 );
+    ctx.arc( x2, y2, 0.1, angle - HEAD, angle + HEAD );
+    ctx.closePath();
+    ctx.fill();
+  }
+
+</script>

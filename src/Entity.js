@@ -12,13 +12,21 @@ export class Entity {
   angle = 0;
   size = 1;
 
+  moveSpeed = 0;
+
   animationTime = 0;
 
   constructor( values ) {
     Object.assign( this, values );
+
+    this.goalX = this.x;
+    this.goalY = this.y;
   }
 
-  update( dt ) {}
+  update( dt ) {
+    this.x += getMove( this.x, this.goalX, this.moveSpeed * dt );
+    this.y += getMove( this.y, this.goalY, this.moveSpeed * dt );
+  }
 
   draw( ctx ) {
     ctx.save();
@@ -40,4 +48,9 @@ export class Entity {
   }
 
   drawEntity( ctx ) {}
+}
+
+function getMove( have, want, maxMove ) {
+  const goalMove = want - have;
+  return Math.sign( goalMove ) * Math.min( maxMove, Math.abs( goalMove ) );
 }

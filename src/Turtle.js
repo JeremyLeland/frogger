@@ -50,6 +50,14 @@ import { Entity } from './Entity.js';
 
 export class Turtle extends Entity {
 
+  moveSpeed = 0.002;  // TODO: Get from tile (for faster/slower water?)
+
+  move( dir ) {
+    this.goalX = this.x + dir.x;
+    this.goalY = this.y + dir.y;
+    this.angle = dir.angle;
+  }
+  
   drawEntity( ctx ) {
     const bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
     bodyGrad.addColorStop( 0, 'green' );
