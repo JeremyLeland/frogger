@@ -9,7 +9,12 @@
 
   const TILE_SIZE = 64;
 
-  const turtle = new Turtle( { x: 0, y: 0 } );
+  const turtles = [
+    new Turtle( { x: 0, y: 0 } ),
+    new Turtle( { x: 1, y: 0 } ),
+    new Turtle( { x: 0, y: 2 } ),
+    new Turtle( { x: 2, y: 2 } ),
+  ];
 
   // 0 - Up
   // 1 - Left
@@ -77,7 +82,7 @@
   const canvas = new AnimatedCanvas();
 
   canvas.update = ( dt ) => {
-    turtle.update( dt, tiles );
+    turtles.forEach( turtle => turtle.update( dt, tiles ) );
   }
   
   const BASE_W = 0.1, HEAD_W = 0.3, NECK = 0, LEN = 0.3;
@@ -96,7 +101,7 @@
     ctx.scale( TILE_SIZE, TILE_SIZE );
     ctx.translate( 0.5, 0.5 );
 
-    turtle.draw( ctx );
+    turtles.forEach( turtle => turtle.draw( ctx ) );
 
     ctx.fillStyle = ctx.strokeStyle = '#ff05';
     ctx.lineWidth = 1 / TILE_SIZE;
