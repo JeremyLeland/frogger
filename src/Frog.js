@@ -65,7 +65,7 @@ export class Frog extends Entity {
     this.#jumpQueue.push( dir );
   }
 
-  update( dt ) {
+  update( dt, world ) {
     if ( this.#isJumping ) {
       this.x += getMove( this.x, this.goalX, dt );
       this.y += getMove( this.y, this.goalY, dt );
@@ -81,10 +81,22 @@ export class Frog extends Entity {
     else if ( this.#jumpQueue.length > 0 ) {
       const dir = this.#jumpQueue.shift();
 
-      this.goalX = this.x + dir.x;
-      this.goalY = this.y + dir.y;
-      this.angle = dir.angle;
       this.#isJumping = true;
+
+      // TODO: align to tiles when jumping off ride?
+      this.goalX = Math.round( this.x ) + dir.x;
+      this.goalY = Math.round( this.y ) + dir.y;
+      this.angle = dir.angle;
+      this.ride = null;
+    }
+    else if ( this.ride ) {
+      this.x = this.ride.x;
+      this.y = this.ride.y;
+    }
+    else {
+      this.ride = world.entities.find( 
+        turtle => Math.abs( turtle.x - this.x ) < 1 && Math.abs( turtle.y - this.y ) < 1 
+      );
     }
   }
 

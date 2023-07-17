@@ -1,29 +1,24 @@
-<title>Follow tile directions</title>
+<title>Frog ride turtles</title>
 <link rel="stylesheet" href="../grid.css">
 
 <script type="module">
   import { Direction } from '../src/Entity.js';
   import { Turtle } from '../src/Turtle.js';
+  import { Frog } from '../src/Frog.js';
   import { World } from '../src/World.js';
   
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
 
   const TILE_SIZE = 64;
 
-  const turtles = [
-    new Turtle( { x: 0, y: 0 } ),
-    new Turtle( { x: 1, y: 0 } ),
-    new Turtle( { x: 0, y: 2 } ),
-    new Turtle( { x: 2, y: 2 } ),
-  ];
-
   const world = new World();
-
-  // 0 - Up
-  // 1 - Left
-  // 2 - Down
-  // 3 - Right
-
+  world.entities = [
+    // new Turtle( { x: 0, y: 0 } ),
+    // new Turtle( { x: 1, y: 0 } ),
+    // new Turtle( { x: 0, y: 2 } ),
+    new Turtle( { x: 0, y: 2 } ),
+  ];
+  world.player = new Frog( { x: 2, y: 2, color: 'green' } );
   world.tiles = [
     [
       {
@@ -85,7 +80,7 @@
   const canvas = new AnimatedCanvas();
 
   canvas.update = ( dt ) => {
-    turtles.forEach( turtle => turtle.update( dt, world ) );
+    world.update( dt );
   }
   
   canvas.draw = ( ctx ) => {
@@ -93,12 +88,29 @@
     ctx.scale( TILE_SIZE, TILE_SIZE );
     ctx.translate( 0.5, 0.5 );
 
-    turtles.forEach( turtle => turtle.draw( ctx ) );
     world.draw( ctx );
 
     ctx.restore();
   };
 
   canvas.start();
+
+  const moveUp =    () => world.player.move( Direction.Up );
+  const moveDown =  () => world.player.move( Direction.Down );
+  const moveLeft =  () => world.player.move( Direction.Left );
+  const moveRight = () => world.player.move( Direction.Right );
+
+  const KeyBindings = {
+    KeyW: moveUp,
+    KeyA: moveLeft,
+    KeyS: moveDown,
+    KeyD: moveRight,
+    ArrowUp: moveUp,
+    ArrowLeft: moveLeft,
+    ArrowDown: moveDown,
+    ArrowRight: moveRight,
+  };
+
+  document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
 
 </script>

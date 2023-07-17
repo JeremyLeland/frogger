@@ -29,11 +29,21 @@ function drawDashedArrow( ctx, x1, y1, x2, y2 ) {
   ctx.fill();
 }
 
-export class Level
+export class World
 {
+  entities = [];
+  player;
   tiles;
 
+  update( dt ) {
+    this.entities.forEach( entity => entity.update( dt, this ) );
+    this.player?.update( dt, this );
+  }
+
   draw( ctx ) {
+    this.entities.forEach( entity => entity.draw( ctx ) );
+    this.player?.draw( ctx );
+
     ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
     ctx.lineWidth = TILE_BORDER;
 
