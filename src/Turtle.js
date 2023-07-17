@@ -58,17 +58,17 @@ export class Turtle extends Entity {
     this.angle = dir.angle;
   }
 
-  update( dt, tiles ) {
+  update( dt, level ) {
     super.update( dt );
 
     if ( this.x == this.goalX && this.y == this.goalY ) {
-      let tile = tiles[ Math.floor( this.x ) ][ Math.floor( this.y ) ];
+      let tile = level.tiles[ Math.floor( this.x ) ][ Math.floor( this.y ) ];
 
       if ( tile.warp ) {
         this.x = tile.warp.c;
         this.y = tile.warp.r;
 
-        tile = tiles[ tile.warp.c ][ tile.warp.r ];
+        tile = level.tiles[ tile.warp.c ][ tile.warp.r ];
       }
 
       if ( tile.dir ) {
