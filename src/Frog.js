@@ -44,6 +44,7 @@ pupils.ellipse( PUPIL_OFFSET_X,  PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI
 import { Direction, Entity } from './Entity.js';
 
 const MOVE_SPEED = 0.003;
+const JUMP_TIME = 1 / MOVE_SPEED;
 
 function getMove( have, want, dt ) {
   const goalMove = want - have;
@@ -51,52 +52,57 @@ function getMove( have, want, dt ) {
 }
 
 export class Frog extends Entity {
-  #isJumping = false;
+  #jumpTimeLeft = 0;
   #jumpQueue = [];
-
-  constructor( values ) {
-    super( values );
-
-    this.goalX = this.x;
-    this.goalY = this.y;
-  }
 
   move( dir ) {
     this.#jumpQueue.push( dir );
   }
 
-  update( dt, world ) {
-    if ( this.#isJumping ) {
-      this.x += getMove( this.x, this.goalX, dt );
-      this.y += getMove( this.y, this.goalY, dt );
+  checkRide( world ) {
+    this.ride = world.entities.find( 
+      turtle => Math.abs( turtle.x - this.x ) < 1 && Math.abs( turtle.y - this.y ) < 1 
+    );
+  }
 
-      if ( this.x == this.goalX && this.y == this.goalY ) {
-        this.#isJumping = false;
-        this.animationTime = 0;
+  update( dt, world ) {
+    super.update( dt );
+
+    if ( this.#jumpTimeLeft > 0 ) {
+      this.#jumpTimeLeft -= dt;
+    }
+
+    if ( this.#jumpTimeLeft <= 0 ) {
+      this.#jumpTimeLeft = 0;
+      this.dx = 0;
+      this.dy = 0;
+
+      this.checkRide( world );
+
+      if ( this.ride ) {        
+        this.x = this.ride.x;
+        this.y = this.ride.y;
       }
       else {
-        this.animationTime += dt;
+        this.x = Math.round( this.x );
+        this.y = Math.round( this.y );
       }
-    }
-    else if ( this.#jumpQueue.length > 0 ) {
-      const dir = this.#jumpQueue.shift();
 
-      this.#isJumping = true;
-
-      // TODO: align to tiles when jumping off ride?
-      this.goalX = Math.round( this.x ) + dir.x;
-      this.goalY = Math.round( this.y ) + dir.y;
-      this.angle = dir.angle;
-      this.ride = null;
-    }
-    else if ( this.ride ) {
-      this.x = this.ride.x;
-      this.y = this.ride.y;
-    }
-    else {
-      this.ride = world.entities.find( 
-        turtle => Math.abs( turtle.x - this.x ) < 1 && Math.abs( turtle.y - this.y ) < 1 
-      );
+      if ( this.#jumpQueue.length > 0 ) {
+        const dir = this.#jumpQueue.shift();
+  
+        this.#jumpTimeLeft += JUMP_TIME;
+  
+        this.dir = dir;
+        this.dx = dir.x * MOVE_SPEED;
+        this.dy = dir.y * MOVE_SPEED;
+  
+        if ( this.ride ) {
+          this.dx += this.ride.dx;
+          this.dy += this.ride.dy;
+          this.ride = null;
+        }
+      }
     }
   }
 

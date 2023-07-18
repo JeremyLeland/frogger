@@ -13,19 +13,19 @@
 
   const world = new World();
   world.entities = [
-    // new Turtle( { x: 0, y: 0 } ),
+    new Turtle( { x: 0, y: 0 } ),
     // new Turtle( { x: 1, y: 0 } ),
-    // new Turtle( { x: 0, y: 2 } ),
-    new Turtle( { x: 0, y: 2 } ),
+    // new Turtle( { x: 2, y: 2 } ),
+    // new Turtle( { x: 3, y: 2 } ),
   ];
-  world.player = new Frog( { x: 2, y: 2, color: 'green' } );
+  world.player = new Frog( { x: 4, y: 2, color: 'green' } );
   world.tiles = [
     [
       {
         dir: Direction.Right,
       },
       {
-        warp: { c: 4, r: 1 },
+        warp: { c: 5, r: 1 },
       },
       {
         dir: Direction.Right,
@@ -48,6 +48,17 @@
       },
       {
         dir: Direction.Up,
+      },
+      {
+        dir: Direction.Right,
+      },
+    ],
+    [
+      {
+        dir: Direction.Right,
+      },
+      {
+        dir: Direction.Left,
       },
       {
         dir: Direction.Right,

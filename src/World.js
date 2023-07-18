@@ -1,4 +1,4 @@
-const BASE_W = 0.1, HEAD_W = 0.3, NECK = 0, LEN = 0.3;
+const BASE_W = 0.05, HEAD_W = 0.2, NECK = 0, LEN = 0.2;
 const arrow = new Path2D();
 arrow.moveTo( -LEN,  -BASE_W );
 arrow.lineTo(  NECK, -BASE_W );

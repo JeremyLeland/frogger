@@ -48,31 +48,33 @@ detail.lineTo( DETAIL_W_1, 0 );
 
 import { Entity } from './Entity.js';
 
+const MOVE_SPEED = 0.001;   // TODO: Get from tile (for faster/slower water?)
+
 export class Turtle extends Entity {
-
-  moveSpeed = 0.001;  // TODO: Get from tile (for faster/slower water?)
-
-  move( dir ) {
-    this.goalX = Math.floor( this.x ) + dir.x;
-    this.goalY = Math.floor( this.y ) + dir.y;
-    this.angle = dir.angle;
-  }
 
   update( dt, world ) {
     super.update( dt );
 
-    if ( this.x == this.goalX && this.y == this.goalY ) {
-      let tile = world.tiles[ Math.floor( this.x ) ][ Math.floor( this.y ) ];
+    let tile = world.tiles[ Math.round( this.x - this.dir.x * 0.5 ) ][ Math.round( this.y - this.dir.y * 0.5 ) ];
 
+    if ( this.currentTile != tile ) {
+      this.currentTile = tile;
+ 
       if ( tile.warp ) {
         this.x = tile.warp.c;
         this.y = tile.warp.r;
-
+        
         tile = world.tiles[ tile.warp.c ][ tile.warp.r ];
       }
-
+      
       if ( tile.dir ) {
-        this.move( tile.dir );
+        if ( this.dir != tile.dir ) {
+          this.x = Math.round( this.x );
+          this.y = Math.round( this.y );
+        }
+        this.dir = tile.dir;
+        this.dx = tile.dir.x * MOVE_SPEED;
+        this.dy = tile.dir.y * MOVE_SPEED;
       }
     }
   }

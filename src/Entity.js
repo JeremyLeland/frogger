@@ -9,10 +9,11 @@ export const Direction = {
 export class Entity {
   x = 0;
   y = 0;
-  angle = 0;
+  dir = Direction.Right;
   size = 1;
 
-  moveSpeed = 0;
+  dx = 0;
+  dy = 0;
 
   animationTime = 0;
 
@@ -24,14 +25,14 @@ export class Entity {
   }
 
   update( dt ) {
-    this.x += getMove( this.x, this.goalX, this.moveSpeed * dt );
-    this.y += getMove( this.y, this.goalY, this.moveSpeed * dt );
+    this.x += this.dx * dt;
+    this.y += this.dy * dt;
   }
 
   draw( ctx ) {
     ctx.save();
     ctx.translate( this.x, this.y );
-    ctx.rotate( this.angle );
+    ctx.rotate( this.dir.angle );
     ctx.scale( this.size, this.size );
 
     ctx.strokeStyle = 'black';
@@ -48,9 +49,4 @@ export class Entity {
   }
 
   drawEntity( ctx ) {}
-}
-
-function getMove( have, want, maxMove ) {
-  const goalMove = want - have;
-  return Math.sign( goalMove ) * Math.min( maxMove, Math.abs( goalMove ) );
 }
