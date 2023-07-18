@@ -61,7 +61,7 @@ export class Frog extends Entity {
 
   checkRide( world ) {
     this.ride = world.entities.find( 
-      turtle => Math.abs( turtle.x - this.x ) < 1 && Math.abs( turtle.y - this.y ) < 1 
+      turtle => Math.abs( turtle.x - this.x ) < 0.5 && Math.abs( turtle.y - this.y ) < 0.5 
     );
   }
 
