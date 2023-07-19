@@ -14,17 +14,25 @@
 
   const world = new World();
   world.entities = [
-    new Turtle( { x: 0, y: 0 } ),
-    new Turtle( { x: 1, y: 0 } ),
+    new Turtle( { x: 0, y: 1 } ),
+    new Turtle( { x: 0, y: 2 } ),
+    new Turtle( { x: 0, y: 3 } ),
   ];
-  world.player = new Frog( { x: 4, y: 3, color: 'green' } );
+  [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].forEach( ( color, i ) =>
+    world.entities.push( new Frog( { x: i, y: 0, size: 0.7, dir: Direction.Down, color: color } ) )
+  );
+
+  world.player = new Frog( { x: 4, y: 4, color: 'green', dir: Direction.Up } );
   world.tiles = [
     [
       {
+        tile: Tiles.Grass,
+      },
+      {
         dir: Direction.Right,
       },
       {
-        warp: { c: 5, r: 1 },
+        warp: { c: 5, r: 2 },
       },
       {
         dir: Direction.Right,
@@ -35,8 +43,24 @@
       {
         tile: Tiles.Sidewalk,
       },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Up,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Up,
+      },
     ],
     [
+      {
+        tile: Tiles.Grass,
+        dir: Direction.Right,
+      },
       {
         tile: Tiles.Water,
         dir: Direction.Right,
@@ -55,8 +79,22 @@
       {
         tile: Tiles.Sidewalk,
       },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Bush,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Left,
+      },
     ],
     [
+      {
+        tile: Tiles.Grass,
+      },
       {
         tile: Tiles.Water,
         dir: Direction.Right,
@@ -75,8 +113,23 @@
       {
         tile: Tiles.Sidewalk,
       },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Down,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Down,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Left,
+      },
     ],
     [
+      {
+        tile: Tiles.Grass,
+      },
       {
         tile: Tiles.Water,
         dir: Direction.Right,
@@ -95,8 +148,23 @@
       {
         tile: Tiles.Sidewalk,
       },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Up,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Up,
+      },
     ],
     [
+      {
+        tile: Tiles.Grass,
+      },
       {
         tile: Tiles.Water,
         dir: Direction.Right,
@@ -115,22 +183,48 @@
       {
         tile: Tiles.Sidewalk,
       },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Bush,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Left,
+      },
     ],
     [
       {
-        warp: { c: 0, r: 0 },
+        tile: Tiles.Grass,
+      },
+      {
+        warp: { c: 0, r: 1 },
       },
       {
         dir: Direction.Left,
       },
       {
-        warp: { c: 0, r: 2 },
+        warp: { c: 0, r: 3 },
       },
       {
         tile: Tiles.Grass,
       },
       {
         tile: Tiles.Sidewalk,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Down,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Down,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Left,
       },
     ],
   ];

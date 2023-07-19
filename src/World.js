@@ -45,11 +45,13 @@ export class World
     for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
       for ( let c = 0; c < this.tiles.length; c ++ ) {
         const tile = this.tiles[ c ][ r ];
+        const nTile = r > 0 ? this.tiles[ c ][ r - 1 ] : null;
+        const wTile = c > 0 ? this.tiles[ c - 1 ][ r ] : null;
 
         if ( tile.tile ) {
           ctx.save();
-          ctx.translate( c, r );  
-          tile.tile.draw( ctx );
+          ctx.translate( c, r );
+          tile.tile.draw( ctx, nTile, wTile );
           ctx.restore();
         }
       }

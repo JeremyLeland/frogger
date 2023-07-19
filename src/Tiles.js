@@ -14,6 +14,8 @@ for ( let i = 1; i <= BUSH_SIDES; i ++ ) {
   );
 }
 
+const ROAD_LINE_WIDTH = 0.15, ROAD_LINE_LEN = 0.5;
+
 export const Tiles = {
   Grass: {
     draw: ( ctx ) => {
@@ -43,10 +45,15 @@ export const Tiles = {
       ctx.fillRect( -0.4, -0.4, 0.8, 0.8 );
     }
   },
-  Street: {
-    draw: ( ctx ) => {
+  Road: {
+    draw: ( ctx, nTile, wTile ) => {
       ctx.fillStyle = '#333';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
+
+      if ( nTile?.tile == Tiles.Road && nTile?.dir.y == 0 ) {
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect( -ROAD_LINE_LEN / 2, -0.5 - ROAD_LINE_WIDTH / 2, ROAD_LINE_LEN, ROAD_LINE_WIDTH );
+      }
     }
   },
   Water: {
