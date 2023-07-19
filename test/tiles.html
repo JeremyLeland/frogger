@@ -1,0 +1,174 @@
+<title>Frog ride turtles</title>
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import { Direction } from '../src/Entity.js';
+  import { Turtle } from '../src/Turtle.js';
+  import { Frog } from '../src/Frog.js';
+  import { Tiles } from '../src/Tiles.js';
+  import { World } from '../src/World.js';
+  
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+
+  const TILE_SIZE = 64;
+
+  const world = new World();
+  world.entities = [
+    new Turtle( { x: 0, y: 0 } ),
+    new Turtle( { x: 1, y: 0 } ),
+  ];
+  world.player = new Frog( { x: 4, y: 3, color: 'green' } );
+  world.tiles = [
+    [
+      {
+        dir: Direction.Right,
+      },
+      {
+        warp: { c: 5, r: 1 },
+      },
+      {
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Grass,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+    ],
+    [
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Bush,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+    ],
+    [
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Grass,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+    ],
+    [
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Bush,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+    ],
+    [
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Grass,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+    ],
+    [
+      {
+        warp: { c: 0, r: 0 },
+      },
+      {
+        dir: Direction.Left,
+      },
+      {
+        warp: { c: 0, r: 2 },
+      },
+      {
+        tile: Tiles.Grass,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+    ],
+  ];
+
+  const canvas = new AnimatedCanvas();
+
+  canvas.update = ( dt ) => {
+    world.update( dt );
+  }
+  
+  canvas.draw = ( ctx ) => {
+    ctx.save();
+    ctx.scale( TILE_SIZE, TILE_SIZE );
+    ctx.translate( 0.5, 0.5 );
+
+    world.draw( ctx );
+
+    ctx.restore();
+  };
+
+  canvas.start();
+
+  const moveUp =    () => world.player.move( Direction.Up );
+  const moveDown =  () => world.player.move( Direction.Down );
+  const moveLeft =  () => world.player.move( Direction.Left );
+  const moveRight = () => world.player.move( Direction.Right );
+
+  const KeyBindings = {
+    KeyW: moveUp,
+    KeyA: moveLeft,
+    KeyS: moveDown,
+    KeyD: moveRight,
+    ArrowUp: moveUp,
+    ArrowLeft: moveLeft,
+    ArrowDown: moveDown,
+    ArrowRight: moveRight,
+  };
+
+  document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
+
+</script>

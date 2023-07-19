@@ -14,39 +14,45 @@ for ( let i = 1; i <= BUSH_SIDES; i ++ ) {
   );
 }
 
-export class Tiles {
-  static drawGrass( ctx ) {
-    ctx.fillStyle = 'darkgreen';
-    ctx.fillRect( -0.5, -0.5, 1, 1 );
-  }
+export const Tiles = {
+  Grass: {
+    draw: ( ctx ) => {
+      ctx.fillStyle = 'darkgreen';
+      ctx.fillRect( -0.5, -0.5, 1, 1 );
+    }
+  },
+  Bush: {
+    draw: ( ctx ) => {
+      Tiles.Grass.draw( ctx );    
 
-  static drawBush( ctx ) {
-    Tiles.drawGrass( ctx );    
+      ctx.fillStyle = 'green';
+      ctx.fill( bush );
 
-    ctx.fillStyle = 'green';
-    ctx.fill( bush );
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 1 / ctx.getTransform().m11;
+      ctx.stroke( bush );
 
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1 / ctx.getTransform().m11;
-    ctx.stroke( bush );
-
-    // TODO: Berries?
-  }
-
-  static drawSidewalk( ctx ) {
-    ctx.fillStyle = 'darkgray';
-    ctx.fillRect( -0.5, -0.5, 1, 1 );
-    ctx.fillStyle = 'gray';
-    ctx.fillRect( -0.4, -0.4, 0.8, 0.8 );
-  }
-
-  static drawStreet( ctx ) {
-    ctx.fillStyle = '#333';
-    ctx.fillRect( -0.5, -0.5, 1, 1 );
-  }
-
-  static drawWater( ctx ) {
-    ctx.fillStyle = 'darkblue';
-    ctx.fillRect( -0.5, -0.5, 1, 1 );
-  }
+      // TODO: Berries?
+    }
+  },
+  Sidewalk: {
+    draw: ( ctx ) => {
+      ctx.fillStyle = 'darkgray';
+      ctx.fillRect( -0.5, -0.5, 1, 1 );
+      ctx.fillStyle = 'gray';
+      ctx.fillRect( -0.4, -0.4, 0.8, 0.8 );
+    }
+  },
+  Street: {
+    draw: ( ctx ) => {
+      ctx.fillStyle = '#333';
+      ctx.fillRect( -0.5, -0.5, 1, 1 );
+    }
+  },
+  Water: {
+    draw: ( ctx ) => {
+      ctx.fillStyle = 'darkblue';
+      ctx.fillRect( -0.5, -0.5, 1, 1 );
+    }
+  },
 }

@@ -41,6 +41,20 @@ export class World
   }
 
   draw( ctx ) {
+
+    for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
+      for ( let c = 0; c < this.tiles.length; c ++ ) {
+        const tile = this.tiles[ c ][ r ];
+
+        if ( tile.tile ) {
+          ctx.save();
+          ctx.translate( c, r );  
+          tile.tile.draw( ctx );
+          ctx.restore();
+        }
+      }
+    }
+
     this.entities.forEach( entity => entity.draw( ctx ) );
     this.player?.draw( ctx );
 
@@ -50,7 +64,6 @@ export class World
     for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
       for ( let c = 0; c < this.tiles.length; c ++ ) {
         const tile = this.tiles[ c ][ r ];
-        ctx.strokeRect( c - 0.5, r - 0.5, 1, 1 );
 
         if ( tile.dir ) {
           ctx.save();
@@ -62,6 +75,8 @@ export class World
         else if ( tile.warp ) {
           drawDashedArrow( ctx, c, r, tile.warp.c, tile.warp.r );
         }
+
+        ctx.strokeRect( c - 0.5, r - 0.5, 1, 1 );
       }
     }
   }
