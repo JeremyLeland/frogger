@@ -15,8 +15,11 @@
   const world = new World();
   world.entities = [
     new Turtle( { x: 0, y: 1 } ),
+    new Turtle( { x: 3, y: 1 } ),
     new Turtle( { x: 0, y: 2 } ),
+    new Turtle( { x: 2, y: 2 } ),
     new Turtle( { x: 0, y: 3 } ),
+    new Turtle( { x: 3, y: 3 } ),
   ];
   [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].forEach( ( color, i ) =>
     world.entities.push( new Frog( { x: i, y: 0, size: 0.7, dir: Direction.Down, color: color } ) )
@@ -32,7 +35,7 @@
         dir: Direction.Right,
       },
       {
-        warp: { c: 5, r: 2 },
+        warp: { c: 6, r: 2 },
       },
       {
         dir: Direction.Right,
@@ -45,6 +48,10 @@
       },
       {
         tile: Tiles.Road,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
         dir: Direction.Right,
       },
       {
@@ -54,12 +61,18 @@
       {
         tile: Tiles.Road,
         dir: Direction.Up,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Sidewalk,
       },
     ],
     [
       {
         tile: Tiles.Grass,
-        dir: Direction.Right,
       },
       {
         tile: Tiles.Water,
@@ -81,6 +94,10 @@
       },
       {
         tile: Tiles.Road,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
         dir: Direction.Right,
       },
       {
@@ -89,6 +106,13 @@
       {
         tile: Tiles.Road,
         dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Sidewalk,
       },
     ],
     [
@@ -109,6 +133,52 @@
       },
       {
         tile: Tiles.Grass,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Down,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Down,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+    ],
+    [
+      {
+        tile: Tiles.Grass,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Bush,
       },
       {
         tile: Tiles.Sidewalk,
@@ -123,42 +193,18 @@
       },
       {
         tile: Tiles.Road,
-        dir: Direction.Left,
-      },
-    ],
-    [
-      {
-        tile: Tiles.Grass,
+        dir: Direction.Down,
       },
       {
-        tile: Tiles.Water,
-        dir: Direction.Right,
+        tile: Tiles.Road,
+        dir: Direction.Down,
       },
       {
-        tile: Tiles.Water,
-        dir: Direction.Left,
-      },
-      {
-        tile: Tiles.Water,
-        dir: Direction.Right,
-      },
-      {
-        tile: Tiles.Bush,
+        tile: Tiles.Road,
+        dir: Direction.Down,
       },
       {
         tile: Tiles.Sidewalk,
-      },
-      {
-        tile: Tiles.Road,
-        dir: Direction.Right,
-      },
-      {
-        tile: Tiles.Road,
-        dir: Direction.Up,
-      },
-      {
-        tile: Tiles.Road,
-        dir: Direction.Up,
       },
     ],
     [
@@ -185,6 +231,56 @@
       },
       {
         tile: Tiles.Road,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Up,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Up,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+    ],
+    [
+      {
+        tile: Tiles.Grass,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Water,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Grass,
+      },
+      {
+        tile: Tiles.Sidewalk,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
         dir: Direction.Right,
       },
       {
@@ -193,6 +289,13 @@
       {
         tile: Tiles.Road,
         dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Sidewalk,
       },
     ],
     [
@@ -216,6 +319,10 @@
       },
       {
         tile: Tiles.Road,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
         dir: Direction.Down,
       },
       {
@@ -225,6 +332,13 @@
       {
         tile: Tiles.Road,
         dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Road,
+        dir: Direction.Right,
+      },
+      {
+        tile: Tiles.Sidewalk,
       },
     ],
   ];
@@ -261,6 +375,7 @@
     ArrowLeft: moveLeft,
     ArrowDown: moveDown,
     ArrowRight: moveRight,
+    KeyG: () => World.DebugGrid = !World.DebugGrid,
   };
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );

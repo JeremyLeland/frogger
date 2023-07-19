@@ -31,6 +31,8 @@ function drawDashedArrow( ctx, x1, y1, x2, y2 ) {
 
 export class World
 {
+  static DebugGrid = true;
+ 
   entities = [];
   player;
   tiles;
@@ -51,7 +53,7 @@ export class World
         if ( tile.tile ) {
           ctx.save();
           ctx.translate( c, r );
-          tile.tile.draw( ctx, nTile, wTile );
+          tile.tile.draw( ctx, tile, nTile, wTile );
           ctx.restore();
         }
       }
@@ -60,25 +62,27 @@ export class World
     this.entities.forEach( entity => entity.draw( ctx ) );
     this.player?.draw( ctx );
 
-    ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
-    ctx.lineWidth = TILE_BORDER;
-
-    for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
-      for ( let c = 0; c < this.tiles.length; c ++ ) {
-        const tile = this.tiles[ c ][ r ];
-
-        if ( tile.dir ) {
-          ctx.save();
-          ctx.translate( c, r );
-          ctx.rotate( tile.dir.angle );
-          ctx.fill( arrow );
-          ctx.restore();
+    if ( World.DebugGrid ) {
+      ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
+      ctx.lineWidth = TILE_BORDER;
+      
+      for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
+        for ( let c = 0; c < this.tiles.length; c ++ ) {
+          const tile = this.tiles[ c ][ r ];
+          
+          if ( tile.dir ) {
+            ctx.save();
+            ctx.translate( c, r );
+            ctx.rotate( tile.dir.angle );
+            ctx.fill( arrow );
+            ctx.restore();
+          }
+          else if ( tile.warp ) {
+            drawDashedArrow( ctx, c, r, tile.warp.c, tile.warp.r );
+          }
+          
+          ctx.strokeRect( c - 0.5, r - 0.5, 1, 1 );
         }
-        else if ( tile.warp ) {
-          drawDashedArrow( ctx, c, r, tile.warp.c, tile.warp.r );
-        }
-
-        ctx.strokeRect( c - 0.5, r - 0.5, 1, 1 );
       }
     }
   }
