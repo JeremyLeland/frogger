@@ -14,6 +14,8 @@ import { Entity } from './Entity.js';
 
 export class Car extends Entity {
 
+  killsPlayer = true;
+
   update( dt, world ) {
     super.update( dt );
 

@@ -41,23 +41,29 @@ pupils.ellipse( PUPIL_OFFSET_X, -PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI
 pupils.moveTo(  PUPIL_OFFSET_X, PUPIL_OFFSET_Y + PUPIL_H );
 pupils.ellipse( PUPIL_OFFSET_X,  PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
 
+const exes = new Path2D();
+exes.moveTo( EYE_OFFSET_X - EYE_SIZE, -EYE_OFFSET_Y - EYE_SIZE );
+exes.lineTo( EYE_OFFSET_X + EYE_SIZE, -EYE_OFFSET_Y + EYE_SIZE );
+exes.moveTo( EYE_OFFSET_X + EYE_SIZE, -EYE_OFFSET_Y - EYE_SIZE );
+exes.lineTo( EYE_OFFSET_X - EYE_SIZE, -EYE_OFFSET_Y + EYE_SIZE );
+exes.moveTo( EYE_OFFSET_X - EYE_SIZE, EYE_OFFSET_Y - EYE_SIZE );
+exes.lineTo( EYE_OFFSET_X + EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
+exes.moveTo( EYE_OFFSET_X + EYE_SIZE, EYE_OFFSET_Y - EYE_SIZE );
+exes.lineTo( EYE_OFFSET_X - EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
+
 import { Direction, Entity } from './Entity.js';
 
 const MOVE_SPEED = 0.003;
 const JUMP_TIME = 1 / MOVE_SPEED;
 
 export class Frog extends Entity {
+  isAlive = true;
+
   #jumpTimeLeft = 0;
   #jumpQueue = [];
 
   move( dir ) {
     this.#jumpQueue.push( dir );
-  }
-
-  checkRide( world ) {
-    this.ride = world.entities.find( 
-      turtle => Math.abs( turtle.x - this.x ) < 0.5 && Math.abs( turtle.y - this.y ) < 0.5 
-    );
   }
 
   update( dt, world ) {
@@ -67,12 +73,21 @@ export class Frog extends Entity {
       this.#jumpTimeLeft -= dt;
     }
 
-    if ( this.#jumpTimeLeft <= 0 ) {
+    if ( this.isAlive && this.#jumpTimeLeft <= 0 ) {
       this.#jumpTimeLeft = 0;
       this.dx = 0;
       this.dy = 0;
 
-      this.checkRide( world );
+      const collidingWith = world.entities.find( 
+        e => Math.abs( e.x - this.x ) < 0.5 && Math.abs( e.y - this.y ) < 0.5 
+      );
+
+      if ( collidingWith?.killsPlayer ) {
+        this.isAlive = false;
+      }
+      else {
+        this.ride = collidingWith;
+      }
 
       if ( this.ride ) {        
         this.x = this.ride.x;
@@ -81,21 +96,29 @@ export class Frog extends Entity {
       else {
         this.x = Math.round( this.x );
         this.y = Math.round( this.y );
+
+        if ( world.getTile( this.x, this.y ).tile.KillsPlayer ) {
+          this.isAlive = false;
+        }
       }
 
       if ( this.#jumpQueue.length > 0 ) {
         const dir = this.#jumpQueue.shift();
-  
-        this.#jumpTimeLeft += JUMP_TIME;
-  
         this.dir = dir;
-        this.dx = dir.x * MOVE_SPEED;
-        this.dy = dir.y * MOVE_SPEED;
   
-        if ( this.ride ) {
-          this.dx += this.ride.dx;
-          this.dy += this.ride.dy;
-          this.ride = null;
+        const nextTile = world.getTile( Math.round( this.x + dir.x ), Math.round( this.y + dir.y ) );
+
+        if ( nextTile && !nextTile.tile.Solid ) {
+          this.#jumpTimeLeft += JUMP_TIME;
+          
+          this.dx = dir.x * MOVE_SPEED;
+          this.dy = dir.y * MOVE_SPEED;
+          
+          if ( this.ride ) {
+            this.dx += this.ride.dx;
+            this.dy += this.ride.dy;
+            this.ride = null;
+          }
         }
       }
     }
@@ -145,11 +168,18 @@ export class Frog extends Entity {
     ctx.fill( body );
     ctx.stroke( body );
 
-    ctx.fillStyle = 'white';
-    ctx.fill( sclera );
-    ctx.stroke( sclera );
-
-    ctx.fillStyle = 'black';
-    ctx.fill( pupils );
+    if ( this.isAlive ) {
+      ctx.fillStyle = 'white';
+      ctx.fill( sclera );
+      ctx.stroke( sclera );
+      
+      ctx.fillStyle = 'black';
+      ctx.fill( pupils );
+    }
+    else {
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = EYE_SIZE / 2;
+      ctx.stroke( exes );
+    }
   }
 }

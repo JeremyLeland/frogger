@@ -29,13 +29,25 @@ function drawDashedArrow( ctx, x1, y1, x2, y2 ) {
   ctx.fill();
 }
 
+import { Log } from '../src/Log.js';
+import { Turtle } from '../src/Turtle.js';
+import { Car } from '../src/Car.js';
+
 export class World
 {
   static DebugGrid = false;
  
-  entities = [];
+  rides = [];
   player;
+  cars = [];
   tiles;
+
+  getTile( col, row ) {
+    if ( 0 <= col && col < this.tiles.length && 
+         0 <= row && row < this.tiles[ 0 ].length ) {
+      return this.tiles[ col ][ row ];
+    }
+  }
 
   update( dt ) {
     this.entities.forEach( entity => entity.update( dt, this ) );
@@ -43,7 +55,6 @@ export class World
   }
 
   draw( ctx ) {
-
     for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
       for ( let c = 0; c < this.tiles.length; c ++ ) {
         const tile = this.tiles[ c ][ r ];
@@ -59,8 +70,13 @@ export class World
       }
     }
 
-    this.entities.forEach( entity => entity.draw( ctx ) );
+    // TODO: store z-index in object or class?
+    const others = this.entities.filter( e => !e.killsPlayer );
+    const cars = this.entities.filter( e => e.killsPlayer );
+
+    others.forEach( entity => entity.draw( ctx ) );
     this.player?.draw( ctx );
+    cars.forEach( entity => entity.draw( ctx ) );
 
     if ( World.DebugGrid ) {
       ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;

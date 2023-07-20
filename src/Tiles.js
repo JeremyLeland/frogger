@@ -66,7 +66,7 @@ export const Tiles = {
     }
   },
   Water: {
-    Fatal: true,
+    KillsPlayer: true,
     Speed: 0.001,
     draw: ( ctx ) => {
       ctx.fillStyle = 'darkblue';
