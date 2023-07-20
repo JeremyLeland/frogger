@@ -29,6 +29,36 @@ export class Entity {
     this.y += this.dy * dt;
   }
 
+  followTile( world ) {
+    const col = Math.max( 0, Math.min( world.tiles.length - 1, Math.round( this.x - this.dir.x * 0.5 ) ) );
+    const row = Math.max( 0, Math.min( world.tiles[ 0 ].length - 1, Math.round( this.y - this.dir.y * 0.5 ) ) );
+    let tile = world.tiles[ col ][ row ];
+
+    if ( this.currentTile != tile ) {
+      this.currentTile = tile;
+ 
+      if ( tile.warp ) {
+        this.x = tile.warp.c;
+        this.y = tile.warp.r;
+        
+        tile = world.tiles[ tile.warp.c ][ tile.warp.r ];
+      }
+      
+      if ( tile.dir ) {
+        if ( this.dir != tile.dir ) {
+          this.x = Math.round( this.x );
+          this.y = Math.round( this.y );
+        }
+        this.dir = tile.dir;
+
+        if ( tile.tile.Speed ) {
+          this.dx = tile.dir.x * tile.tile.Speed;
+          this.dy = tile.dir.y * tile.tile.Speed;
+        }
+      }
+    }
+  }
+
   draw( ctx ) {
     ctx.save();
     ctx.translate( this.x, this.y );

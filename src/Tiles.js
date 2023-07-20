@@ -26,6 +26,7 @@ export const Tiles = {
     }
   },
   Bush: {
+    Solid: true,
     draw: ( ctx ) => {
       Tiles.Grass.draw( ctx );    
 
@@ -48,6 +49,7 @@ export const Tiles = {
     }
   },
   Road: {
+    Speed: 0.002,
     draw: ( ctx, tile, nTile, wTile ) => {
       ctx.fillStyle = '#333';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
@@ -64,6 +66,8 @@ export const Tiles = {
     }
   },
   Water: {
+    Fatal: true,
+    Speed: 0.001,
     draw: ( ctx ) => {
       ctx.fillStyle = 'darkblue';
       ctx.fillRect( -0.5, -0.5, 1, 1 );

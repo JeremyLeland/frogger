@@ -46,11 +46,6 @@ import { Direction, Entity } from './Entity.js';
 const MOVE_SPEED = 0.003;
 const JUMP_TIME = 1 / MOVE_SPEED;
 
-function getMove( have, want, dt ) {
-  const goalMove = want - have;
-  return Math.sign( goalMove ) * Math.min( MOVE_SPEED * dt, Math.abs( goalMove ) );
-}
-
 export class Frog extends Entity {
   #jumpTimeLeft = 0;
   #jumpQueue = [];

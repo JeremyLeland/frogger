@@ -31,7 +31,7 @@ function drawDashedArrow( ctx, x1, y1, x2, y2 ) {
 
 export class World
 {
-  static DebugGrid = true;
+  static DebugGrid = false;
  
   entities = [];
   player;

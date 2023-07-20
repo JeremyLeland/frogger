@@ -5,6 +5,7 @@
   import { Frog } from '../src/Frog.js';
   import { Turtle } from '../src/Turtle.js';
   import { Log } from '../src/Log.js';
+  import { Car } from '../src/Car.js';
   import { Tiles } from '../src/Tiles.js';
 
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
@@ -16,6 +17,8 @@
   const frogs = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].map( ( color, i ) =>
     new Frog( { x: i, y: 0, size: 0.6, color: color } )
   );
+
+  const car = new Car( { x: 3, y: 5, color: 'red' } );
 
   const player = new Frog( { x: 1, y: 2, color: 'green' } );
   const turtle = new Turtle( { x: 1, y: 4 } );
@@ -38,19 +41,19 @@
     ctx.save();
     
     ctx.translate( 0, 1 );
-    Tiles.drawGrass( ctx );
+    Tiles.Grass.draw( ctx );
 
     ctx.translate( 1, 0 );
-    Tiles.drawBush( ctx );
+    Tiles.Bush.draw( ctx );
 
     ctx.translate( 1, 0 );
-    Tiles.drawSidewalk( ctx );
+    Tiles.Sidewalk.draw( ctx );
     
     ctx.translate( 1, 0 );
-    Tiles.drawWater( ctx );
+    Tiles.Water.draw( ctx );
     
     ctx.translate( 1, 0 );
-    Tiles.drawStreet( ctx );
+    Tiles.Road.draw( ctx );
 
     ctx.restore();
 
@@ -70,6 +73,7 @@
     // slither across the screen
 
     // Car
+    car.draw( ctx );
 
     // Water
     // ctx.fillStyle = 'darkblue';
@@ -90,8 +94,8 @@
     ctx.restore();
   };
 
-  // canvas.redraw();
-  canvas.start();
+  canvas.redraw();
+  // canvas.start();
 
   function drawRoad( ctx, path ) {
     ctx.save();

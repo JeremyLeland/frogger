@@ -5,6 +5,7 @@
   import { Direction } from '../src/Entity.js';
   import { Turtle } from '../src/Turtle.js';
   import { Frog } from '../src/Frog.js';
+  import { Car } from '../src/Car.js';
   import { Tiles } from '../src/Tiles.js';
   import { World } from '../src/World.js';
   
@@ -20,6 +21,14 @@
     new Turtle( { x: 2, y: 2 } ),
     new Turtle( { x: 0, y: 3 } ),
     new Turtle( { x: 3, y: 3 } ),
+    new Car( { x: 0, y: 6, color: 'red' } ),
+    new Car( { x: 4, y: 6, color: 'darkred' } ),
+    new Car( { x: 0, y: 7, color: 'orange' } ),
+    new Car( { x: 2, y: 9, color: 'yellow' } ),
+    new Car( { x: 4, y: 7, color: 'cyan' } ),
+    new Car( { x: 6, y: 9, color: 'blue' } ),
+    new Car( { x: 0, y: 10, color: 'purple' } ),
+    new Car( { x: 4, y: 10, color: 'violet' } ),
   ];
   [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].forEach( ( color, i ) =>
     world.entities.push( new Frog( { x: i, y: 0, size: 0.7, dir: Direction.Down, color: color } ) )
@@ -32,12 +41,15 @@
         tile: Tiles.Grass,
       },
       {
+        tile: Tiles.Water,
         dir: Direction.Right,
       },
       {
+        tile: Tiles.Water,
         warp: { c: 6, r: 2 },
       },
       {
+        tile: Tiles.Water,
         dir: Direction.Right,
       },
       {
@@ -48,7 +60,7 @@
       },
       {
         tile: Tiles.Road,
-        dir: Direction.Left,
+        warp: { c: 6, r: 6 },
       },
       {
         tile: Tiles.Road,
@@ -185,23 +197,20 @@
       },
       {
         tile: Tiles.Road,
-        dir: Direction.Down,
+        dir: Direction.Left,
+      },
+      {
+        tile: Tiles.Sidewalk
+      },
+      {
+        tile: Tiles.Sidewalk
+      },
+      {
+        tile: Tiles.Sidewalk
       },
       {
         tile: Tiles.Road,
-        dir: Direction.Down,
-      },
-      {
-        tile: Tiles.Road,
-        dir: Direction.Down,
-      },
-      {
-        tile: Tiles.Road,
-        dir: Direction.Down,
-      },
-      {
-        tile: Tiles.Road,
-        dir: Direction.Down,
+        dir: Direction.Right,
       },
       {
         tile: Tiles.Sidewalk,
@@ -303,12 +312,15 @@
         tile: Tiles.Grass,
       },
       {
+        tile: Tiles.Water,
         warp: { c: 0, r: 1 },
       },
       {
+        tile: Tiles.Water,
         dir: Direction.Left,
       },
       {
+        tile: Tiles.Water,
         warp: { c: 0, r: 3 },
       },
       {
@@ -335,7 +347,7 @@
       },
       {
         tile: Tiles.Road,
-        dir: Direction.Right,
+        warp: { c: 0, r: 10 },
       },
       {
         tile: Tiles.Sidewalk,
