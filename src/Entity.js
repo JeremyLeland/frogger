@@ -52,9 +52,9 @@ export class Entity {
         }
         this.dir = tile.dir;
 
-        if ( tile.tile.Speed ) {
-          this.dx = tile.dir.x * tile.tile.Speed;
-          this.dy = tile.dir.y * tile.tile.Speed;
+        if ( tile.tileInfo.Speed ) {
+          this.dx = tile.dir.x * tile.tileInfo.Speed;
+          this.dy = tile.dir.y * tile.tileInfo.Speed;
         }
       }
     }

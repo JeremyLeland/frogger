@@ -108,7 +108,7 @@ export class Frog extends Entity {
   
         const nextTile = world.getTile( Math.round( this.x + dir.x ), Math.round( this.y + dir.y ) );
 
-        if ( nextTile && !nextTile.tile.Solid ) {
+        if ( nextTile && !nextTile.tileInfo.Solid ) {
           this.#jumpTimeLeft += JUMP_TIME;
           
           this.dx = dir.x * MOVE_SPEED;

@@ -1,0 +1,38 @@
+<title>Load levels</title>
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import { Direction } from '../src/Entity.js';
+  import { Turtle } from '../src/Turtle.js';
+  import { Frog } from '../src/Frog.js';
+  import { Car } from '../src/Car.js';
+  import { Tiles } from '../src/Tiles.js';
+  import { World } from '../src/World.js';
+  
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+
+  World.DebugGrid = true;
+
+  const TILE_SIZE = 64;
+
+  const world = await World.fromFile( '../levels/test1.json' );
+
+  const canvas = new AnimatedCanvas();
+
+  canvas.update = ( dt ) => {
+    world.update( dt );
+  }
+  
+  canvas.draw = ( ctx ) => {
+    ctx.save();
+    ctx.scale( TILE_SIZE, TILE_SIZE );
+    ctx.translate( 0.5, 0.5 );
+
+    world.draw( ctx );
+
+    ctx.restore();
+  };
+
+  canvas.redraw();
+
+</script>

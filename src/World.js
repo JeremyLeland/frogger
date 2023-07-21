@@ -29,18 +29,92 @@ function drawDashedArrow( ctx, x1, y1, x2, y2 ) {
   ctx.fill();
 }
 
-import { Log } from '../src/Log.js';
+import { Direction } from '../src/Entity.js';
+import { Tiles } from '../src/Tiles.js';
+import { Frog } from '../src/Frog.js';
 import { Turtle } from '../src/Turtle.js';
 import { Car } from '../src/Car.js';
+
+const DirMap = [
+  Direction.Up,
+  Direction.Left,
+  Direction.Down,
+  Direction.Right,
+];
+
+const FroggyColors = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ];
 
 export class World
 {
   static DebugGrid = false;
+
+  static async fromFile( path ) {
+    const json = JSON.parse( await ( await fetch( path ) ).text() );    // TODO: error handling
+    return new World( json );
+  }
  
-  rides = [];
+  froggies = [];
+  entities = [];
   player;
-  cars = [];
   tiles;
+
+  constructor( json ) {
+    this.tiles = Array.from( 
+      Array( json.cols ), () => Array.from( 
+        Array( json.rows ), () => ( {} ) ) );
+
+    json.tiles.forEach( ( tileIndex, index ) => {
+      const col = index % json.cols;
+      const row = Math.floor( index / json.cols );
+
+      this.tiles[ col ][ row ].tileInfo = Tiles[ json.tilePalette[ tileIndex ] ]; // TODO: rename to tileInfo?
+    } );
+
+    json.directions.forEach( ( dirIndex, index ) => {
+      if ( dirIndex > 0 ) {
+        const col = index % json.cols;
+        const row = Math.floor( index / json.cols );
+        
+        this.tiles[ col ][ row ].dir = DirMap[ dirIndex - 1 ]; // TODO: rename to tileInfo?
+      }
+    } );
+
+    this.froggies = json.froggies.map( ( coords, index ) => 
+      new Frog( { 
+        x: coords[ 0 ], 
+        y: coords[ 1 ], 
+        color: FroggyColors[ index ], 
+        size: 0.7, 
+        dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir 
+      } )
+    );
+
+    json.turtles.forEach( coords => this.entities.push( 
+      new Turtle( { 
+        x: coords[ 0 ], 
+        y: coords[ 1 ],
+        dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
+      } ) 
+    ) );
+
+    for ( const color in json.cars ) {
+      json.cars[ color ].forEach( coords => this.entities.push( 
+        new Car( { 
+          x: coords[ 0 ], 
+          y: coords[ 1 ], 
+          color: color,
+          dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
+        } ) 
+      ) );
+    }
+
+    this.player = new Frog( {
+      x: json.player[ 0 ], 
+      y: json.player[ 1 ], 
+      color: 'green',
+      dir: this.tiles[ json.player[ 0 ] ][ json.player[ 1 ] ].dir
+    } );
+  }
 
   getTile( col, row ) {
     if ( 0 <= col && col < this.tiles.length && 
@@ -61,10 +135,10 @@ export class World
         const nTile = r > 0 ? this.tiles[ c ][ r - 1 ] : null;
         const wTile = c > 0 ? this.tiles[ c - 1 ][ r ] : null;
 
-        if ( tile.tile ) {
+        if ( tile.tileInfo ) {
           ctx.save();
           ctx.translate( c, r );
-          tile.tile.draw( ctx, tile, nTile, wTile );
+          tile.tileInfo.draw( ctx, tile, nTile, wTile );
           ctx.restore();
         }
       }
@@ -74,6 +148,7 @@ export class World
     const others = this.entities.filter( e => !e.killsPlayer );
     const cars = this.entities.filter( e => e.killsPlayer );
 
+    this.froggies.forEach( froggy => froggy.draw( ctx ) );
     others.forEach( entity => entity.draw( ctx ) );
     this.player?.draw( ctx );
     cars.forEach( entity => entity.draw( ctx ) );
@@ -81,6 +156,8 @@ export class World
     if ( World.DebugGrid ) {
       ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
       ctx.lineWidth = TILE_BORDER;
+      ctx.textAlign = 'center';
+      ctx.font = '0.2px Arial';
       
       for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
         for ( let c = 0; c < this.tiles.length; c ++ ) {
@@ -98,6 +175,7 @@ export class World
           }
           
           ctx.strokeRect( c - 0.5, r - 0.5, 1, 1 );
+          ctx.fillText( `(${ c },${ r })`, c, r + 0.4 );
         }
       }
     }

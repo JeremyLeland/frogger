@@ -54,12 +54,12 @@ export const Tiles = {
       ctx.fillStyle = '#333';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
 
-      if ( nTile && nTile.tile == Tiles.Road && tile.dir != Direction.Up && nTile.dir != Direction.Down ) {
+      if ( nTile && nTile.tileInfo == Tiles.Road && tile.dir != Direction.Up && nTile.dir != Direction.Down ) {
         ctx.fillStyle = 'yellow';
         ctx.fillRect( -ROAD_LINE_LEN / 2, -0.5 - ROAD_LINE_WIDTH / 2, ROAD_LINE_LEN, ROAD_LINE_WIDTH );
       }
       
-      if ( wTile && wTile.tile == Tiles.Road && tile.dir != Direction.Left && wTile.dir != Direction.Right ) {
+      if ( wTile && wTile.tileInfo == Tiles.Road && tile.dir != Direction.Left && wTile.dir != Direction.Right ) {
         ctx.fillStyle = 'yellow';
         ctx.fillRect( -0.5 - ROAD_LINE_WIDTH / 2, -ROAD_LINE_LEN / 2, ROAD_LINE_WIDTH, ROAD_LINE_LEN );
       }
