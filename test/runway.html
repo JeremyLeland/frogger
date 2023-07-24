@@ -24,7 +24,11 @@
   player.isAlive = false;
   
   const turtle = new Turtle( { x: 1, y: 4 } );
-  const log = new Log( { x: 1, y: 3, length: 2 } );
+  const logs = [
+    new Log( { x: 1, y: 3, logType: 'start' } ),
+    new Log( { x: 2, y: 3, logType: 'middle' } ),
+    new Log( { x: 3, y: 3, logType: 'end' } ),
+  ];
 
   const canvas = new AnimatedCanvas();
 
@@ -82,7 +86,7 @@
     // ctx.fillRect( 32, 128, 256, 320 );
 
     // // Log
-    log.draw( ctx );
+    logs.forEach( log => log.draw( ctx ) );
 
     // Turtle
     turtle.draw( ctx );

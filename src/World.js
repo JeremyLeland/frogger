@@ -33,6 +33,7 @@ import { Direction } from '../src/Entity.js';
 import { Tiles } from '../src/Tiles.js';
 import { Frog } from '../src/Frog.js';
 import { Turtle } from '../src/Turtle.js';
+import { Log } from '../src/Log.js';
 import { Car } from '../src/Car.js';
 
 const DirMap = [
@@ -43,6 +44,13 @@ const DirMap = [
 ];
 
 const FroggyColors = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ];
+
+const RideType = {
+  turtle:     ( vals ) => new Turtle( vals ),
+  logStart:   ( vals ) => new Log( Object.assign( vals, { logType: 'start' } ) ),
+  logMiddle:  ( vals ) => new Log( Object.assign( vals, { logType: 'middle' } ) ),
+  logEnd:     ( vals ) => new Log( Object.assign( vals, { logType: 'end' } ) ),
+}
 
 export class World
 {
@@ -89,13 +97,15 @@ export class World
       } )
     );
 
-    json.turtles.forEach( coords => this.entities.push( 
-      new Turtle( { 
-        x: coords[ 0 ], 
-        y: coords[ 1 ],
-        dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
-      } ) 
-    ) );
+    for ( const type in json.rides ) {
+      json.rides[ type ].forEach( coords => this.entities.push( 
+        RideType[ type ]( { 
+          x: coords[ 0 ], 
+          y: coords[ 1 ],
+          dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
+        } ) 
+      ) );
+    }
 
     for ( const color in json.cars ) {
       json.cars[ color ].forEach( coords => this.entities.push( 
