@@ -1,0 +1,51 @@
+<title>Load levels</title>
+<link rel="stylesheet" href="./grid.css">
+
+<script type="module">
+  import { Direction } from './src/Entity.js';
+  import { World } from './src/World.js';
+  
+  import { AnimatedCanvas } from './src/common/AnimatedCanvas.js';
+
+  const TILE_SIZE = 64;
+
+  const world = await World.fromFile( './levels/test1.json' );
+
+  const canvas = new AnimatedCanvas();
+
+  canvas.update = ( dt ) => {
+    world.update( dt );
+  }
+  
+  canvas.draw = ( ctx ) => {
+    ctx.save();
+    ctx.scale( TILE_SIZE, TILE_SIZE );
+    ctx.translate( 0.5, 0.5 );
+
+    world.draw( ctx );
+
+    ctx.restore();
+  };
+
+  canvas.start();
+
+  const moveUp =    () => world.player.move( Direction.Up );
+  const moveDown =  () => world.player.move( Direction.Down );
+  const moveLeft =  () => world.player.move( Direction.Left );
+  const moveRight = () => world.player.move( Direction.Right );
+
+  const KeyBindings = {
+    KeyW: moveUp,
+    KeyA: moveLeft,
+    KeyS: moveDown,
+    KeyD: moveRight,
+    ArrowUp: moveUp,
+    ArrowLeft: moveLeft,
+    ArrowDown: moveDown,
+    ArrowRight: moveRight,
+    KeyG: () => World.DebugGrid = !World.DebugGrid,
+  };
+
+  document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
+
+</script>
