@@ -67,7 +67,8 @@ export class Frog extends Entity {
   }
 
   update( dt, world ) {
-    super.update( dt );
+    this.x += this.dx * dt;
+    this.y += this.dy * dt;
 
     if ( this.#jumpTimeLeft > 0 ) {
       this.#jumpTimeLeft -= dt;
@@ -97,7 +98,7 @@ export class Frog extends Entity {
         this.x = Math.round( this.x );
         this.y = Math.round( this.y );
 
-        if ( world.getTile( this.x, this.y ).tile.KillsPlayer ) {
+        if ( world.getTile( this.x, this.y ).tileInfo.KillsPlayer ) {
           this.isAlive = false;
         }
       }

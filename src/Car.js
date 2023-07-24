@@ -13,14 +13,7 @@ roof.roundRect( -0.25, -0.3, 0.4, 0.6, 0.2 );
 import { Entity } from './Entity.js';
 
 export class Car extends Entity {
-
   killsPlayer = true;
-
-  update( dt, world ) {
-    super.update( dt );
-
-    this.followTile( world );
-  }
 
   drawEntity( ctx ) {
     ctx.fillStyle = this.color;

@@ -87,6 +87,10 @@ export class World
       }
     } );
 
+    json.warps.forEach( coords => 
+      this.tiles[ coords[ 0 ] ][ coords [ 1 ] ].warp = { c: coords[ 2 ], r: coords[ 3 ] }
+    );
+
     this.froggies = json.froggies.map( ( coords, index ) => 
       new Frog( { 
         x: coords[ 0 ], 

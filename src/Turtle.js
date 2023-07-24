@@ -51,11 +51,9 @@ import { Entity } from './Entity.js';
 export class Turtle extends Entity {
 
   update( dt, world ) {
-    super.update( dt );
+    super.update( dt, world );
 
     this.animationTime += dt;
-
-    this.followTile( world );
   }
   
   drawEntity( ctx ) {
