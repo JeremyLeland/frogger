@@ -2,7 +2,7 @@ export class AnimatedCanvas {
   #ctx;
   #reqId;
 
-  constructor() {
+  constructor( width = window.innerWidth, height = window.innerHeight ) {
     const canvas = document.createElement( 'canvas' );
     document.body.appendChild( canvas );
     
@@ -10,10 +10,10 @@ export class AnimatedCanvas {
 
     canvas.oncontextmenu = () => { return false };
     window.onresize = () => {
-      canvas.width = window.innerWidth * devicePixelRatio;
-      canvas.height = window.innerHeight * devicePixelRatio;
-      canvas.style.width = window.innerWidth + 'px';
-      canvas.style.height = window.innerHeight + 'px';
+      canvas.width = width * devicePixelRatio;
+      canvas.height = height * devicePixelRatio;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
       this.#ctx.scale( devicePixelRatio, devicePixelRatio );
     }
     window.onresize();

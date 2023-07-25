@@ -11,7 +11,10 @@
 
   const world = await World.fromFile( './levels/test1.json' );
 
-  const canvas = new AnimatedCanvas();
+  const canvas = new AnimatedCanvas(
+    ( world.crop.maxCol - world.crop.minCol + 1 ) * TILE_SIZE,
+    ( world.crop.maxRow - world.crop.minRow + 1 ) * TILE_SIZE,
+  );
 
   canvas.update = ( dt ) => {
     world.update( dt );
@@ -20,7 +23,7 @@
   canvas.draw = ( ctx ) => {
     ctx.save();
     ctx.scale( TILE_SIZE, TILE_SIZE );
-    ctx.translate( 0.5, 0.5 );
+    ctx.translate( 0.5 - world.crop.minCol, 0.5 - world.crop.minRow );
 
     world.draw( ctx );
 

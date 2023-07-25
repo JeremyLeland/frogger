@@ -30,7 +30,10 @@ export const Tiles = {
     draw: ( ctx ) => {
       Tiles.Grass.draw( ctx );    
 
-      ctx.fillStyle = 'green';
+      const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 2 );
+      gradient.addColorStop( 0, 'darkgreen' );
+      gradient.addColorStop( 1, 'black' );
+      ctx.fillStyle = gradient;
       ctx.fill( bush );
 
       ctx.strokeStyle = 'black';

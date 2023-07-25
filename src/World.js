@@ -65,11 +65,27 @@ export class World
   entities = [];
   player;
   tiles;
+  crop;
 
   constructor( json ) {
+    this.cols = json.cols;
+    this.rows = json.rows;
+
     this.tiles = Array.from( 
       Array( json.cols ), () => Array.from( 
         Array( json.rows ), () => ( {} ) ) );
+
+    this.crop = json.crop ? {
+      minCol: json.crop[ 0 ],
+      minRow: json.crop[ 1 ],
+      maxCol: json.crop[ 2 ],
+      maxRow: json.crop[ 3 ],
+    } : {
+      minCol: 0,
+      minRow: 0,
+      maxCol: json.cols - 1,
+      maxRow: json.rows - 1,
+    }
 
     json.tiles.forEach( ( tileIndex, index ) => {
       const col = index % json.cols;
@@ -143,8 +159,8 @@ export class World
   }
 
   draw( ctx ) {
-    for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
-      for ( let c = 0; c < this.tiles.length; c ++ ) {
+    for ( let r = this.crop.minRow; r <= this.crop.maxRow; r ++ ) {
+      for ( let c = this.crop.minCol; c <= this.crop.maxCol; c ++ ) {
         const tile = this.tiles[ c ][ r ];
         const nTile = r > 0 ? this.tiles[ c ][ r - 1 ] : null;
         const wTile = c > 0 ? this.tiles[ c - 1 ][ r ] : null;

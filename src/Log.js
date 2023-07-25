@@ -3,11 +3,11 @@ const END_SIZE = 0.3;
 const DETAIL_ROWS = 8;
 
 const start = new Path2D();
-start.moveTo( 0.5, -LOG_WIDTH );
+start.moveTo( 0.6, -LOG_WIDTH );
 start.lineTo( -0.5 + END_SIZE, -LOG_WIDTH );
 start.quadraticCurveTo( -0.5, -LOG_WIDTH, -0.5, 0 );
 start.quadraticCurveTo( -0.5,  LOG_WIDTH, -0.5 + END_SIZE, LOG_WIDTH );
-start.lineTo( 0.5, LOG_WIDTH );
+start.lineTo( 0.6, LOG_WIDTH );
 
 const middle = new Path2D();
 middle.moveTo( -0.5, -LOG_WIDTH );

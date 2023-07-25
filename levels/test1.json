@@ -1,12 +1,13 @@
 {
+  "cols": 8,
+  "rows": 8,
+  "crop": [ 1, 0, 6, 7 ],
   "tilePalette": [
     "Grass",
     "Water",
     "Road",
     "Bush"
   ],
-  "cols": 8,
-  "rows": 8,
   "tiles": [
     0, 0, 0, 0, 0, 0, 0, 0,
     1, 1, 1, 1, 1, 1, 1, 1,
