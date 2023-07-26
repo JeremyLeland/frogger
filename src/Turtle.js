@@ -1,5 +1,5 @@
 const LEG_L = 0.45, LEG_W = 0.08;
-const HEAD_SIZE = 0.15;
+const HEAD_SIZE = 0.14;
 const SHELL_SIZE = 0.3;
 
 const leg = new Path2D();
@@ -60,6 +60,8 @@ export class Turtle extends Entity {
     const bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
     bodyGrad.addColorStop( 0, 'green' );
     bodyGrad.addColorStop( 1, 'black' );
+
+    ctx.translate( -0.05, 0 );
 
     ctx.fillStyle = bodyGrad;
     

@@ -71,6 +71,8 @@ export class World
   needsRespawn = true;
   tiles;
   crop;
+  maxTime;
+  timeLeft = 0;
 
   constructor( json ) {
     this.cols = json.cols;
@@ -148,6 +150,8 @@ export class World
     this.spawnCol = json.player[ 0 ];
     this.spawnRow = json.player[ 1 ];
 
+    this.maxTime = json.time;
+
     this.lives = Array.from( Array( 4 ), () => new Player( { color: 'green', dir: Direction.Up } ) );
   }
 
@@ -167,6 +171,8 @@ export class World
 
   respawnPlayer() {
     this.needsRespawn = false;
+
+    this.timeLeft = this.maxTime;
 
     this.player = new Player( {
       x: this.spawnCol, 
@@ -190,6 +196,14 @@ export class World
   update( dt ) {
     this.entities.forEach( entity => entity.update( dt, this ) );
     this.player?.update( dt, this );
+
+    if ( !this.needsRespawn ) {
+      this.timeLeft = Math.max( 0, this.timeLeft - dt );
+      
+      if ( this.timeLeft == 0 ) {
+        this.killPlayer();
+      }
+    }
   }
 
   draw( ctx ) {
@@ -252,18 +266,21 @@ export class World
     this.rescued.forEach( froggy => froggy.draw( ctx ) );
     
     ctx.translate( 6, 0 );
+    
+    const timerGrad = ctx.createLinearGradient( 0, 0, 3, 0 );
+    timerGrad.addColorStop( 0, 'red' );
+    timerGrad.addColorStop( 0.5, 'yellow' );
+    timerGrad.addColorStop( 1, 'green' );
 
-    ctx.beginPath();
-    ctx.moveTo( 0, 0 );
-    ctx.lineTo( 3, 0 );
+    ctx.fillStyle = timerGrad;
+    ctx.fillRect( 0, -0.15, 3 * ( this.timeLeft / this.maxTime ), 0.3 );
+    ctx.lineWidth = 0.02;
+    ctx.strokeRect( 0, -0.15, 3, 0.3 );
 
-    ctx.lineWidth = 0.3;
-    ctx.stroke();
-
-    ctx.translate( 8, 0 );
+    ctx.translate( 3 + 4, 0 );
     this.lives.forEach( frog => {
-      ctx.translate( -1, 0 );
       frog.draw( ctx );
+      ctx.translate( -1, 0 );
     } );
   }
 }
