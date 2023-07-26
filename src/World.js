@@ -61,10 +61,14 @@ export class World
     const json = JSON.parse( await ( await fetch( path ) ).text() );    // TODO: error handling
     return new World( json );
   }
+
+  // TODO: Lives is list of Players ready to go? 
+  //       Use for UI initially, then pull out of list and add to world when spawn?
  
   entities = [];
   rescued = [];
   player;
+  needsRespawn = true;
   tiles;
   crop;
 
@@ -143,7 +147,7 @@ export class World
 
     this.spawnCol = json.player[ 0 ];
     this.spawnRow = json.player[ 1 ];
-    this.respawnPlayer();
+    // this.respawnPlayer();
   }
 
   getTile( col, row ) {
@@ -153,7 +157,14 @@ export class World
     }
   }
 
+  killPlayer() {
+    this.player.isAlive = false;
+    this.needsRespawn = true;
+  }
+
   respawnPlayer() {
+    this.needsRespawn = false;
+
     this.player = new Player( {
       x: this.spawnCol, 
       y: this.spawnRow, 
@@ -169,6 +180,8 @@ export class World
     this.rescued.push( entity );
 
     this.entities = this.entities.filter( e => e != entity );
+
+    this.needsRespawn = true;
   }
 
   update( dt ) {

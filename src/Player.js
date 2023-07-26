@@ -33,11 +33,9 @@ export class Player extends Frog {
 
       if ( collidingWith?.canRescue ) {
         world.rescue( collidingWith );
-
-        // TODO: set up a respawn after this
       }
       else if ( collidingWith?.killsPlayer ) {
-        this.isAlive = false;
+        world.killPlayer();
       }
       else {
         this.ride = collidingWith;
@@ -53,7 +51,7 @@ export class Player extends Frog {
 
         const tile = world.getTile( this.x, this.y );
         if ( !tile || tile.tileInfo.KillsPlayer ) {
-          this.isAlive = false;
+          world.killPlayer();
         }
       }
 
