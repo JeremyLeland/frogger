@@ -9,6 +9,8 @@ export class AnimatedCanvas {
     this.#ctx = canvas.getContext( '2d' /*, { alpha: false }*/ );
 
     canvas.oncontextmenu = () => { return false };
+
+    // TODO: Reconcile dynamic width/height
     window.onresize = () => {
       canvas.width = width * devicePixelRatio;
       canvas.height = height * devicePixelRatio;

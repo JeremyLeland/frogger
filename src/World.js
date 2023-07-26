@@ -147,7 +147,8 @@ export class World
 
     this.spawnCol = json.player[ 0 ];
     this.spawnRow = json.player[ 1 ];
-    // this.respawnPlayer();
+
+    this.lives = Array.from( Array( 4 ), () => new Player( { color: 'green', dir: Direction.Up } ) );
   }
 
   getTile( col, row ) {
@@ -160,6 +161,8 @@ export class World
   killPlayer() {
     this.player.isAlive = false;
     this.needsRespawn = true;
+    
+    this.lives.pop();
   }
 
   respawnPlayer() {
@@ -242,11 +245,25 @@ export class World
 
   drawUI( ctx ) {
     ctx.fillStyle = 'gray';
-    ctx.fillRect( 0, 0, 6, 1 );
+    ctx.fillRect( 0, 0, 14, 1 );
 
     ctx.translate( 0.5, 0.5 );
-
+    
     this.rescued.forEach( froggy => froggy.draw( ctx ) );
+    
+    ctx.translate( 6, 0 );
 
+    ctx.beginPath();
+    ctx.moveTo( 0, 0 );
+    ctx.lineTo( 3, 0 );
+
+    ctx.lineWidth = 0.3;
+    ctx.stroke();
+
+    ctx.translate( 8, 0 );
+    this.lives.forEach( frog => {
+      ctx.translate( -1, 0 );
+      frog.draw( ctx );
+    } );
   }
 }

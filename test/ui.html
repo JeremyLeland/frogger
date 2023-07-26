@@ -1,0 +1,49 @@
+<style>
+  body {
+    margin: 0px;
+  }
+  #ui {
+    background-color: gray;
+    width: min-content;
+    height: 64px;
+    display: flex;
+  }
+  #rescued {
+    background-color: darkred;
+    width: max-content;
+  }
+  #timer {
+    background-color: green;
+    width: calc( 64px * 3 );
+  }
+  #lives {
+    background-color: blue;
+    width: calc( 64px * 4 );
+  }
+</style>
+<body>
+  <div id="ui">
+    <div id="rescued"></div>
+    <div id="timer"></div>
+    <div id="lives"></div>
+  </div>
+</body>
+
+<script type="module">
+  import { Frog } from '../src/Frog.js';
+
+  const rescued = document.getElementById( 'rescued' );
+
+  for ( let i = 0; i < 6; i ++ ) {
+    const froggy = document.createElement( 'canvas' );
+    froggy.width = froggy.height = 64;
+    
+
+    const ctx = froggy.getContext( '2d' );
+    ctx.scale( 64, 64 );
+    new Frog( { x: 0.5, y: 0.5, color: 'blue' } ).draw( ctx );
+
+    rescued.appendChild( froggy );
+  }
+
+</script>
