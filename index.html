@@ -1,5 +1,12 @@
-<title>Load levels</title>
+<title>Frogger</title>
 <link rel="stylesheet" href="./grid.css">
+
+<style>
+  body { 
+    display: flex;
+    flex-direction: column;
+  }
+</style>
 
 <script type="module">
   import { Direction } from './src/Entity.js';
@@ -16,6 +23,11 @@
     ( world.crop.maxRow - world.crop.minRow + 1 ) * TILE_SIZE,
   );
 
+  const rescuedCanvas = new AnimatedCanvas(
+    6 * TILE_SIZE,
+    TILE_SIZE,
+  );
+
   canvas.update = ( dt ) => {
     world.update( dt );
   }
@@ -23,14 +35,24 @@
   canvas.draw = ( ctx ) => {
     ctx.save();
     ctx.scale( TILE_SIZE, TILE_SIZE );
-    ctx.translate( 0.5 - world.crop.minCol, 0.5 - world.crop.minRow );
 
     world.draw( ctx );
 
     ctx.restore();
+
+    rescuedCanvas.redraw();
   };
 
   canvas.start();
+
+  rescuedCanvas.draw = ( ctx ) => {
+    ctx.save();
+    ctx.scale( TILE_SIZE, TILE_SIZE );
+
+    world.drawUI( ctx );
+
+    ctx.restore();
+  }
 
   const moveUp =    () => move( Direction.Up );
   const moveDown =  () => move( Direction.Down );

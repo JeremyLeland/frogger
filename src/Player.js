@@ -33,8 +33,10 @@ export class Player extends Frog {
 
       if ( collidingWith?.canRescue ) {
         world.rescue( collidingWith );
+
+        // TODO: set up a respawn after this
       }
-      if ( collidingWith?.killsPlayer ) {
+      else if ( collidingWith?.killsPlayer ) {
         this.isAlive = false;
       }
       else {

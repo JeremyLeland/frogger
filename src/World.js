@@ -111,7 +111,8 @@ export class World
     this.entities = json.froggies.map( ( coords, index ) => 
       new Frog( { 
         x: coords[ 0 ], 
-        y: coords[ 1 ], 
+        y: coords[ 1 ],
+        froggyIndex: index,
         color: FroggyColors[ index ],
         canRescue: true,
         size: 0.7, 
@@ -162,8 +163,12 @@ export class World
   }
 
   rescue( entity ) {
-    this.entities = this.entities.filter( e => e != entity );
+    entity.x = entity.froggyIndex;
+    entity.y = 0;
+    entity.dir = Direction.Up;
     this.rescued.push( entity );
+
+    this.entities = this.entities.filter( e => e != entity );
   }
 
   update( dt ) {
@@ -172,6 +177,8 @@ export class World
   }
 
   draw( ctx ) {
+    ctx.translate( 0.5 - this.crop.minCol, 0.5 - this.crop.minRow );
+
     for ( let r = this.crop.minRow; r <= this.crop.maxRow; r ++ ) {
       for ( let c = this.crop.minCol; c <= this.crop.maxCol; c ++ ) {
         const tile = this.tiles[ c ][ r ];
@@ -218,5 +225,15 @@ export class World
         }
       }
     }
+  }
+
+  drawUI( ctx ) {
+    ctx.fillStyle = 'gray';
+    ctx.fillRect( 0, 0, 6, 1 );
+
+    ctx.translate( 0.5, 0.5 );
+
+    this.rescued.forEach( froggy => froggy.draw( ctx ) );
+
   }
 }
