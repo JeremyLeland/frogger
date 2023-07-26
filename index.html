@@ -32,10 +32,19 @@
 
   canvas.start();
 
-  const moveUp =    () => world.player.move( Direction.Up );
-  const moveDown =  () => world.player.move( Direction.Down );
-  const moveLeft =  () => world.player.move( Direction.Left );
-  const moveRight = () => world.player.move( Direction.Right );
+  const moveUp =    () => move( Direction.Up );
+  const moveDown =  () => move( Direction.Down );
+  const moveLeft =  () => move( Direction.Left );
+  const moveRight = () => move( Direction.Right );
+
+  function move( dir ) {
+    if ( world.player.isAlive ) {
+      world.player.move( dir );
+    }
+    else {
+      world.respawnPlayer();
+    }
+  }
 
   const KeyBindings = {
     KeyW: moveUp,

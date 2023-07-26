@@ -49,7 +49,8 @@ export class Player extends Frog {
         this.x = Math.round( this.x );
         this.y = Math.round( this.y );
 
-        if ( world.getTile( this.x, this.y ).tileInfo.KillsPlayer ) {
+        const tile = world.getTile( this.x, this.y );
+        if ( !tile || tile.tileInfo.KillsPlayer ) {
           this.isAlive = false;
         }
       }

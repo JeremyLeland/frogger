@@ -140,19 +140,25 @@ export class World
       ) );
     }
 
-    this.player = new Player( {
-      x: json.player[ 0 ], 
-      y: json.player[ 1 ], 
-      color: 'green',
-      dir: this.tiles[ json.player[ 0 ] ][ json.player[ 1 ] ].dir
-    } );
+    this.spawnCol = json.player[ 0 ];
+    this.spawnRow = json.player[ 1 ];
+    this.respawnPlayer();
   }
 
   getTile( col, row ) {
-    if ( 0 <= col && col < this.tiles.length && 
-         0 <= row && row < this.tiles[ 0 ].length ) {
+    if ( this.crop.minCol <= col && col <= this.crop.maxCol && 
+         this.crop.minRow <= row && row <= this.crop.maxRow ) {
       return this.tiles[ col ][ row ];
     }
+  }
+
+  respawnPlayer() {
+    this.player = new Player( {
+      x: this.spawnCol, 
+      y: this.spawnRow, 
+      color: 'green',
+      dir: this.tiles[ this.spawnCol ][ this.spawnRow ].dir
+    } );
   }
 
   rescue( entity ) {
