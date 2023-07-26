@@ -16,7 +16,6 @@ export class Entity {
   dy = 0;
 
   animationTime = 0;
-  killsPlayer = false;
 
   constructor( values ) {
     Object.assign( this, values );

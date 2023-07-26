@@ -35,6 +35,7 @@ import { Frog } from '../src/Frog.js';
 import { Turtle } from '../src/Turtle.js';
 import { Log } from '../src/Log.js';
 import { Car } from '../src/Car.js';
+import { Player } from '../src/Player.js';
 
 const DirMap = [
   Direction.Up,
@@ -61,8 +62,8 @@ export class World
     return new World( json );
   }
  
-  froggies = [];
   entities = [];
+  rescued = [];
   player;
   tiles;
   crop;
@@ -107,11 +108,12 @@ export class World
       this.tiles[ coords[ 0 ] ][ coords [ 1 ] ].warp = { c: coords[ 2 ], r: coords[ 3 ] }
     );
 
-    this.froggies = json.froggies.map( ( coords, index ) => 
+    this.entities = json.froggies.map( ( coords, index ) => 
       new Frog( { 
         x: coords[ 0 ], 
         y: coords[ 1 ], 
-        color: FroggyColors[ index ], 
+        color: FroggyColors[ index ],
+        canRescue: true,
         size: 0.7, 
         dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir 
       } )
@@ -138,7 +140,7 @@ export class World
       ) );
     }
 
-    this.player = new Frog( {
+    this.player = new Player( {
       x: json.player[ 0 ], 
       y: json.player[ 1 ], 
       color: 'green',
@@ -151,6 +153,11 @@ export class World
          0 <= row && row < this.tiles[ 0 ].length ) {
       return this.tiles[ col ][ row ];
     }
+  }
+
+  rescue( entity ) {
+    this.entities = this.entities.filter( e => e != entity );
+    this.rescued.push( entity );
   }
 
   update( dt ) {
@@ -175,13 +182,9 @@ export class World
     }
 
     // TODO: store z-index in object or class?
-    const others = this.entities.filter( e => !e.killsPlayer );
-    const cars = this.entities.filter( e => e.killsPlayer );
-
-    this.froggies.forEach( froggy => froggy.draw( ctx ) );
-    others.forEach( entity => entity.draw( ctx ) );
+    
+    this.entities.forEach( entity => entity.draw( ctx ) );
     this.player?.draw( ctx );
-    cars.forEach( entity => entity.draw( ctx ) );
 
     if ( World.DebugGrid ) {
       ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;

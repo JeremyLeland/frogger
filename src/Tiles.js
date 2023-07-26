@@ -21,7 +21,7 @@ const ROAD_LINE_WIDTH = 0.15, ROAD_LINE_LEN = 0.5;
 export const Tiles = {
   Grass: {
     draw: ( ctx ) => {
-      ctx.fillStyle = 'darkgreen';
+      ctx.fillStyle = 'forestgreen';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
     }
   },
