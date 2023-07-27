@@ -53,10 +53,13 @@ exes.lineTo( EYE_OFFSET_X - EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
 
 import { Direction, Entity } from './Entity.js';
 
-const MOVE_SPEED = 0.003;
-
 export class Frog extends Entity {
   isAlive = true;
+
+  kill() {
+    this.isAlive = false;
+    this.animationTime = 0;   // TODO: death splat animation?
+  }
   
   drawEntity( ctx ) {
     // TODO: Is there a way to reuse this? Is it worth it performance-wise?

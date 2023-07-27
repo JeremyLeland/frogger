@@ -166,7 +166,7 @@ export class World
   }
 
   killPlayer() {
-    this.player.isAlive = false;
+    this.player.kill();
     this.needsRespawn = true;
     
     this.lives.pop();
@@ -211,9 +211,9 @@ export class World
 
   draw( ctx ) {
     ctx.save();
-    // ctx.translate( 0.5 - this.crop.minCol, 0.5 - this.crop.minRow );
     ctx.translate( 0.5, 0.5 );
 
+    // TODO: Maybe explicitly leave out cropped tiles sometime?
     // for ( let r = this.crop.minRow; r <= this.crop.maxRow; r ++ ) {
     //   for ( let c = this.crop.minCol; c <= this.crop.maxCol; c ++ ) {
     for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {

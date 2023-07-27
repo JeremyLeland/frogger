@@ -36,6 +36,8 @@
     ctx.save();
     ctx.scale( TILE_SIZE, TILE_SIZE );
 
+    ctx.translate( -world.crop.minCol, -world.crop.minRow );
+
     world.draw( ctx );
 
     ctx.restore();
