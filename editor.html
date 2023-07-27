@@ -29,51 +29,6 @@
   const world = await World.fromFile( './levels/test1.json' );
   const worldCanvas = new Canvas( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
   
-  redraw();
-  
-  const worldDiv = document.getElementById( 'world' );
-  worldDiv.appendChild( worldCanvas.canvas );
-
-  const tilesDiv = document.getElementById( 'tiles' );
-  tilesDiv.appendChild( document.createTextNode( 'Tiles: ' ) );
-  for ( const tile in Tiles ) {
-    const button = document.createElement( 'button' );
-    button.textContent = tile;
-    tilesDiv.appendChild( button );
-  }
-
-  const froggiesDiv = document.getElementById( 'froggies' );
-  froggiesDiv.appendChild( document.createTextNode( 'Froggies: ' ) );
-  for ( let i = 0; i < Froggy.Count; i ++ ) {
-    const button = document.createElement( 'button' );
-    button.textContent = Froggy.Colors[ i ];  // i
-    froggiesDiv.appendChild( button );
-  }
-
-  const ridesDiv = document.getElementById( 'rides' );
-  ridesDiv.appendChild( document.createTextNode( 'Rides: ' ) );
-  for ( const ride in Rides ) {
-    const button = document.createElement( 'button' );
-    button.textContent = ride;
-    ridesDiv.appendChild( button );
-  }
-
-  const carsDiv = document.getElementById( 'cars' );
-  carsDiv.appendChild( document.createTextNode( 'Cars: ' ) );
-  for ( const car in Cars ) {
-    const button = document.createElement( 'button' );
-    button.textContent = car;
-    carsDiv.appendChild( button );
-  }
-
-  document.addEventListener( 'mousedown', ( e ) => {
-    const col = Math.floor( e.clientX / TILE_SIZE );
-    const row = Math.floor( e.clientY / TILE_SIZE );
-
-    world.tiles[ col ][ row ].tileInfo = Tiles.Grass;
-    redraw();
-  } );
-
   function redraw() {
     const ctx = worldCanvas.ctx;
 
@@ -104,5 +59,59 @@
 
     ctx.restore();
   }
+
+  redraw();
+
+  let activeBrush = Tiles.Grass, activeType = 'Tiles';
+  
+  const worldDiv = document.getElementById( 'world' );
+  worldDiv.appendChild( worldCanvas.canvas );
+
+  const tilesDiv = document.getElementById( 'tiles' );
+  tilesDiv.appendChild( document.createTextNode( 'Tiles: ' ) );
+  for ( const tile in Tiles ) {
+    const button = document.createElement( 'button' );
+    button.textContent = tile;
+    button.brush = Tiles[ tile ];
+    button.addEventListener( 'click', ( e ) => { 
+      activeBrush = Tiles[ tile ];
+      activeType = 'Tiles';
+    } );
+    tilesDiv.appendChild( button );
+  }
+
+  const froggiesDiv = document.getElementById( 'froggies' );
+  froggiesDiv.appendChild( document.createTextNode( 'Froggies: ' ) );
+  for ( let i = 0; i < Froggy.Count; i ++ ) {
+    const button = document.createElement( 'button' );
+    button.textContent = i;
+    froggiesDiv.appendChild( button );
+  }
+
+  const ridesDiv = document.getElementById( 'rides' );
+  ridesDiv.appendChild( document.createTextNode( 'Rides: ' ) );
+  for ( const ride in Rides ) {
+    const button = document.createElement( 'button' );
+    button.textContent = ride;
+    ridesDiv.appendChild( button );
+  }
+
+  const carsDiv = document.getElementById( 'cars' );
+  carsDiv.appendChild( document.createTextNode( 'Cars: ' ) );
+  for ( const car in Cars ) {
+    const button = document.createElement( 'button' );
+    button.textContent = car;
+    carsDiv.appendChild( button );
+  }
+
+  worldCanvas.canvas.addEventListener( 'mousedown', ( e ) => {
+    const col = Math.floor( e.clientX / TILE_SIZE );
+    const row = Math.floor( e.clientY / TILE_SIZE );
+
+    world.tiles[ col ][ row ].tileInfo = activeBrush;
+    redraw();
+  } );
+
+  
 
 </script>
