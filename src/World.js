@@ -29,13 +29,13 @@ function drawDashedArrow( ctx, x1, y1, x2, y2 ) {
   ctx.fill();
 }
 
-import { Direction } from '../src/Entity.js';
-import { Tiles } from '../src/Tiles.js';
-import { Frog } from '../src/Frog.js';
-import { Turtle } from '../src/Turtle.js';
-import { Log } from '../src/Log.js';
-import { Car } from '../src/Car.js';
-import { Player } from '../src/Player.js';
+import { Direction } from './Entity.js';
+import { Tiles } from './Tiles.js';
+import { Entity } from './Entity.js';
+import { Froggy } from './Froggy.js';
+import { Rides } from './Rides.js';
+import { Cars } from './Cars.js';
+import { Player } from './Player.js';
 
 const DirMap = [
   Direction.Up,
@@ -44,14 +44,12 @@ const DirMap = [
   Direction.Right,
 ];
 
-const FroggyColors = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ];
-
-const RideType = {
-  turtle:     ( vals ) => new Turtle( vals ),
-  logStart:   ( vals ) => new Log( Object.assign( vals, { logType: 'start' } ) ),
-  logMiddle:  ( vals ) => new Log( Object.assign( vals, { logType: 'middle' } ) ),
-  logEnd:     ( vals ) => new Log( Object.assign( vals, { logType: 'end' } ) ),
-}
+// const RideType = {
+//   turtle:     ( vals ) => new Turtle( vals ),
+//   logStart:   ( vals ) => new Log( Object.assign( vals, { logType: 'start' } ) ),
+//   logMiddle:  ( vals ) => new Log( Object.assign( vals, { logType: 'middle' } ) ),
+//   logEnd:     ( vals ) => new Log( Object.assign( vals, { logType: 'end' } ) ),
+// }
 
 export class World
 {
@@ -68,7 +66,7 @@ export class World
   entities = [];
   rescued = [];
   player;
-  needsRespawn = true;
+  needsRespawn = false;
   tiles;
   crop;
   maxTime;
@@ -115,44 +113,49 @@ export class World
     );
 
     this.entities = json.froggies.map( ( coords, index ) => 
-      new Frog( { 
+      new Froggy( { 
         x: coords[ 0 ], 
         y: coords[ 1 ],
         froggyIndex: index,
-        color: FroggyColors[ index ],
-        canRescue: true,
-        size: 0.7, 
         dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir 
       } )
     );
 
     for ( const type in json.rides ) {
-      json.rides[ type ].forEach( coords => this.entities.push( 
-        RideType[ type ]( { 
-          x: coords[ 0 ], 
-          y: coords[ 1 ],
-          dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
-        } ) 
+      json.rides[ type ].forEach( coords => this.entities.push(
+        Object.assign( 
+          new Entity( { 
+            type: type,
+            x: coords[ 0 ], 
+            y: coords[ 1 ],
+            dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
+          } ), 
+          Rides[ type ] 
+        )
       ) );
     }
 
-    for ( const color in json.cars ) {
-      json.cars[ color ].forEach( coords => this.entities.push( 
-        new Car( { 
-          x: coords[ 0 ], 
-          y: coords[ 1 ], 
-          color: color,
-          dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
-        } ) 
+    for ( const type in json.cars ) {
+      json.cars[ type ].forEach( coords => this.entities.push( 
+        Object.assign( 
+          new Entity( { 
+            type: type,
+            x: coords[ 0 ], 
+            y: coords[ 1 ],
+            dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
+          } ), 
+          Cars[ type ]
+        )
       ) );
     }
-
-    this.spawnCol = json.player[ 0 ];
-    this.spawnRow = json.player[ 1 ];
 
     this.maxTime = json.time;
-
+    
     this.lives = Array.from( Array( 4 ), () => new Player( { color: 'green', dir: Direction.Up } ) );
+    
+    this.spawnCol = json.player[ 0 ];
+    this.spawnRow = json.player[ 1 ];
+    this.respawnPlayer();
   }
 
   getTile( col, row ) {

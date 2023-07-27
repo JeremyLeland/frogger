@@ -28,6 +28,8 @@ export class Entity {
     this.x += this.dx * dt;
     this.y += this.dy * dt;
 
+    this.animationTime += dt;
+
     const col = Math.max( 0, Math.min( world.tiles.length - 1, Math.round( this.x - this.dir.x * 0.49 ) ) );
     const row = Math.max( 0, Math.min( world.tiles[ 0 ].length - 1, Math.round( this.y - this.dir.y * 0.49 ) ) );
     let tile = world.tiles[ col ][ row ];
