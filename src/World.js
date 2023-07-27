@@ -210,10 +210,14 @@ export class World
   }
 
   draw( ctx ) {
-    ctx.translate( 0.5 - this.crop.minCol, 0.5 - this.crop.minRow );
+    ctx.save();
+    // ctx.translate( 0.5 - this.crop.minCol, 0.5 - this.crop.minRow );
+    ctx.translate( 0.5, 0.5 );
 
-    for ( let r = this.crop.minRow; r <= this.crop.maxRow; r ++ ) {
-      for ( let c = this.crop.minCol; c <= this.crop.maxCol; c ++ ) {
+    // for ( let r = this.crop.minRow; r <= this.crop.maxRow; r ++ ) {
+    //   for ( let c = this.crop.minCol; c <= this.crop.maxCol; c ++ ) {
+    for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
+      for ( let c = 0; c < this.tiles.length; c ++ ) {
         const tile = this.tiles[ c ][ r ];
         const nTile = r > 0 ? this.tiles[ c ][ r - 1 ] : null;
         const wTile = c > 0 ? this.tiles[ c - 1 ][ r ] : null;
@@ -258,6 +262,8 @@ export class World
         }
       }
     }
+
+    ctx.restore();
   }
 
   drawUI( ctx ) {

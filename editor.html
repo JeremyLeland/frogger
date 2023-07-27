@@ -24,11 +24,12 @@
   
   const TILE_SIZE = 64;
 
+  World.DebugGrid = true;
   
   const world = await World.fromFile( './levels/test1.json' );
   const worldCanvas = new Canvas( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
-  worldCanvas.ctx.scale( TILE_SIZE, TILE_SIZE );
-  world.draw( worldCanvas.ctx );
+  
+  redraw();
   
   const worldDiv = document.getElementById( 'world' );
   worldDiv.appendChild( worldCanvas.canvas );
@@ -63,6 +64,45 @@
     const button = document.createElement( 'button' );
     button.textContent = car;
     carsDiv.appendChild( button );
+  }
+
+  document.addEventListener( 'mousedown', ( e ) => {
+    const col = Math.floor( e.clientX / TILE_SIZE );
+    const row = Math.floor( e.clientY / TILE_SIZE );
+
+    world.tiles[ col ][ row ].tileInfo = Tiles.Grass;
+    redraw();
+  } );
+
+  function redraw() {
+    const ctx = worldCanvas.ctx;
+
+    ctx.save();
+
+    ctx.scale( TILE_SIZE, TILE_SIZE );
+    world.draw( ctx );
+
+    ctx.beginPath();
+    ctx.moveTo( world.crop.minCol,     world.crop.minRow     );
+    ctx.lineTo( world.crop.minCol,     world.crop.maxRow + 1 );
+    ctx.lineTo( world.crop.maxCol + 1, world.crop.maxRow + 1 );
+    ctx.lineTo( world.crop.maxCol + 1, world.crop.minRow     );
+    ctx.lineTo( world.crop.minCol,     world.crop.minRow     );
+
+    ctx.setLineDash( [ 0.1, 0.1 ] );
+    ctx.lineWidth = 0.05;
+    ctx.stroke();
+
+    ctx.lineTo( 0, 0 );
+    ctx.lineTo( world.cols, 0 );
+    ctx.lineTo( world.cols, world.rows );
+    ctx.lineTo( 0, world.rows );
+    ctx.lineTo( 0, 0 );
+
+    ctx.fillStyle = "#000b";
+    ctx.fill();
+
+    ctx.restore();
   }
 
 </script>
