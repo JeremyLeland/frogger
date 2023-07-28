@@ -147,6 +147,7 @@
     KeyS: () => setDirection( Direction.Down ),
     KeyD: () => setDirection( Direction.Right ),
     Space: () => setDirection( null ),
+    KeyG: toggleGrid,
   };
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
@@ -155,7 +156,12 @@
     // TODO: Remove col/row with Shift?
 
   function setDirection( dir ) {
-    world.tiles[ mouseCol ][ mouseRow ].dir = dir;
+    world.setDirection( dir, mouseCol, mouseRow );
+    redraw();
+  }
+
+  function toggleGrid() {
+    World.DebugGrid = !World.DebugGrid;
     redraw();
   }
   

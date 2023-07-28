@@ -132,6 +132,21 @@ export class World
     }
   }
 
+  setDirection( dir, col, row ) {
+    this.tiles[ col ][ row ].dir = dir;
+
+    let affected = this.entities.find( e => e.x == col && e.y == row );
+    
+    // TODO: affected ?= froggies.find (if we ever make these separate)
+
+    if ( affected ) {
+      affected.dir = dir;
+    }
+    else if ( this.player.x == col && this.player.y == row ) {
+      this.player.dir = dir;
+    }
+  }
+
   addEntity( type, col, row ) {
     this.removeEntity( col, row );
 
