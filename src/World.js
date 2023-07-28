@@ -85,7 +85,7 @@ export class World
       const col = index % json.cols;
       const row = Math.floor( index / json.cols );
 
-      this.tiles[ col ][ row ].tileInfo = Tiles[ json.tilePalette[ tileIndex ] ]; // TODO: rename to tileInfo?
+      this.tiles[ col ][ row ].tileInfo = Tiles[ json.tilePalette[ tileIndex ] ];
     } );
 
     json.directions.forEach( ( dirIndex, index ) => {
@@ -93,7 +93,7 @@ export class World
         const col = index % json.cols;
         const row = Math.floor( index / json.cols );
         
-        this.tiles[ col ][ row ].dir = DirMap[ dirIndex - 1 ]; // TODO: rename to tileInfo?
+        this.tiles[ col ][ row ].dir = DirMap[ dirIndex - 1 ];
       }
     } );
 
@@ -165,6 +165,20 @@ export class World
 
   removeEntity( col, row ) {
     this.entities = this.entities.filter( e => e.x != col || e.y != row );
+  }
+
+  addColumn( col ) {
+    this.tiles.splice( col, 0, 
+      Array.from( this.tiles[ col ], e => ( { tileInfo: e.tileInfo, dir: e.dir } ) ) 
+    );
+
+    this.entities.filter( e => e.x > col ).forEach( e => e.x ++ );
+    if ( this.player.x > col ) {
+      this.player.x ++;
+    }
+
+    this.cols ++;
+    this.crop.maxCol ++;
   }
 
   killPlayer() {

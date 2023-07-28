@@ -148,6 +148,7 @@
     KeyD: () => setDirection( Direction.Right ),
     Space: () => setDirection( null ),
     KeyG: toggleGrid,
+    KeyC: addColumn,
   };
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
@@ -162,6 +163,12 @@
 
   function toggleGrid() {
     World.DebugGrid = !World.DebugGrid;
+    redraw();
+  }
+
+  function addColumn() {
+    world.addColumn( mouseCol );
+    worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
     redraw();
   }
   
