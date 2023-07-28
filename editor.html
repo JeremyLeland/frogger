@@ -9,16 +9,14 @@
   <div id="ui">
     <div id="tiles"></div>
     <div id="froggies"></div>
-    <div id="rides"></div>
-    <div id="cars"></div>
+    <div id="entities"></div>
   </div>
 </body>
 
 <script type="module">
   import { Canvas } from './src/common/Canvas.js';
   import { Tiles } from './src/Tiles.js';
-  import { Rides } from './src/Rides.js';
-  import { Cars } from './src/Cars.js';
+  import { Entities } from './src/Entities.js';
   import { Froggy } from './src/Froggy.js';
   import { World } from './src/World.js';
   
@@ -88,27 +86,34 @@
     froggiesDiv.appendChild( button );
   }
 
-  const ridesDiv = document.getElementById( 'rides' );
-  ridesDiv.appendChild( document.createTextNode( 'Rides: ' ) );
-  for ( const ride in Rides ) {
+  const entitiesDiv = document.getElementById( 'entities' );
+  entitiesDiv.appendChild( document.createTextNode( 'Entities: ' ) );
+  for ( const type in Entities ) {
     const button = document.createElement( 'button' );
-    button.textContent = ride;
-    ridesDiv.appendChild( button );
-  }
-
-  const carsDiv = document.getElementById( 'cars' );
-  carsDiv.appendChild( document.createTextNode( 'Cars: ' ) );
-  for ( const car in Cars ) {
-    const button = document.createElement( 'button' );
-    button.textContent = car;
-    carsDiv.appendChild( button );
+    button.textContent = type;
+    button.addEventListener( 'click', ( e ) => { 
+      activeBrush = type;
+      activeType = 'Cars';
+    } );
+    entitiesDiv.appendChild( button );
   }
 
   worldCanvas.canvas.addEventListener( 'mousedown', ( e ) => {
     const col = Math.floor( e.clientX / TILE_SIZE );
     const row = Math.floor( e.clientY / TILE_SIZE );
 
-    world.tiles[ col ][ row ].tileInfo = activeBrush;
+    if ( e.button == 0 ) { 
+      if ( activeType == 'Tiles' ) {
+        world.tiles[ col ][ row ].tileInfo = activeBrush;
+      }
+      else if ( activeType == 'Cars' ) {
+        world.addEntity( activeBrush, col, row );
+      }
+    }
+    else if ( e.button == 2 ) {
+      world.removeEntity( col, row );
+    }
+      
     redraw();
   } );
 

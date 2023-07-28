@@ -62,7 +62,7 @@ export class Entity {
   draw( ctx ) {
     ctx.save();
     ctx.translate( this.x, this.y );
-    ctx.rotate( this.dir.angle );
+    ctx.rotate( this.dir?.angle ?? 0 );
     ctx.scale( this.size, this.size );
 
     ctx.strokeStyle = 'black';

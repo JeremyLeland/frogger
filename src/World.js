@@ -33,8 +33,7 @@ import { Direction } from './Entity.js';
 import { Tiles } from './Tiles.js';
 import { Entity } from './Entity.js';
 import { Froggy } from './Froggy.js';
-import { Rides } from './Rides.js';
-import { Cars } from './Cars.js';
+import { Entities } from './Entities.js';
 import { Player } from './Player.js';
 
 const DirMap = [
@@ -44,13 +43,6 @@ const DirMap = [
   Direction.Right,
 ];
 
-// const RideType = {
-//   turtle:     ( vals ) => new Turtle( vals ),
-//   logStart:   ( vals ) => new Log( Object.assign( vals, { logType: 'start' } ) ),
-//   logMiddle:  ( vals ) => new Log( Object.assign( vals, { logType: 'middle' } ) ),
-//   logEnd:     ( vals ) => new Log( Object.assign( vals, { logType: 'end' } ) ),
-// }
-
 export class World
 {
   static DebugGrid = false;
@@ -59,9 +51,6 @@ export class World
     const json = JSON.parse( await ( await fetch( path ) ).text() );    // TODO: error handling
     return new World( json );
   }
-
-  // TODO: Lives is list of Players ready to go? 
-  //       Use for UI initially, then pull out of list and add to world when spawn?
  
   entities = [];
   rescued = [];
@@ -121,32 +110,10 @@ export class World
       } )
     );
 
-    for ( const type in json.rides ) {
-      json.rides[ type ].forEach( coords => this.entities.push(
-        Object.assign( 
-          new Entity( { 
-            type: type,
-            x: coords[ 0 ], 
-            y: coords[ 1 ],
-            dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
-          } ), 
-          Rides[ type ] 
-        )
-      ) );
-    }
-
-    for ( const type in json.cars ) {
-      json.cars[ type ].forEach( coords => this.entities.push( 
-        Object.assign( 
-          new Entity( { 
-            type: type,
-            x: coords[ 0 ], 
-            y: coords[ 1 ],
-            dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir,
-          } ), 
-          Cars[ type ]
-        )
-      ) );
+    for ( const type in json.entities ) {
+      json.entities[ type ].forEach( coords => 
+        this.addEntity( type, coords[ 0 ], coords[ 1 ] ) 
+      );
     }
 
     this.maxTime = json.time;
@@ -163,6 +130,26 @@ export class World
          this.crop.minRow <= row && row <= this.crop.maxRow ) {
       return this.tiles[ col ][ row ];
     }
+  }
+
+  addEntity( type, col, row ) {
+    this.removeEntity( col, row );
+    
+    this.entities.push(
+      Object.assign( 
+        new Entity( { 
+          type: type,
+          x: col,
+          y: row,
+          dir: this.tiles[ col ][ row ].dir,
+        } ), 
+        Entities[ type ]
+      )
+    );
+  }
+
+  removeEntity( col, row ) {
+    this.entities = this.entities.filter( e => e.x != col || e.y != row );
   }
 
   killPlayer() {
