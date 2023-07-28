@@ -16,6 +16,7 @@
 <script type="module">
   import { Canvas } from './src/common/Canvas.js';
   import { Tiles } from './src/Tiles.js';
+  import { Direction } from './src/Entity.js';
   import { Entities } from './src/Entities.js';
   import { Froggy } from './src/Froggy.js';
   import { World } from './src/World.js';
@@ -98,25 +99,65 @@
     entitiesDiv.appendChild( button );
   }
 
-  worldCanvas.canvas.addEventListener( 'mousedown', ( e ) => {
-    const col = Math.floor( e.clientX / TILE_SIZE );
-    const row = Math.floor( e.clientY / TILE_SIZE );
+  let mouseCol = 0, mouseRow = 0, mouseDown = false, mouseButton = 0;
+  let lastCol, lastRow;
 
-    if ( e.button == 0 ) { 
-      if ( activeType == 'Tiles' ) {
-        world.tiles[ col ][ row ].tileInfo = activeBrush;
-      }
-      else if ( activeType == 'Cars' ) {
-        world.addEntity( activeBrush, col, row );
-      }
-    }
-    else if ( e.button == 2 ) {
-      world.removeEntity( col, row );
-    }
-      
-    redraw();
+  worldCanvas.canvas.addEventListener( 'mousemove', ( e ) => {
+    mouseCol = Math.floor( e.clientX / TILE_SIZE );
+    mouseRow = Math.floor( e.clientY / TILE_SIZE );
+    doMouse();
   } );
 
+  worldCanvas.canvas.addEventListener( 'mousedown', ( e ) => {
+    mouseDown = true;
+    mouseButton = e.button;
+    doMouse();
+  } );
+
+  worldCanvas.canvas.addEventListener( 'mouseup', ( e ) => {
+    mouseDown = false;
+    mouseButton = null;
+    lastCol = lastRow = null;
+  } );
+
+  function doMouse() {
+    if ( mouseDown && ( mouseCol != lastCol || mouseRow != lastRow ) ) {
+      lastCol = mouseCol;
+      lastRow = mouseRow;
+
+      if ( mouseButton == 0 ) { 
+        if ( activeType == 'Tiles' ) {
+          world.tiles[ mouseCol ][ mouseRow ].tileInfo = activeBrush;
+        }
+        else if ( activeType == 'Cars' ) {
+          world.addEntity( activeBrush, mouseCol, mouseRow );
+        }
+      }
+      else if ( mouseButton == 2 ) {
+        world.removeEntity( mouseCol, mouseRow );
+      }
+
+      redraw();
+    }
+  }
+
+  const KeyBindings = {
+    KeyW: () => setDirection( Direction.Up ),
+    KeyA: () => setDirection( Direction.Left ),
+    KeyS: () => setDirection( Direction.Down ),
+    KeyD: () => setDirection( Direction.Right ),
+    Space: () => setDirection( null ),
+  };
+
+  document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
+
+    // TODO: Add col/row
+    // TODO: Remove col/row with Shift?
+
+  function setDirection( dir ) {
+    world.tiles[ mouseCol ][ mouseRow ].dir = dir;
+    redraw();
+  }
   
 
 </script>
