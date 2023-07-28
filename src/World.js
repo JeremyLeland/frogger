@@ -134,7 +134,7 @@ export class World
 
   addEntity( type, col, row ) {
     this.removeEntity( col, row );
-    
+
     this.entities.push(
       Object.assign( 
         new Entity( { 
@@ -227,25 +227,32 @@ export class World
       ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
       ctx.lineWidth = TILE_BORDER;
       ctx.textAlign = 'center';
-      ctx.font = '0.2px Arial';
+      ctx.font = '10px Arial';      // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
       
       for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
         for ( let c = 0; c < this.tiles.length; c ++ ) {
           const tile = this.tiles[ c ][ r ];
-          
+
+          ctx.save();
+          ctx.translate( c, r );
+
+          ctx.strokeRect( -0.5, -0.5, 1, 1 );
+
           if ( tile.dir ) {
             ctx.save();
-            ctx.translate( c, r );
             ctx.rotate( tile.dir.angle );
             ctx.fill( arrow );
             ctx.restore();
           }
-          else if ( tile.warp ) {
+
+          ctx.scale( 0.02, 0.02 );    // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
+          ctx.fillText( `(${ c },${ r })`, 0, 20 );
+
+          ctx.restore();
+          
+          if ( tile.warp ) {
             drawDashedArrow( ctx, c, r, tile.warp.c, tile.warp.r );
           }
-          
-          ctx.strokeRect( c - 0.5, r - 0.5, 1, 1 );
-          ctx.fillText( `(${ c },${ r })`, c, r + 0.4 );
         }
       }
     }
