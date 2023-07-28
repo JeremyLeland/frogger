@@ -148,7 +148,10 @@
     KeyD: () => setDirection( Direction.Right ),
     Space: () => setDirection( null ),
     KeyG: toggleGrid,
-    KeyC: addColumn,
+    KeyC: () => resize( 1, 0 ),
+    KeyX: () => resize( -1, 0 ),
+    KeyR: () => resize( 0, 1 ),
+    KeyE: () => resize( 0, -1 ),
   };
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
@@ -166,8 +169,13 @@
     redraw();
   }
 
-  function addColumn() {
-    world.addColumn( mouseCol );
+  function resize( cols, rows ) {
+    // TODO: multiple?
+    if ( cols > 0 )   world.addColumn( mouseCol );
+    if ( cols < 0 )   world.removeColumn( mouseCol );
+    if ( rows > 0 )   world.addRow( mouseRow ); 
+    if ( rows < 0 )   world.removeRow( mouseRow ); 
+
     worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
     redraw();
   }

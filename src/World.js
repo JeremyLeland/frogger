@@ -167,6 +167,8 @@ export class World
     this.entities = this.entities.filter( e => e.x != col || e.y != row );
   }
 
+  // TODO: Fix warps when adding/removing!
+
   addColumn( col ) {
     this.tiles.splice( col, 0, 
       Array.from( this.tiles[ col ], e => ( { tileInfo: e.tileInfo, dir: e.dir } ) ) 
@@ -179,6 +181,47 @@ export class World
 
     this.cols ++;
     this.crop.maxCol ++;
+  }
+
+  removeColumn( col ) {
+    this.tiles.splice( col, 1 );
+
+    this.entities.filter( e => e.x > col ).forEach( e => e.x -- );
+    if ( this.player.x > col ) {
+      this.player.x --;
+    }
+
+    this.cols --;
+    this.crop.maxCol --;
+  }
+
+  addRow( row ) {
+    for ( let col = 0; col < this.cols; col ++ ) {
+      const toCopy = this.tiles[ col ][ row ];
+      this.tiles[ col ].splice( row, 0, ( { tileInfo: toCopy.tileInfo, dir: toCopy.dir } ) );
+    }
+
+    this.entities.filter( e => e.y > row ).forEach( e => e.y ++ );
+    if ( this.player.y > row ) {
+      this.player.y ++;
+    }
+
+    this.rows ++;
+    this.crop.maxRow ++;
+  }
+
+  removeRow( row ) {
+    for ( let col = 0; col < this.cols; col ++ ) {
+      this.tiles[ col ].splice( row, 1 );
+    }
+
+    this.entities.filter( e => e.y > row ).forEach( e => e.y -- );
+    if ( this.player.y > row ) {
+      this.player.y --;
+    }
+
+    this.rows --;
+    this.crop.maxRow --;
   }
 
   killPlayer() {
