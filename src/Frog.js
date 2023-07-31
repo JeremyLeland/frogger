@@ -62,17 +62,21 @@ export class Frog extends Entity {
   }
   
   drawEntity( ctx ) {
+    Frog.drawFrog( ctx, this.color, this.animationTime, this.isAlive );
+  }
+
+  static drawFrog( ctx, color = 'green', animationTime = 0, isAlive = true ) {
     // TODO: Is there a way to reuse this? Is it worth it performance-wise?
     const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
-    gradient.addColorStop( 0, this.color );
+    gradient.addColorStop( 0, color );
     gradient.addColorStop( 1, 'black' );
 
     ctx.fillStyle = gradient;
     
-    const footOffset = -0.1 * Math.sin( this.animationTime * Math.PI );
+    const footOffset = -0.1 * Math.sin( animationTime * Math.PI );
 
     ctx.save();
-    ctx.translate( footOffset, 0 );    
+    ctx.translate( footOffset, 0 );
     ctx.fill( feet );
     ctx.stroke( feet );
     ctx.restore();
@@ -105,7 +109,7 @@ export class Frog extends Entity {
     ctx.fill( body );
     ctx.stroke( body );
 
-    if ( this.isAlive ) {
+    if ( isAlive ) {
       ctx.fillStyle = 'white';
       ctx.fill( sclera );
       ctx.stroke( sclera );

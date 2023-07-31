@@ -57,6 +57,8 @@
     ctx.fill();
 
     ctx.restore();
+
+    console.log( JSON.stringify( world.toJson() ) );
   }
 
   redraw();
@@ -119,6 +121,9 @@
     mouseButton = null;
     lastCol = lastRow = null;
   } );
+
+  // TODO: Moving entities with Click-Drag?
+  // (how do I know not to change the tile instead? modifier key?)
 
   function doMouse() {
     if ( mouseDown && ( mouseCol != lastCol || mouseRow != lastRow ) ) {

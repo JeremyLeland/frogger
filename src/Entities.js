@@ -1,3 +1,5 @@
+// TODO: Split all this out into separate files again, with static draw functions?
+
 //
 // Turtle
 //
@@ -135,6 +137,8 @@ function drawCar( ctx, color ) {
   ctx.stroke( roof );
 }
 
+import { Frog } from './Frog.js';
+
 export const Entities = {
   // Rides
   Turtle: {
@@ -203,3 +207,16 @@ export const Entities = {
     drawEntity: function( ctx ) { drawCar( ctx, 'cyan' ) }
   }
 };
+
+[ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].forEach( ( color, index ) => {
+  Entities[ 'Froggy' + ( index + 1 ) ] = {
+    size: 0.7,
+    canRescue: true,
+    froggyIndex: index,
+    drawEntity: function( ctx ) { Frog.drawFrog( ctx, color ) }
+  }
+} );
+
+for ( const entityKey in Entities ) {
+  Entities[ entityKey ].entityKey = entityKey;
+}

@@ -36,12 +36,13 @@ import { Froggy } from './Froggy.js';
 import { Entities } from './Entities.js';
 import { Player } from './Player.js';
 
-const DirMap = [
+const DirArray = [
   Direction.Up,
   Direction.Left,
   Direction.Down,
-  Direction.Right,
+  Direction.Right
 ];
+const DirMap = new Map( DirArray.map( ( e, i ) => [ e, i + 1 ] ) );
 
 export class World
 {
@@ -85,29 +86,22 @@ export class World
       const col = index % json.cols;
       const row = Math.floor( index / json.cols );
 
-      this.tiles[ col ][ row ].tileInfo = Tiles[ json.tilePalette[ tileIndex ] ];
+      this.tiles[ col ][ row ].tileInfoKey = json.tileInfoKeys[ tileIndex ];
     } );
 
     json.directions.forEach( ( dirIndex, index ) => {
       if ( dirIndex > 0 ) {
         const col = index % json.cols;
         const row = Math.floor( index / json.cols );
-        
-        this.tiles[ col ][ row ].dir = DirMap[ dirIndex - 1 ];
+
+        if ( dirIndex > 0 ) {
+          this.tiles[ col ][ row ].dir = DirArray[ dirIndex - 1 ];
+        }
       }
     } );
 
     json.warps.forEach( coords => 
-      this.tiles[ coords[ 0 ] ][ coords [ 1 ] ].warp = { c: coords[ 2 ], r: coords[ 3 ] }
-    );
-
-    this.entities = json.froggies.map( ( coords, index ) => 
-      new Froggy( { 
-        x: coords[ 0 ], 
-        y: coords[ 1 ],
-        froggyIndex: index,
-        dir: this.tiles[ coords[ 0 ] ][ coords[ 1 ] ].dir 
-      } )
+      this.tiles[ coords[ 0 ] ][ coords [ 1 ] ].warp = { col: coords[ 2 ], row: coords[ 3 ] }
     );
 
     for ( const type in json.entities ) {
@@ -120,9 +114,54 @@ export class World
     
     this.lives = Array.from( Array( 4 ), () => new Player( { color: 'green', dir: Direction.Up } ) );
     
-    this.spawnCol = json.player[ 0 ];
-    this.spawnRow = json.player[ 1 ];
+    [ this.spawnCol, this.spawnRow ] = json.player;
     this.respawnPlayer();
+  }
+
+  toJson() {
+    
+    // TODO:
+    // froggies -> Entities
+
+    const tileInfoKeys = new Map();
+    const jsonTiles = [];
+    const jsonDirs = [];
+    const jsonWarps = [];
+    const jsonEntities = {};
+
+    for ( let index = 0, row = 0; row < this.rows; row ++ ) {
+      for ( let col = 0; col < this.cols; col ++, index ++ ) {
+        const tile = this.tiles[ col ][ row ];
+
+        if ( !tileInfoKeys.has( tile.tileInfoKey ) ) {
+          tileInfoKeys.set( tile.tileInfoKey, tileInfoKeys.size );
+        }
+        jsonTiles.push( tileInfoKeys.get( tile.tileInfoKey ) );
+        jsonDirs.push( tile.dir ? DirMap.get( tile.dir ) : 0 );
+
+        if ( tile.warp ) {
+          jsonWarps.push( [ col, row, tile.warp.col, tile.warp.row ] );
+        }
+      }
+    }
+
+    this.entities.forEach( entity => {
+      jsonEntities[ entity.entityKey ] ??= [];
+      jsonEntities[ entity.entityKey ].push( [ entity.x, entity.y ] );
+    } );
+    
+    return {
+      cols: this.cols,
+      rows: this.rows,
+      crop: [ this.crop.minCol, this.crop.minRow, this.crop.maxCol, this.crop.maxRow ],
+      tileInfoKeys: Array.from( tileInfoKeys.keys() ),
+      tiles: jsonTiles,
+      directions: jsonDirs,
+      warps: jsonWarps,
+      entities: jsonEntities,
+      player: [ this.spawnCol, this.spawnRow ],
+      time: this.maxTime,
+    };
   }
 
   getTile( col, row ) {
@@ -152,8 +191,7 @@ export class World
 
     this.entities.push(
       Object.assign( 
-        new Entity( { 
-          type: type,
+        new Entity( {
           x: col,
           y: row,
           dir: this.tiles[ col ][ row ].dir,
@@ -171,7 +209,7 @@ export class World
 
   addColumn( col ) {
     this.tiles.splice( col, 0, 
-      Array.from( this.tiles[ col ], e => ( { tileInfo: e.tileInfo, dir: e.dir } ) ) 
+      Array.from( this.tiles[ col ], e => ( { tileInfoKey: e.tileInfoKey, dir: e.dir } ) ) 
     );
 
     this.entities.filter( e => e.x > col ).forEach( e => e.x ++ );
@@ -198,7 +236,7 @@ export class World
   addRow( row ) {
     for ( let col = 0; col < this.cols; col ++ ) {
       const toCopy = this.tiles[ col ][ row ];
-      this.tiles[ col ].splice( row, 0, ( { tileInfo: toCopy.tileInfo, dir: toCopy.dir } ) );
+      this.tiles[ col ].splice( row, 0, ( { tileInfoKey: toCopy.tileInfoKey, dir: toCopy.dir } ) );
     }
 
     this.entities.filter( e => e.y > row ).forEach( e => e.y ++ );
@@ -281,10 +319,10 @@ export class World
         const nTile = r > 0 ? this.tiles[ c ][ r - 1 ] : null;
         const wTile = c > 0 ? this.tiles[ c - 1 ][ r ] : null;
 
-        if ( tile.tileInfo ) {
+        if ( tile.tileInfoKey ) {
           ctx.save();
           ctx.translate( c, r );
-          tile.tileInfo.draw( ctx, tile, nTile, wTile );
+          Tiles[ tile.tileInfoKey ].draw( ctx, tile, nTile, wTile );
           ctx.restore();
         }
       }
@@ -323,7 +361,7 @@ export class World
           ctx.restore();
           
           if ( tile.warp ) {
-            drawDashedArrow( ctx, c, r, tile.warp.c, tile.warp.r );
+            drawDashedArrow( ctx, c, r, tile.warp.col, tile.warp.row );
           }
         }
       }

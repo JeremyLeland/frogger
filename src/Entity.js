@@ -38,10 +38,10 @@ export class Entity {
       this.currentTile = tile;
  
       if ( tile.warp ) {
-        this.x = tile.warp.c;
-        this.y = tile.warp.r;
+        this.x = tile.warp.col;
+        this.y = tile.warp.row;
         
-        tile = world.tiles[ tile.warp.c ][ tile.warp.r ];
+        tile = world.tiles[ tile.warp.col ][ tile.warp.row ];
       }
       
       if ( tile.dir ) {
