@@ -51,6 +51,14 @@
 
   let world;
 
+  const GameState = {
+    Playing: 0,
+    Died: 1,
+    Win: 2,
+    Lose: 3
+  };
+  let gameState = GameState.Playing;
+
   const canvas = new AnimatedCanvas(
     TILE_SIZE,
     TILE_SIZE,
@@ -71,10 +79,22 @@
 
     // TODO: Don't constantly set this!
     if ( world.victory ) {
-      showMessage( 'Victory!' );
+      if ( gameState != GameState.Win ) {
+        showMessage( 'Victory!' );
+        gameState = GameState.Win;
+      }
     }
-    if ( world.timeLeft <= 0 ) {
-      showMessage( '⏰ Time’s Up! ⏰' );
+    else if ( world.timeLeft <= 0 ) {
+      if ( gameState != GameState.Died ) {
+        showMessage( '⏰ Time’s Up! ⏰' );
+        gameState = GameState.Died;
+      }
+    }
+    else if ( !world.player.isAlive ) {
+      if ( gameState != GameState.Died ) {
+        showMessage( 'Oops!' );
+        gameState = GameState.Died;
+      }
     }
   }
   
@@ -131,6 +151,7 @@
     // ui.victory.style.visibility = 'hidden';
 
     world = await World.fromFile( path );
+    gameState = GameState.Playing;
     
     canvas.setSize(
       ( world.crop.maxCol - world.crop.minCol + 1 ) * TILE_SIZE,
@@ -164,6 +185,7 @@
     }
     else if ( world.needsRespawn ) {
       world.respawnPlayer();
+      gameState = GameState.Playing;
       messageDiv.style.visibility = 'hidden';
     }
     else {
