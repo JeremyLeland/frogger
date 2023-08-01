@@ -74,14 +74,14 @@
   for ( const tile in Tiles ) {
     const button = document.createElement( 'button' );
     button.textContent = tile;
-    button.brush = Tiles[ tile ];
     button.addEventListener( 'click', ( e ) => { 
-      activeBrush = Tiles[ tile ];
+      activeBrush = tile;
       activeType = 'Tiles';
     } );
     tilesDiv.appendChild( button );
   }
 
+  // TODO: Combine similar code with above?
   const entitiesDiv = document.getElementById( 'entities' );
   entitiesDiv.appendChild( document.createTextNode( 'Entities: ' ) );
   for ( const type in Entities ) {
@@ -157,7 +157,7 @@
 
       if ( mouseButton == 0 ) { 
         if ( activeType == 'Tiles' ) {
-          world.tiles[ mouseCol ][ mouseRow ].tileInfo = activeBrush;
+          world.tiles[ mouseCol ][ mouseRow ].tileInfoKey = activeBrush;
         }
         else if ( activeType == 'Entities' ) {
           world.addEntity( activeBrush, mouseCol, mouseRow );
