@@ -183,6 +183,7 @@ export const Entities = {
     drawEntity: function( ctx ) { drawLog( ctx, start ) }
   },
   LogMiddle: {
+    // TODO: No side lines
     drawEntity: function( ctx ) { drawLog( ctx, middle ) }
   },
   LogEnd: {

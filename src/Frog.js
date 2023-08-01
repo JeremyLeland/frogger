@@ -55,11 +55,6 @@ import { Direction, Entity } from './Entity.js';
 
 export class Frog extends Entity {
   isAlive = true;
-
-  kill() {
-    this.isAlive = false;
-    this.animationTime = 0;   // TODO: death splat animation?
-  }
   
   drawEntity( ctx ) {
     Frog.drawFrog( ctx, this.color, this.animationTime, this.isAlive );

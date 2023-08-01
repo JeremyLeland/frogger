@@ -61,6 +61,7 @@ export class World
   crop;
   maxTime;
   timeLeft = 0;
+  victory = false;
 
   constructor( json ) {
     this.cols = json.cols;
@@ -236,8 +237,8 @@ export class World
       }
     }
 
-    this.entities.filter( e => e.x > col ).forEach( e => e.x += delta );
-    if ( this.player.x > col ) {
+    this.entities.filter( e => e.x >= col ).forEach( e => e.x += delta );
+    if ( this.player.x >= col ) {
       this.player.x += delta;
     }
   }
@@ -271,8 +272,8 @@ export class World
       }
     }
 
-    this.entities.filter( e => e.y > row ).forEach( e => e.y += delta );
-    if ( this.player.y > row ) {
+    this.entities.filter( e => e.y >= row ).forEach( e => e.y += delta );
+    if ( this.player.y >= row ) {
       this.player.y += delta;
     }
   }
@@ -293,7 +294,7 @@ export class World
       x: this.spawnCol, 
       y: this.spawnRow, 
       color: 'green',
-      dir: this.tiles[ this.spawnCol ][ this.spawnRow ].dir
+      dir: this.tiles[ this.spawnCol ][ this.spawnRow ].dir ?? Direction.Right
     } );
   }
 
@@ -305,6 +306,7 @@ export class World
 
     this.entities = this.entities.filter( e => e != entity );
 
+    this.victory = this.entities.filter( e => e.canRescue ).length == 0;
     this.needsRespawn = true;
   }
 

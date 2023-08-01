@@ -15,6 +15,12 @@ export class Player extends Frog {
     this.#jumpQueue.push( dir );
   }
 
+  kill() {
+    this.isAlive = false;
+    this.animationTime = 0;   // TODO: death splat animation?
+    this.#jumpQueue = [];
+  }
+
   update( dt, world ) {
     if ( this.isAlive ) {
       this.x += this.dx * dt;
@@ -36,6 +42,7 @@ export class Player extends Frog {
 
         if ( collidingWith?.canRescue ) {
           world.rescue( collidingWith );
+          this.#jumpQueue = [];
         }
         else if ( collidingWith?.killsPlayer ) {
           world.killPlayer();

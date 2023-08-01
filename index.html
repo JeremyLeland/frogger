@@ -5,8 +5,32 @@
   body { 
     display: flex;
     flex-direction: column;
+    justify-content: center;
+  }
+  #message {
+    position: absolute;
+    font-family: cursive;
+    visibility: hidden;
+  }
+  #ui {
+    bottom: 0%;
+  }
+  #big {
+    font-size: 100;
+    bottom: 50%;
+  }
+  #little {
+    font-size: 20;
+    bottom: 60%;
   }
 </style>
+
+<body>
+  <div id="message">
+    <div id="big">Victory!</div>
+    <div id="little">Press any key to continue</div>
+  </div>
+</body>
 
 <script type="module">
   import { Direction } from './src/Entity.js';
@@ -16,20 +40,27 @@
 
   const TILE_SIZE = 64;
 
-  const world = await World.fromFile( './levels/test1.json' );
+  let world;
 
   const canvas = new AnimatedCanvas(
-    ( world.crop.maxCol - world.crop.minCol + 1 ) * TILE_SIZE,
-    ( world.crop.maxRow - world.crop.minRow + 1 ) * TILE_SIZE,
+    TILE_SIZE,
+    TILE_SIZE,
   );
 
+  // TODO: use html-based UI for this instead?
   const rescuedCanvas = new AnimatedCanvas(
     14 * TILE_SIZE,
     TILE_SIZE,
   );
 
+  const messageDiv = document.getElementById( 'message' );
+
   canvas.update = ( dt ) => {
     world.update( dt );
+
+    if ( world.victory ) {
+      messageDiv.style.visibility = 'visible';
+    }
   }
   
   canvas.draw = ( ctx ) => {
@@ -45,8 +76,6 @@
     rescuedCanvas.redraw();
   };
 
-  canvas.start();
-
   rescuedCanvas.draw = ( ctx ) => {
     ctx.save();
     ctx.scale( TILE_SIZE, TILE_SIZE );
@@ -56,14 +85,58 @@
     ctx.restore();
   }
 
+  //
+  // Levels
+  //
+  let levelIndex = 0;
+  const levels = [
+    './levels/justone.json',
+    './levels/test1.json',
+    './levels/test2.json',
+  ];
+
+  loadLevel( levels[ levelIndex ] );
+
+  async function loadLevel( path ) {
+    canvas.stop();
+    messageDiv.style.visibility = 'hidden';
+    // ui.victory.style.visibility = 'hidden';
+
+    world = await World.fromFile( path );
+    
+    canvas.setSize(
+      ( world.crop.maxCol - world.crop.minCol + 1 ) * TILE_SIZE,
+      ( world.crop.maxRow - world.crop.minRow + 1 ) * TILE_SIZE,
+    );
+    canvas.start();
+  }
+
+  function prevLevel() {
+    levelIndex = Math.max( 0, levelIndex - 1 );
+    loadLevel( levels[ levelIndex ] );
+  }
+  
+  function nextLevel() {
+    levelIndex = Math.min( levels.length - 1, levelIndex + 1 );
+    loadLevel( levels[ levelIndex ] );
+  }
+
+  // 
+  // Movement
+  //
+
   const moveUp =    () => move( Direction.Up );
   const moveDown =  () => move( Direction.Down );
   const moveLeft =  () => move( Direction.Left );
   const moveRight = () => move( Direction.Right );
 
   function move( dir ) {
-    if ( world.needsRespawn ) {
+    if ( world.victory ) {
+      nextLevel();
+    }
+    else if ( world.needsRespawn ) {
       world.respawnPlayer();
+      messageDiv.style.visibility = 'hidden';
     }
     else {
       world.player.move( dir );
@@ -80,6 +153,8 @@
     ArrowDown: moveDown,
     ArrowRight: moveRight,
     KeyG: () => World.DebugGrid = !World.DebugGrid,
+    KeyN: nextLevel,
+    KeyP: prevLevel,
   };
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
