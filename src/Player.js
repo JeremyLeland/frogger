@@ -5,6 +5,8 @@ import { Frog } from './Frog.js';
 const MOVE_SPEED = 0.003;
 const JUMP_TIME = 1 / MOVE_SPEED;
 
+import { Tiles } from './Tiles.js';
+
 export class Player extends Frog {
   #jumpTimeLeft = 0;
   #jumpQueue = [];
@@ -51,7 +53,7 @@ export class Player extends Frog {
           this.y = Math.round( this.y );
 
           const tile = world.getTile( this.x, this.y );
-          if ( !tile || tile.tileInfo.KillsPlayer ) {
+          if ( !tile || Tiles[ tile.tileInfoKey ].KillsPlayer ) {
             world.killPlayer();
           }
         }
@@ -62,7 +64,7 @@ export class Player extends Frog {
     
           const nextTile = world.getTile( Math.round( this.x + dir.x ), Math.round( this.y + dir.y ) );
 
-          if ( nextTile && !nextTile.tileInfo.Solid ) {
+          if ( nextTile && !Tiles[ nextTile.tileInfoKey ].Solid ) {
             this.#jumpTimeLeft += JUMP_TIME;
             
             this.dx = dir.x * MOVE_SPEED;
