@@ -119,10 +119,6 @@ export class World
   }
 
   toJson() {
-    
-    // TODO:
-    // froggies -> Entities
-
     const tileInfoKeys = new Map();
     const jsonTiles = [];
     const jsonDirs = [];
@@ -176,14 +172,22 @@ export class World
 
     let affected = this.entities.find( e => e.x == col && e.y == row );
     
-    // TODO: affected ?= froggies.find (if we ever make these separate)
-
     if ( affected ) {
       affected.dir = dir;
     }
     else if ( this.player.x == col && this.player.y == row ) {
       this.player.dir = dir;
     }
+  }
+
+  setWarp( startCol, startRow, endCol, endRow ) {
+    const start = this.tiles[ startCol ][ startRow ];
+    start.dir = null;
+    start.warp = { col: endCol, row: endRow };
+  }
+
+  clearWarp( col, row ) {
+    this.tiles[ col ][ row ].warp = null;
   }
 
   addEntity( type, col, row ) {
@@ -211,26 +215,31 @@ export class World
     this.tiles.splice( col, 0, 
       Array.from( this.tiles[ col ], e => ( { tileInfoKey: e.tileInfoKey, dir: e.dir } ) ) 
     );
-
-    this.entities.filter( e => e.x > col ).forEach( e => e.x ++ );
-    if ( this.player.x > col ) {
-      this.player.x ++;
-    }
-
-    this.cols ++;
-    this.crop.maxCol ++;
+    this.#adjustColumns( col, +1 );
   }
 
   removeColumn( col ) {
     this.tiles.splice( col, 1 );
+    this.#adjustColumns( col, -1 );
+  }
 
-    this.entities.filter( e => e.x > col ).forEach( e => e.x -- );
-    if ( this.player.x > col ) {
-      this.player.x --;
+  #adjustColumns( col, delta ) {
+    this.cols += delta;
+    this.crop.maxCol += delta;
+
+    for ( let r = 0; r < this.rows; r ++ ) {
+      for ( let c = 0; c < this.cols; c ++ ) {
+        const tile = this.tiles[ c ][ r ];
+        if ( tile.warp?.col >= col ) {
+            tile.warp.col += delta;
+        }
+      }
     }
 
-    this.cols --;
-    this.crop.maxCol --;
+    this.entities.filter( e => e.x > col ).forEach( e => e.x += delta );
+    if ( this.player.x > col ) {
+      this.player.x += delta;
+    }
   }
 
   addRow( row ) {
@@ -239,27 +248,33 @@ export class World
       this.tiles[ col ].splice( row, 0, ( { tileInfoKey: toCopy.tileInfoKey, dir: toCopy.dir } ) );
     }
 
-    this.entities.filter( e => e.y > row ).forEach( e => e.y ++ );
-    if ( this.player.y > row ) {
-      this.player.y ++;
-    }
-
-    this.rows ++;
-    this.crop.maxRow ++;
+    this.#adjustRows( row, +1 );
   }
 
   removeRow( row ) {
     for ( let col = 0; col < this.cols; col ++ ) {
       this.tiles[ col ].splice( row, 1 );
     }
+    this.#adjustRows( row, -1 );
+  }
 
-    this.entities.filter( e => e.y > row ).forEach( e => e.y -- );
-    if ( this.player.y > row ) {
-      this.player.y --;
+  #adjustRows( row, delta ) {
+    this.rows += delta;
+    this.crop.maxRow += delta;
+
+    for ( let r = 0; r < this.rows; r ++ ) {
+      for ( let c = 0; c < this.cols; c ++ ) {
+        const tile = this.tiles[ c ][ r ];
+        if ( tile.warp?.row >= row ) {
+            tile.warp.row += delta;
+        }
+      }
     }
 
-    this.rows --;
-    this.crop.maxRow --;
+    this.entities.filter( e => e.y > row ).forEach( e => e.y += delta );
+    if ( this.player.y > row ) {
+      this.player.y += delta;
+    }
   }
 
   killPlayer() {

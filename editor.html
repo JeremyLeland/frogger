@@ -8,7 +8,6 @@
   <div id="world"></div>
   <div id="ui">
     <div id="tiles"></div>
-    <div id="froggies"></div>
     <div id="entities"></div>
   </div>
 </body>
@@ -68,6 +67,8 @@
   const worldDiv = document.getElementById( 'world' );
   worldDiv.appendChild( worldCanvas.canvas );
 
+  const uiDiv = document.getElementById( 'ui' );
+
   const tilesDiv = document.getElementById( 'tiles' );
   tilesDiv.appendChild( document.createTextNode( 'Tiles: ' ) );
   for ( const tile in Tiles ) {
@@ -81,14 +82,6 @@
     tilesDiv.appendChild( button );
   }
 
-  const froggiesDiv = document.getElementById( 'froggies' );
-  froggiesDiv.appendChild( document.createTextNode( 'Froggies: ' ) );
-  for ( let i = 0; i < Froggy.Count; i ++ ) {
-    const button = document.createElement( 'button' );
-    button.textContent = i;
-    froggiesDiv.appendChild( button );
-  }
-
   const entitiesDiv = document.getElementById( 'entities' );
   entitiesDiv.appendChild( document.createTextNode( 'Entities: ' ) );
   for ( const type in Entities ) {
@@ -96,23 +89,42 @@
     button.textContent = type;
     button.addEventListener( 'click', ( e ) => { 
       activeBrush = type;
-      activeType = 'Cars';
+      activeType = 'Entities';
     } );
     entitiesDiv.appendChild( button );
   }
 
+  const warpButton = document.createElement( 'button' );
+  warpButton.textContent = 'Warp';
+  warpButton.addEventListener( 'click', ( e ) => {
+    activeBrush = 'warp';
+  } );
+  uiDiv.appendChild( warpButton );
+  
+
   let mouseCol = 0, mouseRow = 0, mouseDown = false, mouseButton = 0;
   let lastCol, lastRow;
+  let warpStart;
 
   worldCanvas.canvas.addEventListener( 'mousemove', ( e ) => {
     mouseCol = Math.floor( e.clientX / TILE_SIZE );
     mouseRow = Math.floor( e.clientY / TILE_SIZE );
+
+    if ( mouseDown && activeBrush == 'warp') {
+      // TODO: Draw warp-in-progress?
+    }
+
     doMouse();
   } );
 
   worldCanvas.canvas.addEventListener( 'mousedown', ( e ) => {
     mouseDown = true;
     mouseButton = e.button;
+
+    if ( activeBrush == 'warp' ) {
+      warpStart ??= { col: mouseCol, row: mouseRow };
+    }
+
     doMouse();
   } );
 
@@ -120,6 +132,12 @@
     mouseDown = false;
     mouseButton = null;
     lastCol = lastRow = null;
+
+    if ( activeBrush == 'warp' ) {
+      world.setWarp( warpStart.col, warpStart.row, mouseCol, mouseRow );
+      warpStart = null;
+      redraw();
+    }
   } );
 
   // TODO: Moving entities with Click-Drag?
@@ -134,7 +152,7 @@
         if ( activeType == 'Tiles' ) {
           world.tiles[ mouseCol ][ mouseRow ].tileInfo = activeBrush;
         }
-        else if ( activeType == 'Cars' ) {
+        else if ( activeType == 'Entities' ) {
           world.addEntity( activeBrush, mouseCol, mouseRow );
         }
       }
@@ -166,6 +184,7 @@
 
   function setDirection( dir ) {
     world.setDirection( dir, mouseCol, mouseRow );
+    world.clearWarp( mouseCol, mouseRow );
     redraw();
   }
 
