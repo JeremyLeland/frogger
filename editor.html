@@ -97,9 +97,16 @@
   const warpButton = document.createElement( 'button' );
   warpButton.textContent = 'Warp';
   warpButton.addEventListener( 'click', ( e ) => {
-    activeBrush = 'warp';
+    activeBrush = activeType = 'warp';
   } );
   uiDiv.appendChild( warpButton );
+
+  const playerButton = document.createElement( 'button' );
+  playerButton.textContent = 'Player';
+  playerButton.addEventListener( 'click', ( e ) => {
+    activeBrush = activeType = 'player';
+  } );
+  uiDiv.appendChild( playerButton );
   
 
   let mouseCol = 0, mouseRow = 0, mouseDown = false, mouseButton = 0;
@@ -154,6 +161,10 @@
         }
         else if ( activeType == 'Entities' ) {
           world.addEntity( activeBrush, mouseCol, mouseRow );
+        }
+        else if ( activeBrush == 'player' ) {
+          world.player.x = world.spawnCol = mouseCol;
+          world.player.y = world.spawnRow = mouseRow;
         }
       }
       else if ( mouseButton == 2 ) {
