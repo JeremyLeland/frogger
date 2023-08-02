@@ -47,7 +47,7 @@
   
   import { AnimatedCanvas } from './src/common/AnimatedCanvas.js';
 
-  const TILE_SIZE = 64;
+  const TILE_SIZE = 48;
 
   let world;
 
@@ -66,7 +66,7 @@
 
   // TODO: use html-based UI for this instead?
   const rescuedCanvas = new AnimatedCanvas(
-    14 * TILE_SIZE,
+    15 * TILE_SIZE,
     TILE_SIZE,
   );
   rescuedCanvas.canvas.id = 'ui';
@@ -139,6 +139,8 @@
   let levelIndex = 0;
   const levels = [
     './levels/justone.json',
+    './levels/road.json',
+    './levels/retro.json',
     './levels/test1.json',
     './levels/test2.json',
   ];

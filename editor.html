@@ -20,11 +20,13 @@
   import { Froggy } from './src/Froggy.js';
   import { World } from './src/World.js';
   
-  const TILE_SIZE = 64;
+  const TILE_SIZE = 48;
 
   World.DebugGrid = true;
   
-  const world = await World.fromFile( './levels/test1.json' );
+  // const world = new World( { cols: 15, rows: 15 } );
+  const world = await World.fromFile( './levels/retro.json' );
+  
   const worldCanvas = new Canvas( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
   
   function redraw() {
@@ -114,8 +116,8 @@
   let warpStart;
 
   worldCanvas.canvas.addEventListener( 'mousemove', ( e ) => {
-    mouseCol = Math.floor( e.clientX / TILE_SIZE );
-    mouseRow = Math.floor( e.clientY / TILE_SIZE );
+    mouseCol = Math.floor( e.offsetX / TILE_SIZE );
+    mouseRow = Math.floor( e.offsetY / TILE_SIZE );
 
     if ( mouseDown && activeBrush == 'warp') {
       // TODO: Draw warp-in-progress?

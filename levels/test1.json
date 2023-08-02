@@ -60,16 +60,16 @@
       [ 1, 2 ],
       [ 4, 2 ]
     ],
-    "Red": [ 
+    "RedCar": [ 
       [ 1, 4 ]
     ],
-    "Orange": [
+    "GreenCar": [
       [ 3, 4 ]
     ],
-    "Yellow": [
+    "YellowCar": [
       [ 4, 6 ]
     ],
-    "Blue": [
+    "BlueCar": [
       [ 6, 6 ]
     ]
   },

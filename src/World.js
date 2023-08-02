@@ -32,7 +32,6 @@ function drawDashedArrow( ctx, x1, y1, x2, y2 ) {
 import { Direction } from './Entity.js';
 import { Tiles } from './Tiles.js';
 import { Entity } from './Entity.js';
-import { Froggy } from './Froggy.js';
 import { Entities } from './Entities.js';
 import { Player } from './Player.js';
 
@@ -69,7 +68,7 @@ export class World
 
     this.tiles = Array.from( 
       Array( json.cols ), () => Array.from( 
-        Array( json.rows ), () => ( {} ) ) );
+        Array( json.rows ), () => ( { tileInfoKey: 'Grass' } ) ) );
 
     this.crop = json.crop ? {
       minCol: json.crop[ 0 ],
@@ -83,14 +82,14 @@ export class World
       maxRow: json.rows - 1,
     }
 
-    json.tiles.forEach( ( tileIndex, index ) => {
+    json.tiles?.forEach( ( tileIndex, index ) => {
       const col = index % json.cols;
       const row = Math.floor( index / json.cols );
 
       this.tiles[ col ][ row ].tileInfoKey = json.tileInfoKeys[ tileIndex ];
     } );
 
-    json.directions.forEach( ( dirIndex, index ) => {
+    json.directions?.forEach( ( dirIndex, index ) => {
       if ( dirIndex > 0 ) {
         const col = index % json.cols;
         const row = Math.floor( index / json.cols );
@@ -101,21 +100,21 @@ export class World
       }
     } );
 
-    json.warps.forEach( coords => 
+    json.warps?.forEach( coords => 
       this.tiles[ coords[ 0 ] ][ coords [ 1 ] ].warp = { col: coords[ 2 ], row: coords[ 3 ] }
     );
 
     for ( const type in json.entities ) {
-      json.entities[ type ].forEach( coords => 
+      json.entities[ type ]?.forEach( coords => 
         this.addEntity( type, coords[ 0 ], coords[ 1 ] ) 
       );
     }
 
-    this.maxTime = json.time;
+    this.maxTime = json.time ?? 15000;
     
     this.lives = Array.from( Array( 4 ), () => new Player( { color: 'green', dir: Direction.Up } ) );
     
-    [ this.spawnCol, this.spawnRow ] = json.player;
+    [ this.spawnCol, this.spawnRow ] = json.player ?? [ 0, 0 ];
     this.respawnPlayer();
   }
 
@@ -199,7 +198,7 @@ export class World
         new Entity( {
           x: col,
           y: row,
-          dir: this.tiles[ col ][ row ].dir,
+          dir: this.tiles[ col ][ row ].dir ?? Direction.Right,
         } ), 
         Entities[ type ]
       )
@@ -389,7 +388,7 @@ export class World
 
   drawUI( ctx ) {
     ctx.fillStyle = 'gray';
-    ctx.fillRect( 0, 0, 14, 1 );
+    ctx.fillRect( 0, 0, 15, 1 );
 
     ctx.translate( 0.5, 0.5 );
     
@@ -403,11 +402,11 @@ export class World
     timerGrad.addColorStop( 1, 'green' );
 
     ctx.fillStyle = timerGrad;
-    ctx.fillRect( 0, -0.15, 3 * ( this.timeLeft / this.maxTime ), 0.3 );
+    ctx.fillRect( 0, -0.15, 4 * ( this.timeLeft / this.maxTime ), 0.3 );
     ctx.lineWidth = 0.02;
-    ctx.strokeRect( 0, -0.15, 3, 0.3 );
+    ctx.strokeRect( 0, -0.15, 4, 0.3 );
 
-    ctx.translate( 3 + 4, 0 );
+    ctx.translate( 3 + 5, 0 );
     this.lives.forEach( frog => {
       frog.draw( ctx );
       ctx.translate( -1, 0 );

@@ -191,19 +191,19 @@ export const Entities = {
   },
 
   // Cars
-  Red: {
+  RedCar: {
     killsPlayer: true,
     drawEntity: function( ctx ) { drawCar( ctx, 'red' ) }
   },
-  Orange: {
-    killsPlayer: true,
-    drawEntity: function( ctx ) { drawCar( ctx, 'orange' ) }
-  },
-  Yellow: {
+  YellowCar: {
     killsPlayer: true,
     drawEntity: function( ctx ) { drawCar( ctx, 'yellow' ) }
   },
-  Blue: {
+  GreenCar: {
+    killsPlayer: true,
+    drawEntity: function( ctx ) { drawCar( ctx, 'lime' ) }
+  },
+  BlueCar: {
     killsPlayer: true,
     drawEntity: function( ctx ) { drawCar( ctx, 'cyan' ) }
   }
