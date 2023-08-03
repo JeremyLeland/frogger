@@ -24,8 +24,9 @@
     flex-direction: column;
   }
   #ui {
-    /* position: absolute; */
-    /* bottom: 0%; */
+    /* position: absolute;
+    bottom: 0%; */
+    visibility: hidden;
   }
   #big {
     font-size: 70;
@@ -139,11 +140,9 @@
   //
   let levelIndex = 0;
   const levels = [
-    './levels/justone.json',
-    './levels/road.json',
-    './levels/retro.json',
-    './levels/test1.json',
-    './levels/test2.json',
+    './levels/classic/pond.json',
+    './levels/classic/road.json',
+    './levels/classic/retro.json',
   ];
 
   loadLevel( levels[ levelIndex ] );

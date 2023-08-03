@@ -2,11 +2,6 @@
 <link rel="stylesheet" href="../grid.css">
 
 <script type="module">
-  import { Direction } from '../src/Entity.js';
-  import { Turtle } from '../src/Turtle.js';
-  import { Frog } from '../src/Frog.js';
-  import { Car } from '../src/Car.js';
-  import { Tiles } from '../src/Tiles.js';
   import { World } from '../src/World.js';
   
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
@@ -15,7 +10,7 @@
 
   const TILE_SIZE = 64;
 
-  const world = await World.fromFile( '../levels/test1.json' );
+  const world = await World.fromFile( '../levels/test/test1.json' );
 
   const canvas = new AnimatedCanvas();
 

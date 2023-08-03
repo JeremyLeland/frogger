@@ -24,7 +24,7 @@
 
   World.DebugGrid = true;
   
-  const world = new World( { cols: 15, rows: 15 } );
+  let world = new World( { cols: 15, rows: 15 } );
   
   const worldCanvas = new Canvas( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
   
@@ -109,7 +109,6 @@
   } );
   uiDiv.appendChild( playerButton );
 
-  // TODO: Limit these to valid values based on cols/rows, existing crop
   uiDiv.appendChild( document.createTextNode( 'Crop: ' ) );
 
   const cropUI = [];
@@ -117,10 +116,6 @@
     const numInputUI = document.createElement( 'input' );
     numInputUI.type = 'number';
     numInputUI.style.width = 50;
-    // numInputUI.min = 0;
-    // numInputUI.max = ;
-    
-    // numInputUI.value = world.crop[ val ];
     numInputUI.oninput = e => {
       world.crop[ val ] = parseInt( numInputUI.value );
       updateCropUI();
@@ -131,8 +126,16 @@
 
     uiDiv.appendChild( numInputUI );
   } );
-
   updateCropUI();
+
+  const loadButton = document.createElement( 'input' );
+  loadButton.type = 'file';
+  loadButton.onchange = _ => {
+    const reader = new FileReader();
+    reader.onload = loadLevel;
+    reader.readAsText( loadButton.files[ 0 ] );
+  }
+  uiDiv.appendChild( loadButton );
 
   function updateCropUI() {
     for ( const val in world.crop ) {
@@ -231,8 +234,12 @@
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
 
-    // TODO: Add col/row
-    // TODO: Remove col/row with Shift?
+  function loadLevel( e ) {
+    world = new World( JSON.parse( e.target.result ) );
+    worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
+    updateCropUI();
+    redraw();
+  }
 
   function setDirection( dir ) {
     world.setDirection( dir, mouseCol, mouseRow );

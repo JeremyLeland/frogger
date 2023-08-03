@@ -16,6 +16,13 @@ for ( let i = 1; i <= BUSH_SIDES; i ++ ) {
   );
 }
 
+const LILYPAD_SIZE = 0.4, LILYPAD_ANGLE = 0.3, LILYPAD_OFFSET = 0.15;
+
+const lilypad = new Path2D();
+lilypad.moveTo( LILYPAD_OFFSET, 0 );
+lilypad.arc( 0, 0, LILYPAD_SIZE, LILYPAD_ANGLE, -LILYPAD_ANGLE );
+lilypad.closePath();
+
 const ROAD_LINE_WIDTH = 0.15, ROAD_LINE_LEN = 0.5;
 
 export const Tiles = {
@@ -76,4 +83,19 @@ export const Tiles = {
       ctx.fillRect( -0.5, -0.5, 1, 1 );
     }
   },
+  Lilypad: {
+    draw: ( ctx ) => {
+      Tiles.Water.draw( ctx );
+
+      const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 2 );
+      gradient.addColorStop( 0, 'darkgreen' );
+      gradient.addColorStop( 1, 'black' );
+      ctx.fillStyle = gradient;
+      ctx.fill( lilypad );
+
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 1 / ctx.getTransform().m11;
+      ctx.stroke( lilypad );
+    }
+  }
 }
