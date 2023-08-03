@@ -57,8 +57,6 @@
     ctx.fill();
 
     ctx.restore();
-
-    console.log( JSON.stringify( world.toJson() ) );
   }
 
   redraw();
@@ -128,6 +126,8 @@
   } );
   updateCropUI();
 
+  uiDiv.appendChild( document.createTextNode( 'Load: ' ) );
+
   const loadButton = document.createElement( 'input' );
   loadButton.type = 'file';
   loadButton.onchange = _ => {
@@ -136,6 +136,12 @@
     reader.readAsText( loadButton.files[ 0 ] );
   }
   uiDiv.appendChild( loadButton );
+
+  uiDiv.appendChild( document.createTextNode( 'Save: ' ) );
+  const saveButton = document.createElement( 'button' );
+  saveButton.textContent = 'Save';
+  saveButton.addEventListener( 'click', saveLevel );
+  uiDiv.appendChild( saveButton );
 
   function updateCropUI() {
     for ( const val in world.crop ) {
@@ -239,6 +245,20 @@
     worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
     updateCropUI();
     redraw();
+  }
+
+  function saveLevel() {
+    const filename = 'level.json';
+    const content = JSON.stringify( world.toJson() );
+    const blob = new Blob( [ content ], { type: 'text/plain' } );
+    const link = document.createElement( 'a' );
+    link.download = filename;
+    link.href = window.URL.createObjectURL( blob );
+    document.body.appendChild( link );  // TODO: do we need this?
+    link.click();
+    // should we do this at some point?
+    // document.body.removeChild( link );
+    // window.URL.revokeObjectURL( link.href );
   }
 
   function setDirection( dir ) {
