@@ -59,7 +59,6 @@ export const Tiles = {
     }
   },
   Road: {
-    Speed: 0.002,
     draw: ( ctx, tile, nTile, wTile ) => {
       ctx.fillStyle = '#333';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
@@ -77,7 +76,6 @@ export const Tiles = {
   },
   Water: {
     KillsPlayer: true,
-    Speed: 0.001,
     draw: ( ctx ) => {
       ctx.fillStyle = 'darkblue';
       ctx.fillRect( -0.5, -0.5, 1, 1 );

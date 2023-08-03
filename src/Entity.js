@@ -6,8 +6,6 @@ export const Direction = {
   Right:  { x:  1, y:  0, angle:  0           },
 };
 
-import { Tiles } from './Tiles.js';
-
 export class Entity {
   x = 0;
   y = 0;
@@ -53,10 +51,9 @@ export class Entity {
         }
         this.dir = tile.dir;
 
-        const speed = Tiles[ tile.tileInfoKey ].Speed;
-        if ( speed ) {
-          this.dx = tile.dir.x * speed;
-          this.dy = tile.dir.y * speed;
+        if ( this.Speed ) {
+          this.dx = tile.dir.x * this.Speed;
+          this.dy = tile.dir.y * this.Speed;
         }
       }
     }
