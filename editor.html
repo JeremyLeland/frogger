@@ -24,8 +24,7 @@
 
   World.DebugGrid = true;
   
-  // const world = new World( { cols: 15, rows: 15 } );
-  const world = await World.fromFile( './levels/retro.json' );
+  const world = new World( { cols: 15, rows: 15 } );
   
   const worldCanvas = new Canvas( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
   
@@ -109,6 +108,46 @@
     activeBrush = activeType = 'player';
   } );
   uiDiv.appendChild( playerButton );
+
+  // TODO: Limit these to valid values based on cols/rows, existing crop
+  uiDiv.appendChild( document.createTextNode( 'Crop: ' ) );
+
+  const cropUI = [];
+  [ 'minCol', 'minRow', 'maxCol', 'maxRow' ].forEach( val => {
+    const numInputUI = document.createElement( 'input' );
+    numInputUI.type = 'number';
+    numInputUI.style.width = 50;
+    // numInputUI.min = 0;
+    // numInputUI.max = ;
+    
+    // numInputUI.value = world.crop[ val ];
+    numInputUI.oninput = e => {
+      world.crop[ val ] = parseInt( numInputUI.value );
+      updateCropUI();
+      redraw();
+    };
+
+    cropUI[ val ] = numInputUI;
+
+    uiDiv.appendChild( numInputUI );
+  } );
+
+  updateCropUI();
+
+  function updateCropUI() {
+    for ( const val in world.crop ) {
+      cropUI[ val ].value = world.crop[ val ];
+    }
+
+    cropUI.minCol.min = 0;
+    cropUI.minCol.max = world.crop.maxCol;
+    cropUI.maxCol.min = world.crop.minCol;
+    cropUI.maxCol.max = world.cols - 1;
+    cropUI.minRow.min = 0;
+    cropUI.minRow.max = world.crop.maxRow;
+    cropUI.maxRow.min = world.crop.minRow;
+    cropUI.maxRow.max = world.rows - 1;
+  }
   
 
   let mouseCol = 0, mouseRow = 0, mouseDown = false, mouseButton = 0;
@@ -211,7 +250,9 @@
     if ( cols > 0 )   world.addColumn( mouseCol );
     if ( cols < 0 )   world.removeColumn( mouseCol );
     if ( rows > 0 )   world.addRow( mouseRow ); 
-    if ( rows < 0 )   world.removeRow( mouseRow ); 
+    if ( rows < 0 )   world.removeRow( mouseRow );
+
+    updateCropUI();
 
     worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
     redraw();

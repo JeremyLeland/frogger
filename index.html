@@ -9,6 +9,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
   }
   #message {
     visibility: hidden;
@@ -23,8 +24,8 @@
     flex-direction: column;
   }
   #ui {
-    position: absolute;
-    bottom: 0%;
+    /* position: absolute; */
+    /* bottom: 0%; */
   }
   #big {
     font-size: 70;
@@ -80,7 +81,7 @@
     // TODO: Don't constantly set this!
     if ( world.victory ) {
       if ( gameState != GameState.Win ) {
-        showMessage( 'Victory!' );
+        showMessage( '🏆 Victory! 🏆' );
         gameState = GameState.Win;
       }
     }
