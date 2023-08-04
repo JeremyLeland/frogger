@@ -114,7 +114,7 @@
     const numInputUI = document.createElement( 'input' );
     numInputUI.type = 'number';
     numInputUI.style.width = 50;
-    numInputUI.oninput = e => {
+    numInputUI.oninput = _ => {
       world.crop[ val ] = parseInt( numInputUI.value );
       updateCropUI();
       redraw();
@@ -126,8 +126,19 @@
   } );
   updateCropUI();
 
+  uiDiv.appendChild( document.createTextNode( 'Time: ' ) );
+
+  const timeUI = document.createElement( 'input' );
+  timeUI.type = 'number';
+  timeUI.style.width = 70;
+  timeUI.value = world.maxTime;
+  timeUI.oninput = _ => world.maxTime = parseInt( timeUI.value );
+  uiDiv.appendChild( timeUI );
+  uiDiv.appendChild( document.createTextNode( 'ms' ) );
+  
   uiDiv.appendChild( document.createTextNode( 'Load: ' ) );
 
+  // TODO: Hidden file input, triggered by Load button
   const loadButton = document.createElement( 'input' );
   loadButton.type = 'file';
   loadButton.onchange = _ => {

@@ -114,7 +114,7 @@ export class World
     
     this.lives = Array.from( Array( 4 ), () => new Player( { color: 'green', dir: Direction.Up } ) );
     
-    [ this.spawnCol, this.spawnRow ] = json.player ?? [ 0, 0 ];
+    [ this.spawnCol, this.spawnRow ] = json.player ?? [ Math.floor( this.cols / 2 ), Math.floor( this.rows / 2 ) ];
     this.respawnPlayer();
   }
 
