@@ -343,11 +343,10 @@ export class World
         }
       }
     }
-
-    // TODO: store z-index in object or class?
     
-    this.entities.forEach( entity => entity.draw( ctx ) );
+    this.entities.filter( e => e.zIndex < this.player.zIndex ).forEach( e => e.draw( ctx ) );
     this.player?.draw( ctx );
+    this.entities.filter( e => e.zIndex >= this.player.zIndex ).forEach( e => e.draw( ctx ) );
 
     if ( World.DebugGrid ) {
       ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;

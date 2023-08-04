@@ -143,6 +143,7 @@ export const Entities = {
   // Rides
   Turtle: {
     Speed: 0.001,
+    zIndex: -1,
     drawEntity: function( ctx ) {
       const bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
       bodyGrad.addColorStop( 0, 'green' );
@@ -182,15 +183,18 @@ export const Entities = {
   },
   LogStart: {
     Speed: 0.001,
+    zIndex: -1,
     drawEntity: function( ctx ) { drawLog( ctx, start ) }
   },
   LogMiddle: {
     Speed: 0.001,
+    zIndex: -1,
     // TODO: No side lines
     drawEntity: function( ctx ) { drawLog( ctx, middle ) }
   },
   LogEnd: {
     Speed: 0.001,
+    zIndex: -1,
     drawEntity: function( ctx ) { drawLog( ctx, end ) }
   },
 
@@ -198,21 +202,25 @@ export const Entities = {
   RedCar: {
     Speed: 0.0035,
     killsPlayer: true,
+    zIndex: 1,
     drawEntity: function( ctx ) { drawCar( ctx, 'red' ) }
   },
   YellowCar: {
     Speed: 0.003,
     killsPlayer: true,
+    zIndex: 1,
     drawEntity: function( ctx ) { drawCar( ctx, 'yellow' ) }
   },
   GreenCar: {
     Speed: 0.0025,
     killsPlayer: true,
+    zIndex: 1,
     drawEntity: function( ctx ) { drawCar( ctx, 'lime' ) }
   },
   BlueCar: {
     Speed: 0.002,
     killsPlayer: true,
+    zIndex: 1,
     drawEntity: function( ctx ) { drawCar( ctx, 'dodgerblue' ) }
   }
 };

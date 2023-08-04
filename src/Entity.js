@@ -16,12 +16,10 @@ export class Entity {
   dy = 0;
 
   animationTime = 0;
+  zIndex = 0;
 
   constructor( values ) {
     Object.assign( this, values );
-
-    this.goalX = this.x;
-    this.goalY = this.y;
   }
 
   update( dt, world ) {

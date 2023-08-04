@@ -18,6 +18,7 @@ export class Player extends Frog {
   kill() {
     this.isAlive = false;
     this.animationTime = 0;   // TODO: death splat animation?
+    this.zIndex = 0;
     this.#jumpQueue = [];
   }
 
@@ -29,12 +30,19 @@ export class Player extends Frog {
       if ( this.#jumpTimeLeft > 0 ) {
         this.#jumpTimeLeft -= dt;
         this.animationTime = this.#jumpTimeLeft * MOVE_SPEED;
+        this.zIndex = 2;
       }
 
       if ( this.#jumpTimeLeft <= 0 ) {
         this.#jumpTimeLeft = 0;
+        this.zIndex = 0;
+
         this.dx = 0;
         this.dy = 0;
+
+        //
+        // TODO: Use hitbox from entity (smaller hitbox for rides, larger for cars)
+        //
 
         const collidingWith = world.entities.find( 
           e => Math.abs( e.x - this.x ) < 0.5 && Math.abs( e.y - this.y ) < 0.5 
