@@ -12,7 +12,9 @@ export class Player extends Frog {
   #jumpQueue = [];
 
   move( dir ) {
-    this.#jumpQueue.push( dir );
+    if ( dir != this.#jumpQueue.at( -1 ) ) {
+      this.#jumpQueue.push( dir );
+    }
   }
 
   kill() {
