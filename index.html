@@ -138,7 +138,7 @@
   //
   // Levels
   //
-  let levelIndex = 0;
+  let levelIndex = localStorage.getItem( 'levelIndex' ) ?? 0;
   const levels = [
     './levels/classic/road.json',
     './levels/classic/retro.json',
@@ -170,11 +170,15 @@
 
   function prevLevel() {
     levelIndex = Math.max( 0, levelIndex - 1 );
+    localStorage.setItem( 'levelIndex', levelIndex );
+
     loadLevel( levels[ levelIndex ] );
   }
   
   function nextLevel() {
     levelIndex = Math.min( levels.length - 1, levelIndex + 1 );
+    localStorage.setItem( 'levelIndex', levelIndex );
+    
     loadLevel( levels[ levelIndex ] );
   }
 
