@@ -1,12 +1,13 @@
 export class AnimatedCanvas {
   #reqId;
 
-  constructor( width, height ) {
-    this.canvas = document.createElement( 'canvas' );
+  constructor( width, height, canvas ) {
+    this.canvas = canvas ?? document.createElement( 'canvas' );
     this.canvas.oncontextmenu = () => { return false };
 
-    // TODO: Sometimes don't do this automatically?
-    document.body.appendChild( this.canvas );
+    if ( !canvas ) {
+      document.body.appendChild( this.canvas );
+    }
     
     this.ctx = this.canvas.getContext( '2d' /*, { alpha: false }*/ );
 

@@ -20,7 +20,7 @@
 
   World.DebugGrid = true;
   
-  let world = new World( JSON.parse( localStorage.getItem( 'currentLevel' ) ) ?? { cols: 15, rows: 15 } );
+  let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( { cols: 15, rows: 15 } );
   
   const worldCanvas = new Canvas( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
   

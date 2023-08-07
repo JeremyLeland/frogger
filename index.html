@@ -1,51 +1,31 @@
 <title>Frogger v0.5</title>
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="./grid.css">
+  <link rel="stylesheet" href="./ui.css">
 </head>
 
-<style>
-  body { 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-  }
-  #message {
-    visibility: hidden;
-    position: absolute;
-    
-    font-family: cursive;
-    text-shadow: 2px 2px black;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-  }
-  #ui {
-    /* position: absolute;
-    bottom: 0%; */
-    /* visibility: hidden; */
-  }
-  #big {
-    font-size: 50;
-  }
-  #little {
-    font-size: 20;
-  }
-</style>
-
 <body>
-  <div id="message">
-    <div id="big">Victory!</div>
-    <div id="little">Press any key to continue</div>
+  <div id="wrapper">
+    <div id="game">
+      <canvas id="canvas"></canvas>
+      <div id="paused">Paused</div>
+    </div>
+    <div id="ui">
+      <div id="rescued"></div>
+      <div id="timer">
+        <div id="timerBar">
+          <div id="timeLeft"></div>
+        </div>
+      </div>
+      <div id="lives"></div>
+    </div>
   </div>
 </body>
 
 <script type="module">
   import { Direction } from './src/Entity.js';
   import { World } from './src/World.js';
+  import { UI } from './src/UI.js';
   
   import { AnimatedCanvas } from './src/common/AnimatedCanvas.js';
 
@@ -53,51 +33,16 @@
 
   let world;
 
-  const GameState = {
-    Playing: 0,
-    Died: 1,
-    Win: 2,
-    Lose: 3
-  };
-  let gameState = GameState.Playing;
-
   const canvas = new AnimatedCanvas(
     TILE_SIZE,
     TILE_SIZE,
+    document.getElementById( 'canvas' )
   );
 
-  // TODO: use html-based UI for this instead?
-  const rescuedCanvas = new AnimatedCanvas(
-    15 * TILE_SIZE,
-    TILE_SIZE,
-  );
-  rescuedCanvas.canvas.id = 'ui';
-
-  const messageDiv = document.getElementById( 'message' );
-  const bigDiv = document.getElementById( 'big' );
+  const ui = new UI();
 
   canvas.update = ( dt ) => {
     world.update( dt );
-
-    // TODO: Don't constantly set this!
-    if ( world.victory ) {
-      if ( gameState != GameState.Win ) {
-        showMessage( '🏆 Victory! 🏆' );
-        gameState = GameState.Win;
-      }
-    }
-    else if ( world.timeLeft <= 0 ) {
-      if ( gameState != GameState.Died ) {
-        showMessage( '⏰ Time’s Up! ⏰' );
-        gameState = GameState.Died;
-      }
-    }
-    else if ( !world.player.isAlive ) {
-      if ( gameState != GameState.Died ) {
-        showMessage( 'Oops!' );
-        gameState = GameState.Died;
-      }
-    }
   }
   
   canvas.draw = ( ctx ) => {
@@ -109,31 +54,7 @@
     world.draw( ctx );
 
     ctx.restore();
-
-    rescuedCanvas.redraw();
   };
-
-  rescuedCanvas.draw = ( ctx ) => {
-    ctx.save();
-    ctx.scale( TILE_SIZE, TILE_SIZE );
-
-    world.drawUI( ctx );
-
-    ctx.restore();
-  }
-
-  //
-  // UI
-  //
-
-  function showMessage( text ) {
-    bigDiv.innerText = text;
-    messageDiv.style.visibility = 'visible';
-  }
-
-  function hideMessage() {
-    messageDiv.style.visibility = 'hidden';
-  }
 
   //
   // Levels
@@ -155,11 +76,10 @@
 
   async function loadLevel( path ) {
     canvas.stop();
-    messageDiv.style.visibility = 'hidden';
-    // ui.victory.style.visibility = 'hidden';
 
     world = await World.fromFile( path );
-    gameState = GameState.Playing;
+    ui.reset();
+    world.ui = ui;
     
     canvas.setSize(
       ( world.crop.maxCol - world.crop.minCol + 1 ) * TILE_SIZE,
@@ -178,7 +98,7 @@
   function nextLevel() {
     levelIndex = Math.min( levels.length - 1, levelIndex + 1 );
     localStorage.setItem( 'levelIndex', levelIndex );
-    
+
     loadLevel( levels[ levelIndex ] );
   }
 
@@ -192,16 +112,16 @@
   const moveRight = () => move( Direction.Right );
 
   function move( dir ) {
-    if ( world.victory ) {
-      nextLevel();
-    }
-    else if ( world.needsRespawn ) {
-      world.respawnPlayer();
-      gameState = GameState.Playing;
-      messageDiv.style.visibility = 'hidden';
-    }
-    else {
-      world.player.move( dir );
+    if ( !paused ) {
+      if ( world.victory ) {
+        nextLevel();
+      }
+      else if ( world.needsRespawn ) {
+        world.respawnPlayer();
+      }
+      else {
+        world.player.move( dir );
+      }
     }
   }
 
@@ -217,7 +137,23 @@
     KeyG: () => World.DebugGrid = !World.DebugGrid,
     KeyN: nextLevel,
     KeyP: prevLevel,
+    Space: togglePause
   };
+
+  const pauseUI = document.getElementById( 'paused' );
+  let paused = false;
+  function togglePause() {
+    if ( paused ) {
+      paused = false;
+      pauseUI.style.visibility = 'hidden';
+      canvas.start();
+    }
+    else {
+      paused = true;
+      pauseUI.style.visibility = 'visible';
+      canvas.stop();
+    }
+  }
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
 
