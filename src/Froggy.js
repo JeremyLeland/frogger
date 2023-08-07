@@ -1,13 +1,10 @@
-
-
 import { Frog } from './Frog.js';
 
 export class Froggy extends Frog {
   static Count = 6;
   static Colors = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ];
   
-  size = 0.7;
-  canRescue = true;
+  static Size = 0.7;
   
   constructor( values ) {
     super( values );
@@ -16,4 +13,9 @@ export class Froggy extends Frog {
   }
 
   update( dt, world ) { }     // quick way to avoid animation for now
+
+  static drawFroggy( ctx, colorIndex ) {
+    ctx.scale( Froggy.Size, Froggy.Size );
+    Frog.drawFrog( ctx, Froggy.Colors[ colorIndex ] );
+  }
 }

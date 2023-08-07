@@ -1,6 +1,8 @@
 <style>
   body {
+    background-color: black;
     margin: 0px;
+    color: white;
     font-family: cursive;
     text-shadow: 2px 2px black;
   }
@@ -35,8 +37,23 @@
     width: max-content;
   }
   #timer {
-    background-color: green;
+    background-color: orange;
     width: calc( var( --tileSize ) * 5 );
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #timerBar {
+    border: 2px black solid;
+    /* background: linear-gradient( 90deg, red 0%, yellow 50%, green 100% ); */
+    width: 90%;
+    height: 40%;
+    overflow: hidden;
+  }
+  #timeLeft {
+    background: linear-gradient( 90deg, red 0%, yellow 50%, green 100% );
+    width: 100%;
+    height: 100%;
   }
   #lives {
     background-color: blue;
@@ -49,8 +66,13 @@
     <div id="paused">Paused</div>
   </div>
   <div id="ui">
+    <!-- TODO: Combine these into one div, one item after the other -->
     <div id="rescued"></div>
-    <div id="timer"></div>
+    <div id="timer">
+      <div id="timerBar">
+        <div id="timeLeft"></div>
+      </div>
+    </div>
     <div id="lives"></div>
   </div>
 </body>
@@ -58,6 +80,7 @@
 <script type="module">
   import { Direction } from '../src/Entity.js';
   import { Frog } from '../src/Frog.js';
+  import { Froggy } from '../src/Froggy.js';
   import { Canvas } from '../src/common/Canvas.js';
 
   const froggies = [];
@@ -70,7 +93,7 @@
     froggy.ctx.rotate( Direction.Down.angle );
     froggy.ctx.lineWidth = 1 / 48;
     
-    Frog.drawFrog( froggy.ctx, 'blue' );
+    Froggy.drawFroggy( froggy.ctx, i );
     
     froggies.push( froggy.canvas );
   }
@@ -100,5 +123,12 @@
   froggies[ 2 ].style.visibility = 'hidden';
   players[ 3 ].style.visibility = 'hidden';
 
+  setTimeLeft( 0.75 );
+  
+  function setTimeLeft( ratio ) {
+    const timeLeft = document.getElementById( 'timeLeft' );
+    timeLeft.style.width = `${ 100 * ratio }%`;
+    timeLeft.style.backgroundSize = `${ 100 / ratio }%`;
+  }
 
 </script>
