@@ -5,6 +5,9 @@
     color: white;
     font-family: cursive;
     text-shadow: 2px 2px black;
+
+    display: flex;
+    justify-content: center;
   }
 
   :root {
@@ -33,11 +36,9 @@
     display: flex;
   }
   #rescued {
-    background-color: darkred;
     width: max-content;
   }
   #timer {
-    background-color: orange;
     width: calc( var( --tileSize ) * 5 );
     display: flex;
     justify-content: center;
@@ -45,10 +46,8 @@
   }
   #timerBar {
     border: 2px black solid;
-    /* background: linear-gradient( 90deg, red 0%, yellow 50%, green 100% ); */
-    width: 90%;
-    height: 40%;
-    overflow: hidden;
+    width: 80%;
+    height: 30%;
   }
   #timeLeft {
     background: linear-gradient( 90deg, red 0%, yellow 50%, green 100% );
@@ -56,24 +55,24 @@
     height: 100%;
   }
   #lives {
-    background-color: blue;
-    width: calc( var( --tileSize ) * 4 );
+    width: max-content;
     direction: rtl;
   }
 </style>
 <body>
-  <div id="game">
-    <div id="paused">Paused</div>
-  </div>
-  <div id="ui">
-    <!-- TODO: Combine these into one div, one item after the other -->
-    <div id="rescued"></div>
-    <div id="timer">
-      <div id="timerBar">
-        <div id="timeLeft"></div>
-      </div>
+  <div id="wrapper">
+    <div id="game">
+      <div id="paused">Paused</div>
     </div>
-    <div id="lives"></div>
+    <div id="ui">
+      <div id="rescued"></div>
+      <div id="timer">
+        <div id="timerBar">
+          <div id="timeLeft"></div>
+        </div>
+      </div>
+      <div id="lives"></div>
+    </div>
   </div>
 </body>
 
@@ -94,6 +93,8 @@
     froggy.ctx.lineWidth = 1 / 48;
     
     Froggy.drawFroggy( froggy.ctx, i );
+
+    froggy.canvas.style.visibility = 'hidden';
     
     froggies.push( froggy.canvas );
   }
@@ -120,15 +121,29 @@
   const lives = document.getElementById( 'lives' );
   players.forEach( e => lives.appendChild( e ) );
 
-  froggies[ 2 ].style.visibility = 'hidden';
   players[ 3 ].style.visibility = 'hidden';
 
+  showFroggy( 0 );
+  showFroggy( 3 );
+  showFroggy( 5 );
   setTimeLeft( 0.75 );
+  setLives( 2 );
+  setLives( 3 );
+
+  function showFroggy( index ) {
+    froggies[ index ].style.visibility = 'visible';
+  }
   
   function setTimeLeft( ratio ) {
     const timeLeft = document.getElementById( 'timeLeft' );
     timeLeft.style.width = `${ 100 * ratio }%`;
     timeLeft.style.backgroundSize = `${ 100 / ratio }%`;
+  }
+
+  function setLives( numLives ) {
+    players.forEach( ( player, index ) => 
+      player.style.visibility = index < numLives ? 'visible' : 'hidden' 
+    );
   }
 
 </script>
