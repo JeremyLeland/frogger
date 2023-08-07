@@ -23,7 +23,6 @@ body {
 } */
 
 #game {
-  background-color: aquamarine;
   width:  calc( var( --tileSize ) * 15 );
   height: calc( var( --tileSize ) * 15 );
   position: relative;
