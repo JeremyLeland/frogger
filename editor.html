@@ -20,7 +20,7 @@
 
   World.DebugGrid = true;
   
-  let world = new World( { cols: 15, rows: 15 } );
+  let world = new World( JSON.parse( localStorage.getItem( 'currentLevel' ) ) ?? { cols: 15, rows: 15 } );
   
   const worldCanvas = new Canvas( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
   
@@ -53,6 +53,9 @@
     ctx.fill();
 
     ctx.restore();
+
+    // Save progress
+    localStorage.setItem( 'currentLevel', JSON.stringify( world.toJson() ) );
   }
 
   redraw();
