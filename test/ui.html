@@ -1,11 +1,33 @@
 <style>
   body {
     margin: 0px;
+    font-family: cursive;
+    text-shadow: 2px 2px black;
   }
+
+  :root {
+    --tileSize: 48px;
+  }
+
+  #game {
+    background-color: aquamarine;
+    width:  calc( var( --tileSize ) * 15 );
+    height: calc( var( --tileSize ) * 15 );
+  }
+  #paused {
+    background-color: #000a;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 50;
+  }
+  
   #ui {
     background-color: gray;
     width: min-content;
-    height: 64px;
+    height: var( --tileSize );
     display: flex;
   }
   #rescued {
@@ -14,14 +36,18 @@
   }
   #timer {
     background-color: green;
-    width: calc( 64px * 3 );
+    width: calc( var( --tileSize ) * 5 );
   }
   #lives {
     background-color: blue;
-    width: calc( 64px * 4 );
+    width: calc( var( --tileSize ) * 4 );
+    direction: rtl;
   }
 </style>
 <body>
+  <div id="game">
+    <div id="paused">Paused</div>
+  </div>
   <div id="ui">
     <div id="rescued"></div>
     <div id="timer"></div>
@@ -30,20 +56,49 @@
 </body>
 
 <script type="module">
+  import { Direction } from '../src/Entity.js';
   import { Frog } from '../src/Frog.js';
+  import { Canvas } from '../src/common/Canvas.js';
 
-  const rescued = document.getElementById( 'rescued' );
+  const froggies = [];
 
   for ( let i = 0; i < 6; i ++ ) {
-    const froggy = document.createElement( 'canvas' );
-    froggy.width = froggy.height = 64;
+    const froggy = new Canvas( 48, 48 );
     
-
-    const ctx = froggy.getContext( '2d' );
-    ctx.scale( 64, 64 );
-    new Frog( { x: 0.5, y: 0.5, color: 'blue' } ).draw( ctx );
-
-    rescued.appendChild( froggy );
+    froggy.ctx.scale( 48, 48 );
+    froggy.ctx.translate( 0.5, 0.5 );
+    froggy.ctx.rotate( Direction.Down.angle );
+    froggy.ctx.lineWidth = 1 / 48;
+    
+    Frog.drawFrog( froggy.ctx, 'blue' );
+    
+    froggies.push( froggy.canvas );
   }
+
+  const players = [];
+
+  for ( let i = 0; i < 4; i ++ ) {
+    const player = new Canvas( 48, 48 );
+
+    player.ctx.scale( 48, 48 );
+    player.ctx.translate( 0.5, 0.5 );
+    player.ctx.rotate( Direction.Up.angle );
+    player.ctx.lineWidth = 1 / 48;
+
+    Frog.drawFrog( player.ctx, 'green' );
+
+    players.push( player.canvas );
+
+  }
+  
+  const rescued = document.getElementById( 'rescued' );
+  froggies.forEach( e => rescued.appendChild( e ) );
+  
+  const lives = document.getElementById( 'lives' );
+  players.forEach( e => lives.appendChild( e ) );
+
+  froggies[ 2 ].style.visibility = 'hidden';
+  players[ 3 ].style.visibility = 'hidden';
+
 
 </script>
