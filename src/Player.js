@@ -20,7 +20,7 @@ export class Player extends Frog {
   kill() {
     this.isAlive = false;
     this.animationTime = 0;   // TODO: death splat animation?
-    this.zIndex = 0;
+    this.zIndex = -2;
     this.#jumpQueue = [];
   }
 

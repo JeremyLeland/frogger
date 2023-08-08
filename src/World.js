@@ -317,11 +317,14 @@ export class World
     this.rescued.push( entity );
     this.entities = this.entities.filter( e => e != entity );
 
+    this.lives = Math.min( 4, this.lives + 1 );
+
     this.needsRespawn = true;
     this.victory = this.entities.filter( e => e.canRescue ).length == 0;
 
     if ( this.ui ) {
       this.ui.showFroggy( entity.froggyIndex );
+      this.ui.setLives( this.lives );
 
       if ( this.victory ) {
         this.ui.showVictory();

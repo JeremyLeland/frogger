@@ -22,6 +22,8 @@ body {
   position: absolute;
 } */
 
+#wrapper { position: relative; }
+
 #game {
   width:  calc( var( --tileSize ) * 15 );
   height: calc( var( --tileSize ) * 15 );
@@ -49,6 +51,11 @@ body {
   align-items: center;
   font-size: 50;
   visibility: hidden;
+}
+.bar {
+  background-color: #000a;
+  width: 100%;
+  text-align: center;
 }
 
 #ui {
