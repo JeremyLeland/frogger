@@ -4,10 +4,12 @@
   <link rel="stylesheet" href="./ui.css">
 </head>
 
-<body>
+<body onunload="">
   <div id="wrapper">
     <div id="game">
       <canvas id="canvas"></canvas>
+      <div id="victory" class="message">Victory!</div>
+      <div id="defeat" class="message">Defeat!</div>
       <div id="paused">Paused</div>
     </div>
     <div id="ui">
@@ -115,6 +117,10 @@
     if ( !paused ) {
       if ( world.victory ) {
         nextLevel();
+      }
+      else if ( world.defeat ) {
+        // previousLevel();   // maybe this is too mean
+        loadLevel( levels[ levelIndex ] );  // just restart for now
       }
       else if ( world.needsRespawn ) {
         world.respawnPlayer();

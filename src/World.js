@@ -60,11 +60,13 @@ export class World
   entities = [];
   rescued = [];
   player;
-  needsRespawn = false;
   tiles;
   crop;
   maxTime;
   timeLeft = 0;
+  
+  needsRespawn = false;
+  defeat = false;
   victory = false;
 
   constructor( json ) {
@@ -288,8 +290,13 @@ export class World
     
     // TODO: Lose when lives < 0
     this.lives--;
+    this.defeat = this.lives < 0;
+
     if ( this.ui ) {
       this.ui.setLives( this.lives );
+      if ( this.defeat ) {
+        this.ui.showDefeat();
+      }
     }
   }
 
@@ -308,14 +315,18 @@ export class World
 
   rescue( entity ) {
     this.rescued.push( entity );
-    if ( this.ui ) {
-      this.ui.showFroggy( entity.froggyIndex );
-    }
-
     this.entities = this.entities.filter( e => e != entity );
 
-    this.victory = this.entities.filter( e => e.canRescue ).length == 0;
     this.needsRespawn = true;
+    this.victory = this.entities.filter( e => e.canRescue ).length == 0;
+
+    if ( this.ui ) {
+      this.ui.showFroggy( entity.froggyIndex );
+
+      if ( this.victory ) {
+        this.ui.showVictory();
+      }
+    }
   }
 
   update( dt ) {

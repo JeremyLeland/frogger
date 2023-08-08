@@ -8,6 +8,9 @@ export class UI {
   timeLeft;
   players = [];
 
+  victory;
+  defeat;
+
   constructor() {
     for ( let i = 0; i < 6; i ++ ) {
       const froggy = new Canvas( 48, 48 );
@@ -44,6 +47,9 @@ export class UI {
     
     const lives = document.getElementById( 'lives' );
     this.players.forEach( e => lives.appendChild( e ) );
+
+    this.victory = document.getElementById( 'victory' );
+    this.defeat = document.getElementById( 'defeat' );
   }
 
   reset() {
@@ -52,8 +58,10 @@ export class UI {
     }
 
     this.setTimeLeft( 1 );
-
     this.setLives( 4 );
+
+    this.victory.style.visibility = 'hidden';
+    this.defeat.style.visibility = 'hidden';
   }
 
   showFroggy( index ) {
@@ -69,5 +77,13 @@ export class UI {
     this.players.forEach( ( player, index ) => 
       player.style.visibility = index < numLives ? 'visible' : 'hidden' 
     );
+  }
+
+  showVictory() {
+    this.victory.style.visibility = 'visible';
+  }
+
+  showDefeat() {
+    this.defeat.style.visibility = 'visible';
   }
 }
