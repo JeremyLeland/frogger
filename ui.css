@@ -1,3 +1,8 @@
+@font-face {
+  font-family: 'Silly';
+  src: url('./fonts/MotleyForcesRegular-w1rZ3.ttf');
+}
+
 body {
   margin: 0;
   overscroll-behavior: none; /* Disable Chrome two fingers back/forward swipe */
@@ -7,7 +12,7 @@ body {
   background-color: #222222;
   color: white;
 
-  font-family: cursive;
+  font-family: 'Silly';
   text-shadow: 2px 2px black;
 
   display: flex;
