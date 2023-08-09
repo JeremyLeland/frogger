@@ -4,6 +4,31 @@
   <link rel="stylesheet" href="./ui.css">
 </head>
 
+<style>
+  body {
+    background-color: #222;
+    font-family: cursive;
+    font-size: 16px;
+  }
+
+  svg {
+    position: absolute;
+    top: 0;
+    background-color: grey;
+    width: 100%;
+    height: 100%;
+  }
+
+  path { 
+    fill: transparent;
+  }
+
+  text {
+    fill: url( #gradient );
+    filter: drop-shadow( 0.75px 0.75px 0.1px black );
+  }
+</style>
+
 <body onunload="">
   <div id="wrapper">
     <div id="game">
@@ -25,6 +50,20 @@
       <div id="lives"></div>
     </div>
     <div id="paused" class="center">Paused</div>
+    <svg id="splash" viewBox="0 0 100 100">
+      <defs>
+        <radialGradient id="gradient">
+          <stop offset="5%" stop-color="green" />
+          <stop offset="99%" stop-color="lime" />
+        </radialGradient>
+      </defs>
+      <path id="curve" d="M 25,50 Q 50,25 75,45" />
+      <text>
+        <textPath xlink:href="#curve">
+          Frogger
+        </textPath>
+      </text>
+    </svg>
   </div>
 </body>
 
@@ -78,7 +117,7 @@
     './levels/classic/superhighway.json',
   ];
 
-  loadLevel( levels[ levelIndex ] );
+  const splashUI = document.getElementById( 'splash' );
 
   async function loadLevel( path ) {
     canvas.stop();
@@ -86,12 +125,17 @@
     world = await World.fromFile( path );
     ui.reset();
     world.ui = ui;
+    splashUI.style.visibility = 'hidden';
     
     canvas.setSize(
       ( world.crop.maxCol - world.crop.minCol + 1 ) * TILE_SIZE,
       ( world.crop.maxRow - world.crop.minRow + 1 ) * TILE_SIZE,
     );
     canvas.start();
+  }
+
+  function restartLevel() {
+    loadLevel( levels[ levelIndex ] );
   }
 
   function prevLevel() {
@@ -119,12 +163,15 @@
 
   function move( dir ) {
     if ( !paused ) {
+      if ( !world ) {
+        restartLevel();
+      }
       if ( world.victory ) {
         nextLevel();
       }
       else if ( world.defeat ) {
         // previousLevel();   // maybe this is too mean
-        loadLevel( levels[ levelIndex ] );  // just restart for now
+        restartLevel();  // just restart for now
       }
       else if ( world.needsRespawn ) {
         world.respawnPlayer();

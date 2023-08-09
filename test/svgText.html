@@ -5,19 +5,26 @@
     font-size: 16px;
   }
 
-  path {
+  path { 
     fill: transparent;
   }
 
   text {
-    fill: green;
+    fill: url( #gradient );
+    filter: drop-shadow( 0.75px 0.75px 0.1px black );
   }
 </style>
 
 <svg viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="gradient">
+      <stop offset="5%" stop-color="green" />
+      <stop offset="99%" stop-color="lime" />
+    </radialGradient>
+  </defs>
   <path id="curve" d="M 25,50 Q 50,25 75,45" />
-  <text width="500">
-    <textPath alignment-baseline="top" xlink:href="#curve">
+  <text>
+    <textPath xlink:href="#curve">
       Frogger
     </textPath>
   </text>
