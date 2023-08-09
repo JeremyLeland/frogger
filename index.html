@@ -10,14 +10,12 @@
     font-family: cursive;
     font-size: 16px;
   }
-
+/* 
   svg {
     position: absolute;
     top: 0;
     background-color: grey;
-    width: 100%;
-    height: 100%;
-  }
+  } */
 
   path { 
     fill: transparent;
@@ -26,6 +24,41 @@
   text {
     fill: url( #gradient );
     filter: drop-shadow( 0.75px 0.75px 0.1px black );
+  }
+
+  button {
+    width: 60%;
+
+    color: white;
+    background-color: #00aa00;
+    text-shadow: 1px 1px 1px black;
+
+    font-family: cursive;
+    font-size: 32px;
+    
+    border-radius: 25px;
+    border-top: 2px #00cc00 solid;
+    border-left: 2px #00cc00 solid;
+    border-right: 2px #008800 solid;
+    border-bottom: 2px #008800 solid;
+
+    margin: 16px 0px 16px 0px;
+  }
+
+  .disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  #splash {
+    position: absolute;
+    top: 0;
+    background-color: dimgray;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 </style>
 
@@ -50,20 +83,27 @@
       <div id="lives"></div>
     </div>
     <div id="paused" class="center">Paused</div>
-    <svg id="splash" viewBox="0 0 100 100">
-      <defs>
-        <radialGradient id="gradient">
-          <stop offset="5%" stop-color="green" />
-          <stop offset="99%" stop-color="lime" />
-        </radialGradient>
-      </defs>
-      <path id="curve" d="M 25,50 Q 50,25 75,45" />
-      <text>
-        <textPath xlink:href="#curve">
-          Frogger
-        </textPath>
-      </text>
-    </svg>
+    <div id="splash">
+      <svg viewBox="0 0 85 30">
+        <defs>
+          <radialGradient id="gradient">
+            <stop offset="5%" stop-color="lightgreen" />
+            <stop offset="99%" stop-color="lime" />
+          </radialGradient>
+        </defs>
+        <path id="curve" d="M 10,25 Q 40,0 75,20" />
+        <text font-size="20">
+          <textPath xlink:href="#curve">
+            Frogger
+          </textPath>
+        </text>
+      </svg>
+      <button id="continue">Continue</button>
+      <button id="new">New Game</button>
+      <span>
+        (c) Jeremy Leland <a href="https://github.com/JeremyLeland/frogger">GitHub</a>
+      </span>
+    </div>
   </div>
 </body>
 
@@ -104,7 +144,7 @@
   //
   // Levels
   //
-  let levelIndex = localStorage.getItem( 'levelIndex' ) ?? 0;
+  let levelIndex = 0;
   const levels = [
     './levels/classic/road.json',
     './levels/classic/retro.json',
@@ -134,22 +174,43 @@
     canvas.start();
   }
 
-  function restartLevel() {
+  function startLevel() {
+    localStorage.setItem( 'levelIndex', levelIndex );
     loadLevel( levels[ levelIndex ] );
   }
 
   function prevLevel() {
     levelIndex = Math.max( 0, levelIndex - 1 );
-    localStorage.setItem( 'levelIndex', levelIndex );
-
-    loadLevel( levels[ levelIndex ] );
+    startLevel();
   }
   
   function nextLevel() {
     levelIndex = Math.min( levels.length - 1, levelIndex + 1 );
-    localStorage.setItem( 'levelIndex', levelIndex );
+    startLevel();
+  }
 
-    loadLevel( levels[ levelIndex ] );
+  function continueGame() {
+    levelIndex = localStorage.getItem( 'levelIndex' );
+    startLevel();
+  }
+
+  function newGame() {
+    levelIndex = 0;
+    startLevel();
+  }
+
+  const continueButton = document.getElementById( 'continue' );
+  const newButton = document.getElementById( 'new' );
+  
+  newButton.addEventListener( 'click', newGame );
+
+  if ( localStorage.getItem( 'levelIndex' ) ) {
+    continueButton.addEventListener( 'click', continueGame );
+    continueButton.focus();
+  }
+  else {
+    continueButton.classList.add( 'disabled' );
+    newButton.focus();
   }
 
   // 
@@ -164,14 +225,14 @@
   function move( dir ) {
     if ( !paused ) {
       if ( !world ) {
-        restartLevel();
+        startLevel();
       }
       if ( world.victory ) {
         nextLevel();
       }
       else if ( world.defeat ) {
         // previousLevel();   // maybe this is too mean
-        restartLevel();  // just restart for now
+        startLevel();  // just restart for now
       }
       else if ( world.needsRespawn ) {
         world.respawnPlayer();
