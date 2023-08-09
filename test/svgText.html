@@ -2,7 +2,11 @@
   body {
     background-color: #333;
     font-family: cursive;
-    font-size: 16px;
+    /* font-size: 16px; */
+
+    color: white;
+
+    
   }
 
   path { 
@@ -13,19 +17,57 @@
     fill: url( #gradient );
     filter: drop-shadow( 0.75px 0.75px 0.1px black );
   }
+  
+  #wrapper {
+    position: relative;
+    width: 600;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  button {
+    width: 60%;
+
+    color: white;
+    background-color: #00aa00;
+    text-shadow: 1px 1px 1px black;
+
+    font-family: cursive;
+    font-size: 32px;
+    
+    border-radius: 25px;
+    border-top: 2px #00cc00 solid;
+    border-left: 2px #00cc00 solid;
+    border-right: 2px #008800 solid;
+    border-bottom: 2px #008800 solid;
+  }
+
+  .disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 </style>
 
-<svg viewBox="0 0 100 100">
-  <defs>
-    <radialGradient id="gradient">
-      <stop offset="5%" stop-color="green" />
-      <stop offset="99%" stop-color="lime" />
-    </radialGradient>
-  </defs>
-  <path id="curve" d="M 25,50 Q 50,25 75,45" />
-  <text>
-    <textPath xlink:href="#curve">
-      Frogger
-    </textPath>
-  </text>
-</svg>
+<div id="wrapper">
+  <svg viewBox="0 0 85 30">
+    <defs>
+      <radialGradient id="gradient">
+        <stop offset="5%" stop-color="lightgreen" />
+        <stop offset="99%" stop-color="lime" />
+      </radialGradient>
+    </defs>
+    <path id="curve" d="M 10,25 Q 40,0 75,20" />
+    <text font-size="20">
+      <textPath xlink:href="#curve">
+        Frogger
+      </textPath>
+    </text>
+  </svg>
+  <button class="disabled">Continue</button>
+  <button>New Game</button>
+  <span>
+    (c) Jeremy Leland <a href="https://github.com/JeremyLeland/frogger">GitHub</a>
+  </span>
+</div>
