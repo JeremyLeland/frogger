@@ -8,12 +8,11 @@
   body {
     font-size: 16px;
   }
-/* 
+
   svg {
-    position: absolute;
-    top: 0;
-    background-color: grey;
-  } */
+    margin-top: 20%;
+    margin-bottom: 10%;
+  }
 
   path { 
     fill: transparent;
@@ -40,7 +39,7 @@
     border-right: 2px #008800 solid;
     border-bottom: 2px #008800 solid;
 
-    margin: 16px 0px 16px 0px;
+    margin: 4% 0% 4% 0%;
   }
 
   .disabled {
@@ -98,7 +97,7 @@
       </svg>
       <button id="continue">Continue</button>
       <button id="new">New Game</button>
-      <span>
+      <span style="position: absolute; bottom: 0">
         (c) Jeremy Leland <a href="https://github.com/JeremyLeland/frogger">GitHub</a>
       </span>
     </div>
@@ -183,12 +182,15 @@
   }
   
   function nextLevel() {
+    console.log( 'next level' );
+    console.log( 'levelIndex was ' + levelIndex );
     levelIndex = Math.min( levels.length - 1, levelIndex + 1 );
+    console.log( 'levelIndex now ' + levelIndex );
     startLevel();
   }
 
   function continueGame() {
-    levelIndex = localStorage.getItem( 'levelIndex' );
+    levelIndex = parseInt( localStorage.getItem( 'levelIndex' ) );
     startLevel();
   }
 
