@@ -42,12 +42,8 @@ export class Player extends Frog {
         this.dx = 0;
         this.dy = 0;
 
-        //
-        // TODO: Use hitbox from entity (smaller hitbox for rides, larger for cars)
-        //
-
         const collidingWith = world.entities.find( 
-          e => Math.abs( e.x - this.x ) < 0.5 && Math.abs( e.y - this.y ) < 0.5 
+          e => Math.abs( e.x - this.x ) < e.hitDist && Math.abs( e.y - this.y ) < e.hitDist
         );
 
         if ( collidingWith?.canRescue ) {

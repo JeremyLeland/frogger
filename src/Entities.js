@@ -59,6 +59,7 @@ detail.lineTo( DETAIL_W_1, 0 );
 
 const CAR_WIDTH = 0.7;  // as opposed to length (not necessarily in x axis)
 const CORNER_RADIUS = 0.3;
+const CAR_HIT = 0.75;
 
 const body = new Path2D();
 body.roundRect( -0.5, -0.5 * CAR_WIDTH, 1, CAR_WIDTH, CORNER_RADIUS );
@@ -68,7 +69,6 @@ windshield.roundRect( -0.35, -0.3, 0.65, 0.6, 0.2 );
 
 const roof = new Path2D();
 roof.roundRect( -0.25, -0.3, 0.4, 0.6, 0.2 );
-
 
 function drawCar( ctx, color ) {
   const bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
@@ -95,6 +95,7 @@ export const Entities = {
   // Rides
   Turtle: {
     Speed: 0.001,
+    hitDist: 0.5,   // if this is < 0.5, you can fall between turtles
     zIndex: -1,
     drawEntity: function( ctx ) {
       const bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
@@ -135,16 +136,19 @@ export const Entities = {
   },
   LogStart: {
     Speed: 0.001,
+    hitDist: 0.5,
     zIndex: -1,
     drawEntity: Log.drawStart
   },
   LogMiddle: {
     Speed: 0.001,
+    hitDist: 0.5,
     zIndex: -1,
     drawEntity: Log.drawMiddle
   },
   LogEnd: {
     Speed: 0.001,
+    hitDist: 0.5,
     zIndex: -1,
     drawEntity: Log.drawEnd
   },
@@ -153,24 +157,28 @@ export const Entities = {
   RedCar: {
     Speed: 0.0035,
     killsPlayer: true,
+    hitDist: CAR_HIT,
     zIndex: 1,
     drawEntity: function( ctx ) { drawCar( ctx, 'red' ) }
   },
   YellowCar: {
     Speed: 0.003,
     killsPlayer: true,
+    hitDist: CAR_HIT,
     zIndex: 1,
     drawEntity: function( ctx ) { drawCar( ctx, 'yellow' ) }
   },
   GreenCar: {
     Speed: 0.0025,
     killsPlayer: true,
+    hitDist: CAR_HIT,
     zIndex: 1,
     drawEntity: function( ctx ) { drawCar( ctx, 'lime' ) }
   },
   BlueCar: {
     Speed: 0.002,
     killsPlayer: true,
+    hitDist: CAR_HIT,
     zIndex: 1,
     drawEntity: function( ctx ) { drawCar( ctx, 'dodgerblue' ) }
   }
@@ -180,6 +188,7 @@ export const Entities = {
   Entities[ 'Froggy' + ( index + 1 ) ] = {
     size: 0.7,
     canRescue: true,
+    hitDist: 0.5,
     froggyIndex: index,
     drawEntity: function( ctx ) { Frog.drawFrog( ctx, color ) }
   }
