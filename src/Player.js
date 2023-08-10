@@ -78,8 +78,11 @@ export class Player extends Frog {
         if ( this.#jumpQueue.length > 0 ) {
           const dir = this.#jumpQueue.shift();
           this.dir = dir;
-    
-          const nextTile = world.getTile( Math.round( this.x + dir.x ), Math.round( this.y + dir.y ) );
+
+          // Take into account ride speed while determining next tile
+          const nextX = this.x + dir.x + ( this.ride?.dx ?? 0 ) * JUMP_TIME;
+          const nextY = this.y + dir.y + ( this.ride?.dy ?? 0 ) * JUMP_TIME;
+          const nextTile = world.getTile( Math.round( nextX ), Math.round( nextY ) );
 
           if ( nextTile && !Tiles[ nextTile.tileInfoKey ].Solid ) {
             this.#jumpTimeLeft += JUMP_TIME;
