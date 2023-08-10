@@ -1,6 +1,6 @@
 
 
-import { Frog } from './Frog.js';
+import { Death, Frog } from './Frog.js';
 
 const MOVE_SPEED = 0.003;
 const JUMP_TIME = 1 / MOVE_SPEED;
@@ -17,8 +17,9 @@ export class Player extends Frog {
     }
   }
 
-  kill() {
+  kill( mannerOfDeath ) {
     this.isAlive = false;
+    this.mannerOfDeath = mannerOfDeath;
     this.animationTime = 0;   // TODO: death splat animation?
     this.zIndex = -2;
     this.#jumpQueue = [];
@@ -51,7 +52,7 @@ export class Player extends Frog {
           this.#jumpQueue = [];
         }
         else if ( collidingWith?.killsPlayer ) {
-          world.killPlayer();
+          world.killPlayer( Death.Squished );
         }
         else {
           this.ride = collidingWith;
@@ -62,12 +63,16 @@ export class Player extends Frog {
           this.y = this.ride.y;
         }
         else {
-          this.x = Math.round( this.x );
-          this.y = Math.round( this.y );
+          const tileX = Math.round( this.x );
+          const tileY = Math.round( this.y );
 
-          const tile = world.getTile( this.x, this.y );
+          const tile = world.getTile( tileX, tileY );
           if ( !tile || Tiles[ tile.tileInfoKey ].KillsPlayer ) {
-            world.killPlayer();
+            world.killPlayer( Death.Drowned );
+          }
+          else {
+            this.x = tileX;
+            this.y = tileY;
           }
         }
 

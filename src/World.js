@@ -33,6 +33,7 @@ import { Direction } from './Entity.js';
 import { Tiles } from './Tiles.js';
 import { Entity } from './Entity.js';
 import { Entities } from './Entities.js';
+import { Death } from './Frog.js';
 import { Player } from './Player.js';
 
 const DirArray = [
@@ -284,8 +285,8 @@ export class World
     }
   }
 
-  killPlayer() {
-    this.player.kill();
+  killPlayer( mannerOfDeath ) {
+    this.player.kill( mannerOfDeath );
     this.needsRespawn = true;
     
     // TODO: Lose when lives < 0
@@ -343,7 +344,7 @@ export class World
       }
       
       if ( this.timeLeft == 0 ) {
-        this.killPlayer();
+        this.killPlayer( Death.Expired );
       }
     }
   }
