@@ -52,7 +52,13 @@ export class Player extends Frog {
           this.#jumpQueue = [];
         }
         else if ( collidingWith?.killsPlayer ) {
-          world.killPlayer( Death.Squished );
+          if ( ( this.dir.x == 0 && collidingWith.dir.x == 0 ) ||
+               ( this.dir.y == 0 && collidingWith.dir.y == 0 ) ) {
+            world.killPlayer( Death.SquishedHorizontal );
+          }
+          else {
+            world.killPlayer( Death.SquishedVertical );
+          }
         }
         else {
           this.ride = collidingWith;

@@ -4,6 +4,15 @@ const FOOT_SHIFT = -0.1;
 
 const BODY_SIZE = 0.4;
 
+const body = new Path2D();
+body.arc( 0, 0, BODY_SIZE, 0, Math.PI * 2 );
+
+const bodySquishHoriz = new Path2D();
+bodySquishHoriz.ellipse( 0, 0, BODY_SIZE + 0.1, BODY_SIZE, 0, 0, Math.PI * 2 );
+
+const bodySquishVert = new Path2D();
+bodySquishVert.ellipse( 0, 0, BODY_SIZE, BODY_SIZE + 0.1, 0, 0, Math.PI * 2 );
+
 const EYE_OFFSET_X = 0.18, EYE_OFFSET_Y = 0.17;
 const EYE_SIZE = 0.1;
 
@@ -34,8 +43,9 @@ import { Direction, Entity } from './Entity.js';
 
 export const Death = {
   Expired: 0,
-  Squished: 1,
-  Drowned: 2,
+  Drowned: 1,
+  SquishedHorizontal: 2,
+  SquishedVertical: 3,
 };
 
 export class Frog extends Entity {
@@ -59,8 +69,8 @@ export class Frog extends Entity {
 
     [ -1, 1 ].forEach( dir => {
       [ -1, 1 ].forEach( side => {
-        const x = dir * FOOT_OFFSET_X + FOOT_SHIFT + footOffset;
-        const y = side * ( FOOT_OFFSET_Y + ( mannerOfDeath == Death.Squished ? 0.1 : 0 ) );
+        const x = dir * ( FOOT_OFFSET_X + ( mannerOfDeath == Death.SquishedHorizontal ? 0.1 : 0 ) ) + FOOT_SHIFT + footOffset;
+        const y = side * ( FOOT_OFFSET_Y + ( mannerOfDeath == Death.SquishedVertical ? 0.1 : 0 ) );
 
         feet.moveTo( x,             y - FOOT_SIZE / 2 );
         feet.lineTo( x + FOOT_SIZE, y - FOOT_SIZE     );
@@ -80,8 +90,8 @@ export class Frog extends Entity {
 
     [ -1, 1 ].forEach( dir => {
       [ -1, 1 ].forEach( side => {
-        const footX = dir * FOOT_OFFSET_X + FOOT_SHIFT + footOffset;
-        const footY = FOOT_OFFSET_Y + ( mannerOfDeath == Death.Squished ? 0.1 : 0 );
+        const footX = dir * ( FOOT_OFFSET_X + ( mannerOfDeath == Death.SquishedHorizontal ? 0.1 : 0 ) ) + FOOT_SHIFT + footOffset;
+        const footY = FOOT_OFFSET_Y + ( mannerOfDeath == Death.SquishedVertical ? 0.1 : 0 );
 
         // TODO: Change magic numbers to named constants
         legs.moveTo( 0, side * ( footY - 0.2 ) );
@@ -102,13 +112,19 @@ export class Frog extends Entity {
     ctx.fill( legs );
     ctx.stroke( legs );
 
-    // TODO: Squish horizontal vs squish vertical (with ellipse instead of larger circle)
-    const body = new Path2D();
-    body.arc( 0, 0, BODY_SIZE + ( mannerOfDeath == Death.Squished ? 0.05 : 0 ), 0, Math.PI * 2 );
-
-    ctx.fill( body );
-    ctx.stroke( body );
-
+    if ( mannerOfDeath == Death.SquishedHorizontal ) {
+      ctx.fill( bodySquishHoriz );
+      ctx.stroke( bodySquishHoriz );
+    }
+    else if ( mannerOfDeath == Death.SquishedVertical ) {
+      ctx.fill( bodySquishVert );
+      ctx.stroke( bodySquishVert );
+    }
+    else {
+      ctx.fill( body );
+      ctx.stroke( body );
+    }
+      
     if ( isAlive ) {
       ctx.fillStyle = 'white';
       ctx.fill( sclera );
