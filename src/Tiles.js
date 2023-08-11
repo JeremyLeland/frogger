@@ -63,7 +63,7 @@ export const Tiles = {
       ctx.fillStyle = '#333';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
 
-      if ( tile.dir ) {
+      if ( tile?.dir ) {
         if ( nTile && nTile.tileInfoKey == 'Road' && tile.dir != Direction.Up && nTile.dir && nTile.dir != Direction.Down ) {
           ctx.fillStyle = 'yellow';
           ctx.fillRect( -ROAD_LINE_LEN / 2, -0.5 - ROAD_LINE_WIDTH / 2, ROAD_LINE_LEN, ROAD_LINE_WIDTH );

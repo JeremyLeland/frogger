@@ -71,7 +71,18 @@
   tilesDiv.appendChild( document.createTextNode( 'Tiles: ' ) );
   for ( const tile in Tiles ) {
     const button = document.createElement( 'button' );
-    button.textContent = tile;
+
+    const icon = new Canvas( 48, 48 );
+    icon.ctx.scale( 48, 48 );
+    icon.ctx.translate( 0.5, 0.5 );
+    Tiles[ tile ].draw( icon.ctx );
+    button.appendChild( icon.canvas );
+    button.appendChild( document.createElement( 'br' ) );
+
+    const text = document.createElement( 'div' );
+    text.innerHTML = tile;
+    button.appendChild( text );
+
     button.addEventListener( 'click', ( e ) => { 
       activeBrush = tile;
       activeType = 'Tiles';
@@ -82,11 +93,23 @@
   // TODO: Combine similar code with above?
   const entitiesDiv = document.getElementById( 'entities' );
   entitiesDiv.appendChild( document.createTextNode( 'Entities: ' ) );
-  for ( const type in Entities ) {
+  for ( const id in Entities ) {
     const button = document.createElement( 'button' );
-    button.textContent = type;
+
+    const icon = new Canvas( 48, 48 );
+    icon.ctx.scale( 48, 48 );
+    icon.ctx.translate( 0.5, 0.5 );
+    icon.ctx.lineWidth = 1 / 48;
+    Entities[ id ].drawEntity( icon.ctx );
+    button.appendChild( icon.canvas );
+    button.appendChild( document.createElement( 'br' ) );
+
+    const text = document.createElement( 'div' );
+    text.innerHTML = id;
+    button.appendChild( text );
+
     button.addEventListener( 'click', ( e ) => { 
-      activeBrush = type;
+      activeBrush = id;
       activeType = 'Entities';
     } );
     entitiesDiv.appendChild( button );
