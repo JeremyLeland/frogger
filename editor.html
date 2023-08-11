@@ -158,23 +158,35 @@
   uiDiv.appendChild( timeUI );
   uiDiv.appendChild( document.createTextNode( 'ms' ) );
   
-  uiDiv.appendChild( document.createTextNode( 'Load: ' ) );
 
-  // TODO: Hidden file input, triggered by Load button
-  const loadButton = document.createElement( 'input' );
-  loadButton.type = 'file';
-  loadButton.onchange = _ => {
+  const fileDiv = document.createElement( 'div' );
+
+  const clearButton = document.createElement( 'button' );
+  clearButton.textContent = 'Clear';
+  clearButton.addEventListener( 'click', clearLevel );
+  fileDiv.appendChild( clearButton );
+  
+  const loadInput = document.createElement( 'input' );
+  loadInput.type = 'file';
+  loadInput.onchange = _ => {
     const reader = new FileReader();
     reader.onload = loadLevel;
-    reader.readAsText( loadButton.files[ 0 ] );
+    reader.readAsText( loadInput.files[ 0 ] );
   }
-  uiDiv.appendChild( loadButton );
 
-  uiDiv.appendChild( document.createTextNode( 'Save: ' ) );
+  const loadButton = document.createElement( 'button' );
+  loadButton.textContent = 'Load';
+  loadButton.addEventListener( 'click', () => {
+    loadInput.click();
+  } );
+  fileDiv.appendChild( loadButton );
+
   const saveButton = document.createElement( 'button' );
   saveButton.textContent = 'Save';
   saveButton.addEventListener( 'click', saveLevel );
-  uiDiv.appendChild( saveButton );
+  fileDiv.appendChild( saveButton );
+
+  uiDiv.appendChild( fileDiv );
 
   function updateCropUI() {
     for ( const val in world.crop ) {
@@ -273,11 +285,16 @@
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
 
+  
+
+  function clearLevel() {
+    world = new World( { cols: 17, rows: 17, crop: [ 1, 1, 15, 15 ] } );
+    levelResized();
+  }
+
   function loadLevel( e ) {
-    world = new World( JSON.parse( e.target.result ) );
-    worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
-    updateCropUI();
-    redraw();
+    world = World.fromString( e.target.result );
+    levelResized();
   }
 
   function saveLevel() {
@@ -312,11 +329,13 @@
     if ( rows > 0 )   world.addRow( mouseRow ); 
     if ( rows < 0 )   world.removeRow( mouseRow );
 
-    updateCropUI();
-
-    worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
-    redraw();
+    levelResized();
   }
   
+  function levelResized() {
+    worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
+    updateCropUI();
+    redraw();
+  }
 
 </script>
