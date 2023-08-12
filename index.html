@@ -124,18 +124,20 @@
   const ui = new UI();
 
   canvas.update = ( dt ) => {
-    world.update( dt );
+    world?.update( dt );
   }
   
   canvas.draw = ( ctx ) => {
-    ctx.save();
-    ctx.scale( TILE_SIZE, TILE_SIZE );
-
-    ctx.translate( -world.crop.minCol, -world.crop.minRow );
-
-    world.draw( ctx );
-
-    ctx.restore();
+    if ( world ) {
+      ctx.save();
+      ctx.scale( TILE_SIZE, TILE_SIZE );
+      
+      ctx.translate( -world.crop.minCol, -world.crop.minRow );
+      
+      world.draw( ctx );
+      
+      ctx.restore();
+    }
   };
 
   //
@@ -182,10 +184,7 @@
   }
   
   function nextLevel() {
-    console.log( 'next level' );
-    console.log( 'levelIndex was ' + levelIndex );
     levelIndex = Math.min( levels.length - 1, levelIndex + 1 );
-    console.log( 'levelIndex now ' + levelIndex );
     startLevel();
   }
 
@@ -262,17 +261,30 @@
   let paused = false;
   function togglePause() {
     if ( paused ) {
-      paused = false;
-      pauseUI.style.visibility = 'hidden';
-      canvas.start();
+      resume();
     }
     else {
+      pause();
+    }
+  }
+  function pause() {
+    if ( !paused ) {
       paused = true;
       pauseUI.style.visibility = 'visible';
       canvas.stop();
     }
   }
+  function resume() {
+    if ( paused ) {
+      paused = false;
+      pauseUI.style.visibility = 'hidden';
+      canvas.start();
+    }
+  }
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
+
+  window.addEventListener( 'blur', pause );
+  window.addEventListener( 'focus', resume );
 
 </script>
