@@ -349,27 +349,42 @@ export class World
     }
   }
 
-  draw( ctx ) {
+  draw( ctx, showCropped = false ) {
     ctx.save();
     ctx.translate( 0.5, 0.5 );
 
-    // TODO: Maybe explicitly leave out cropped tiles sometime?
-    // for ( let r = this.crop.minRow; r <= this.crop.maxRow; r ++ ) {
-    //   for ( let c = this.crop.minCol; c <= this.crop.maxCol; c ++ ) {
-    for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
-      for ( let c = 0; c < this.tiles.length; c ++ ) {
+    if ( !showCropped ) {
+      ctx.translate( -this.crop.minCol, -this.crop.minRow );
+    }
+
+    // Was trying to not draw cropped tiles, but that threw off positioning...
+    const startCol = 0; //showCropped ? 0 : this.crop.minCol;
+    const startRow = 0; // showCropped ? 0 : this.crop.minRow;
+    const endCol = this.cols - 1; //showCropped ? this.cols - 1 : this.crop.maxCol;
+    const endRow = this.rows - 1; //showCropped ? this.rows - 1 : this.crop.maxRow;
+
+    ctx.save();
+
+    for ( let r = startRow; r <= endRow; r ++ ) {
+      ctx.save();
+      
+      for ( let c = startCol; c <= endCol; c ++ ) {
         const tile = this.tiles[ c ][ r ];
         const nTile = r > 0 ? this.tiles[ c ][ r - 1 ] : null;
         const wTile = c > 0 ? this.tiles[ c - 1 ][ r ] : null;
-
+        
         if ( tile.tileInfoKey ) {
-          ctx.save();
-          ctx.translate( c, r );
           Tiles[ tile.tileInfoKey ].draw( ctx, tile, nTile, wTile );
-          ctx.restore();
         }
+
+        ctx.translate( 1, 0 );
       }
+
+      ctx.restore();
+      ctx.translate( 0, 1 );
     }
+
+    ctx.restore();
     
     this.entities.filter( e => e.zIndex < this.player.zIndex ).forEach( e => e.draw( ctx ) );
     this.player?.draw( ctx );
@@ -381,8 +396,8 @@ export class World
       ctx.textAlign = 'center';
       ctx.font = '10px Arial';      // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
       
-      for ( let r = 0; r < this.tiles[ 0 ].length; r ++ ) {
-        for ( let c = 0; c < this.tiles.length; c ++ ) {
+      for ( let r = startRow; r <= endRow; r ++ ) {
+        for ( let c = startCol; c <= endCol; c ++ ) {
           const tile = this.tiles[ c ][ r ];
 
           ctx.save();
@@ -410,5 +425,28 @@ export class World
     }
 
     ctx.restore();
+
+    if ( showCropped ) {
+      // TODO: Precalculate this path? Would need to update whenever resized
+      ctx.beginPath();
+      ctx.moveTo( this.crop.minCol,     this.crop.minRow     );
+      ctx.lineTo( this.crop.minCol,     this.crop.maxRow + 1 );
+      ctx.lineTo( this.crop.maxCol + 1, this.crop.maxRow + 1 );
+      ctx.lineTo( this.crop.maxCol + 1, this.crop.minRow     );
+      ctx.lineTo( this.crop.minCol,     this.crop.minRow     );
+      
+      ctx.setLineDash( [ 0.1, 0.1 ] );
+      ctx.lineWidth = 0.05;
+      ctx.stroke();
+      
+      ctx.lineTo( 0, 0 );
+      ctx.lineTo( this.cols, 0 );
+      ctx.lineTo( this.cols, this.rows );
+      ctx.lineTo( 0, this.rows );
+      ctx.lineTo( 0, 0 );
+      
+      ctx.fillStyle = "#000b";
+      ctx.fill();
+    }
   }
 }
