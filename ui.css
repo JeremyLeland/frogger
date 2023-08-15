@@ -33,12 +33,15 @@ body {
   align-items: center;
 }
 
-#wrapper { position: relative; }
+#wrapper {
+  position: relative;
+}
 
 #game {
   width:  calc( var( --tileSize ) * 15 );
   height: calc( var( --tileSize ) * 15 );
   position: relative;
+  overflow: hidden;
 }
 #paused {
   position: absolute;

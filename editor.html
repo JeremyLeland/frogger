@@ -26,6 +26,7 @@
 </body>
 
 <script type="module">
+  import * as Constants from './src/Constants.js';
   import { Canvas } from './src/common/Canvas.js';
   import { Tiles } from './src/Tiles.js';
   import { Direction } from './src/Entity.js';
@@ -35,15 +36,16 @@
 
   import { FroggerCanvas } from './src/FroggerCanvas.js';
   
-  const TILE_SIZE = 48;
 
   World.DebugGrid = true;
   
-  let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( { cols: 15, rows: 15 } );
-  
-  const worldCanvas = new FroggerCanvas( world, document.getElementById( 'canvas' ) );
+
+  const worldCanvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
   worldCanvas.showCropped = true;
 
+  let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( { cols: 15, rows: 15 } );
+  worldCanvas.setWorld( world );
+  
   
   function redraw() {
     worldCanvas.redraw();
@@ -197,8 +199,8 @@
   let warpStart;
 
   worldCanvas.canvas.addEventListener( 'mousemove', ( e ) => {
-    mouseCol = Math.floor( e.offsetX / TILE_SIZE );
-    mouseRow = Math.floor( e.offsetY / TILE_SIZE );
+    mouseCol = Math.floor( e.offsetX / Constants.TileSize );
+    mouseRow = Math.floor( e.offsetY / Constants.TileSize );
 
     if ( mouseDown && activeBrush == 'warp') {
       // TODO: Draw warp-in-progress?
@@ -277,20 +279,20 @@
 
   function clearLevel() {
     world = new World( { cols: 17, rows: 17, crop: [ 1, 1, 15, 15 ] } );
-    worldCanvas.world = world;
+    worldCanvas.setWorld( world );
     levelResized();
   }
 
   function loadLevel( e ) {
     world = World.fromString( e.target.result );
-    worldCanvas.world = world;
+    worldCanvas.setWorld( world );
     levelResized();
   }
 
   function restoreLevel() {
     worldCanvas.stop();
     world = World.fromString( localStorage.getItem( 'currentLevel' ) );
-    worldCanvas.world = world;
+    worldCanvas.setWorld( world );
     redraw();
   }
 
@@ -330,7 +332,7 @@
   }
   
   function levelResized() {
-    worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
+    worldCanvas.setSize( world.cols * Constants.TileSize, world.rows * Constants.TileSize );
     updateCropUI();
     redraw();
   }

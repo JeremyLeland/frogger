@@ -206,7 +206,7 @@ export class World
         new Entity( {
           x: col,
           y: row,
-          dir: this.tiles[ col ][ row ].dir ?? Direction.Right,
+          dir: this.tiles[ col ]?.[ row ]?.dir ?? Direction.Right,
         } ), 
         Entities[ type ]
       )

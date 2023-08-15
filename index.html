@@ -109,36 +109,12 @@
   import { World } from './src/World.js';
   import { UI } from './src/UI.js';
   
-  import { AnimatedCanvas } from './src/common/AnimatedCanvas.js';
-
-  const TILE_SIZE = 48;
+  import { FroggerCanvas } from './src/FroggerCanvas.js';
 
   let world;
 
-  const canvas = new AnimatedCanvas(
-    TILE_SIZE,
-    TILE_SIZE,
-    document.getElementById( 'canvas' )
-  );
-
+  const canvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
   const ui = new UI();
-
-  canvas.update = ( dt ) => {
-    world?.update( dt );
-  }
-  
-  canvas.draw = ( ctx ) => {
-    if ( world ) {
-      ctx.save();
-      ctx.scale( TILE_SIZE, TILE_SIZE );
-      
-      // ctx.translate( -world.crop.minCol, -world.crop.minRow );
-      
-      world.draw( ctx );
-      
-      ctx.restore();
-    }
-  };
 
   //
   // Levels
@@ -162,15 +138,12 @@
     canvas.stop();
 
     world = await World.fromFile( path );
+    canvas.setWorld( world );
+    canvas.start();
+
     ui.reset();
     world.ui = ui;
     splashUI.style.visibility = 'hidden';
-    
-    canvas.setSize(
-      ( world.crop.maxCol - world.crop.minCol + 1 ) * TILE_SIZE,
-      ( world.crop.maxRow - world.crop.minRow + 1 ) * TILE_SIZE,
-    );
-    canvas.start();
   }
 
   function startLevel() {
@@ -212,45 +185,7 @@
     newButton.focus();
   }
 
-  // 
-  // Movement
-  //
-
-  const moveUp =    () => move( Direction.Up );
-  const moveDown =  () => move( Direction.Down );
-  const moveLeft =  () => move( Direction.Left );
-  const moveRight = () => move( Direction.Right );
-
-  function move( dir ) {
-    if ( !paused ) {
-      if ( !world ) {
-        startLevel();
-      }
-      if ( world.victory ) {
-        nextLevel();
-      }
-      else if ( world.defeat ) {
-        // previousLevel();   // maybe this is too mean
-        startLevel();  // just restart for now
-      }
-      else if ( world.needsRespawn ) {
-        world.respawnPlayer();
-      }
-      else {
-        world.player.move( dir );
-      }
-    }
-  }
-
   const KeyBindings = {
-    KeyW: moveUp,
-    KeyA: moveLeft,
-    KeyS: moveDown,
-    KeyD: moveRight,
-    ArrowUp: moveUp,
-    ArrowLeft: moveLeft,
-    ArrowDown: moveDown,
-    ArrowRight: moveRight,
     KeyG: () => World.DebugGrid = !World.DebugGrid,
     KeyN: nextLevel,
     KeyP: prevLevel,
@@ -282,7 +217,18 @@
     }
   }
 
-  document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
+  document.addEventListener( 'keydown', e => {
+    if ( world.victory ) {
+      nextLevel();
+    }
+    else if ( world.defeat ) {
+      // previousLevel();   // maybe this is too mean
+      startLevel();  // just restart for now
+    }
+    else {
+      KeyBindings[ e.code ]?.()
+    }
+  } );
 
   window.addEventListener( 'blur', pause );
   window.addEventListener( 'focus', resume );
