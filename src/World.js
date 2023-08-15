@@ -55,7 +55,7 @@ export class World
 
   static fromString( string ) {
     const json = JSON.parse( string );    // TODO: error handling
-    return new World( json );
+    return json ? new World( json ) : null;
   }
  
   entities = [];

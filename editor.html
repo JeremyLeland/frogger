@@ -130,8 +130,7 @@
     numInputUI.style.width = 50;
     numInputUI.oninput = _ => {
       world.crop[ val ] = parseInt( numInputUI.value );
-      updateCropUI();
-      redraw();
+      levelResized()
     };
 
     cropUI[ val ] = numInputUI;
@@ -162,10 +161,11 @@
   const fileDiv = document.createElement( 'div' );
  
   makeButton( 'Clear', clearLevel, fileDiv );
-  makeButton( 'Load', ( e ) => loadInput.click(), fileDiv );
+  makeButton( 'Load', _ => loadInput.click(), fileDiv );
   makeButton( 'Save', saveLevel, fileDiv );
-  makeButton( 'Play', ( e ) => worldCanvas.start(), fileDiv );
-  makeButton( 'Pause', ( e ) => worldCanvas.stop(), fileDiv );
+  makeButton( 'Play', _ => worldCanvas.start(), fileDiv );
+  makeButton( 'Pause', _ => worldCanvas.stop(), fileDiv );
+  makeButton( 'Stop', restoreLevel, fileDiv );
 
   uiDiv.appendChild( fileDiv );
 
@@ -277,12 +277,21 @@
 
   function clearLevel() {
     world = new World( { cols: 17, rows: 17, crop: [ 1, 1, 15, 15 ] } );
+    worldCanvas.world = world;
     levelResized();
   }
 
   function loadLevel( e ) {
     world = World.fromString( e.target.result );
+    worldCanvas.world = world;
     levelResized();
+  }
+
+  function restoreLevel() {
+    worldCanvas.stop();
+    world = World.fromString( localStorage.getItem( 'currentLevel' ) );
+    worldCanvas.world = world;
+    redraw();
   }
 
   function saveLevel() {
