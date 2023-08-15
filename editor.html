@@ -1,12 +1,27 @@
 <link rel="stylesheet" href="./grid.css">
 
+<style>
+  #ui {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 140px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 64px 64px;
+  }
+</style>
+
 <body>
   <div id="world">
     <canvas id="canvas"></canvas>
   </div>
   <div id="ui">
-    <div id="tiles"></div>
-    <div id="entities"></div>
+    Tiles
+    <div id="tiles" class="grid"></div>
+    Entities
+    <div id="entities" class="grid"></div>
   </div>
 </body>
 
@@ -46,7 +61,6 @@
   const uiDiv = document.getElementById( 'ui' );
 
   const tilesDiv = document.getElementById( 'tiles' );
-  tilesDiv.appendChild( document.createTextNode( 'Tiles: ' ) );
   for ( const tile in Tiles ) {
     const button = document.createElement( 'button' );
 
@@ -71,7 +85,6 @@
 
   // TODO: Combine similar code with above?
   const entitiesDiv = document.getElementById( 'entities' );
-  entitiesDiv.appendChild( document.createTextNode( 'Entities: ' ) );
   for ( const id in Entities ) {
     const button = document.createElement( 'button' );
 

@@ -88,7 +88,7 @@ function drawCar( ctx, color ) {
   ctx.stroke( roof );
 }
 
-import { Frog } from './Frog.js';
+import { Froggy } from './Froggy.js';
 import { Log } from './entities/Log.js';
 
 export const Entities = {
@@ -184,15 +184,14 @@ export const Entities = {
   }
 };
 
-[ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].forEach( ( color, index ) => {
-  Entities[ 'Froggy' + ( index + 1 ) ] = {
-    size: 0.7,
+for ( let i = 0; i < Froggy.Count; i ++ ) {
+  Entities[ 'Froggy' + ( i + 1 ) ] = {
     canRescue: true,
     hitDist: 0.5,
-    froggyIndex: index,
-    drawEntity: function( ctx ) { Frog.drawFrog( ctx, color ) }
+    froggyIndex: i,
+    drawEntity: function( ctx ) { Froggy.drawFroggy( ctx, i ) }
   }
-} );
+}
 
 for ( const entityKey in Entities ) {
   Entities[ entityKey ].entityKey = entityKey;
