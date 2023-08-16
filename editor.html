@@ -38,6 +38,9 @@
   
 
   World.DebugGrid = true;
+
+  const Mode = { Edit: 0, Play: 1 };
+  let mode = Mode.Edit;
   
 
   const worldCanvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
@@ -46,6 +49,82 @@
   let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( { cols: 15, rows: 15 } );
   worldCanvas.setWorld( world );
   
+
+  //
+  // Load/Save/Clear
+  //
+  function clearLevel() {
+    world = new World( { cols: 17, rows: 17, crop: [ 1, 1, 15, 15 ] } );
+    worldCanvas.setWorld( world );
+    levelResized();
+  }
+
+  function loadLevel() {
+    loadInput.click();
+  }
+
+  function saveLevel() {
+    const filename = 'level.json';
+    const content = JSON.stringify( world.toJson() );
+    const blob = new Blob( [ content ], { type: 'text/plain' } );
+    const link = document.createElement( 'a' );
+    link.download = filename;
+    link.href = window.URL.createObjectURL( blob );
+    document.body.appendChild( link );  // TODO: do we need this?
+    link.click();
+    // should we do this at some point?
+    // document.body.removeChild( link );
+    // window.URL.revokeObjectURL( link.href );
+  }
+
+  //
+  // Playback
+  //
+  function startPlay() {
+    mode = Mode.Play;
+    worldCanvas.start();
+  }
+
+  function pausePlay() {
+    worldCanvas.stop();
+  }
+
+  function stopPlay() {
+    mode = Mode.Edit;
+    worldCanvas.stop();
+    world = World.fromString( localStorage.getItem( 'currentLevel' ) );
+    worldCanvas.setWorld( world );
+    redraw();
+  }
+
+  
+
+  function setDirection( dir ) {
+    world.setDirection( dir, mouseCol, mouseRow );
+    world.clearWarp( mouseCol, mouseRow );
+    redraw();
+  }
+
+  function toggleGrid() {
+    World.DebugGrid = !World.DebugGrid;
+    redraw();
+  }
+
+  function resize( cols, rows ) {
+    // TODO: multiple?
+    if ( cols > 0 )   world.addColumn( mouseCol );
+    if ( cols < 0 )   world.removeColumn( mouseCol );
+    if ( rows > 0 )   world.addRow( mouseRow ); 
+    if ( rows < 0 )   world.removeRow( mouseRow );
+
+    levelResized();
+  }
+  
+  function levelResized() {
+    worldCanvas.setSize( world.cols * Constants.TileSize, world.rows * Constants.TileSize );
+    updateCropUI();
+    redraw();
+  }
   
   function redraw() {
     worldCanvas.redraw();
@@ -156,18 +235,22 @@
   loadInput.type = 'file';
   loadInput.onchange = _ => {
     const reader = new FileReader();
-    reader.onload = loadLevel;
+    reader.onload = ( e ) => {
+      world = World.fromString( e.target.result );
+      worldCanvas.setWorld( world );
+      levelResized();
+    };
     reader.readAsText( loadInput.files[ 0 ] );
   }
 
   const fileDiv = document.createElement( 'div' );
  
   makeButton( 'Clear', clearLevel, fileDiv );
-  makeButton( 'Load', _ => loadInput.click(), fileDiv );
+  makeButton( 'Load', loadLevel, fileDiv );
   makeButton( 'Save', saveLevel, fileDiv );
-  makeButton( 'Play', _ => worldCanvas.start(), fileDiv );
-  makeButton( 'Pause', _ => worldCanvas.stop(), fileDiv );
-  makeButton( 'Stop', restoreLevel, fileDiv );
+  makeButton( 'Play', startPlay, fileDiv );
+  makeButton( 'Pause', pausePlay, fileDiv );
+  makeButton( 'Stop', stopPlay, fileDiv );
 
   uiDiv.appendChild( fileDiv );
 
@@ -235,8 +318,10 @@
   // TODO: Moving entities with Click-Drag?
   // (how do I know not to change the tile instead? modifier key?)
 
+
+  // TODO: Inhibit adding entities if currently playing
   function doMouse() {
-    if ( mouseDown && ( mouseCol != lastCol || mouseRow != lastRow ) ) {
+    if ( mode == Mode.Edit && mouseDown && ( mouseCol != lastCol || mouseRow != lastRow ) ) {
       lastCol = mouseCol;
       lastRow = mouseRow;
 
@@ -274,67 +359,5 @@
   };
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
-
-  
-
-  function clearLevel() {
-    world = new World( { cols: 17, rows: 17, crop: [ 1, 1, 15, 15 ] } );
-    worldCanvas.setWorld( world );
-    levelResized();
-  }
-
-  function loadLevel( e ) {
-    world = World.fromString( e.target.result );
-    worldCanvas.setWorld( world );
-    levelResized();
-  }
-
-  function restoreLevel() {
-    worldCanvas.stop();
-    world = World.fromString( localStorage.getItem( 'currentLevel' ) );
-    worldCanvas.setWorld( world );
-    redraw();
-  }
-
-  function saveLevel() {
-    const filename = 'level.json';
-    const content = JSON.stringify( world.toJson() );
-    const blob = new Blob( [ content ], { type: 'text/plain' } );
-    const link = document.createElement( 'a' );
-    link.download = filename;
-    link.href = window.URL.createObjectURL( blob );
-    document.body.appendChild( link );  // TODO: do we need this?
-    link.click();
-    // should we do this at some point?
-    // document.body.removeChild( link );
-    // window.URL.revokeObjectURL( link.href );
-  }
-
-  function setDirection( dir ) {
-    world.setDirection( dir, mouseCol, mouseRow );
-    world.clearWarp( mouseCol, mouseRow );
-    redraw();
-  }
-
-  function toggleGrid() {
-    World.DebugGrid = !World.DebugGrid;
-    redraw();
-  }
-
-  function resize( cols, rows ) {
-    // TODO: multiple?
-    if ( cols > 0 )   world.addColumn( mouseCol );
-    if ( cols < 0 )   world.removeColumn( mouseCol );
-    if ( rows > 0 )   world.addRow( mouseRow ); 
-    if ( rows < 0 )   world.removeRow( mouseRow );
-
-    levelResized();
-  }
-  
-  function levelResized() {
-    worldCanvas.setSize( world.cols * Constants.TileSize, world.rows * Constants.TileSize );
-    updateCropUI();
-    redraw();
-  }
 
 </script>
