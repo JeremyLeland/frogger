@@ -29,18 +29,21 @@
   const canvas = new AnimatedCanvas( 100, 100, document.getElementById( 'canvas' ) );
   const world = await World.fromFile( '../levels/classic/retro.json' );
 
+  let scale = 1;
+
   canvas.draw = ( ctx ) => {
+    ctx.save();
+    ctx.scale( scale, scale );
     world.draw( ctx );
+    ctx.restore();
   }
 
   const wrapper = document.getElementById( 'wrapper' );
 
   window.onresize = ( e ) => {
     canvas.setSize( wrapper.clientWidth, wrapper.clientHeight );
-    canvas.ctx.resetTransform();
 
-    const scale = wrapper.clientHeight / 12.8;
-    canvas.ctx.scale( scale, scale );
+    scale = wrapper.clientHeight / 16;
 
     canvas.redraw();
   };
