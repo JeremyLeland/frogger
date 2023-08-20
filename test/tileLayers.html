@@ -7,6 +7,10 @@
 
   const canvas = new AnimatedCanvas();
 
+  const DirIndex = {
+    Left: 0, Up: 1, Right: 2, Down: 3
+  };
+
   const TILE_SIZE = 64;
   const colors = [
     'blue',
@@ -14,93 +18,132 @@
   ];
   const cols = 3, rows = 3;
   const tiles = [
-    [ 1, 1, 1 ],
+    [ 0, 1, 1 ],
     [ 1, 0, 1 ],
-    [ 1, 1, 1 ],
+    [ 1, 1, 0 ],
   ];
 
   // Is this per layer? YES
 
+  // Store the edges coming from each corner, indexed by direction
   const edges = Array.from( 
     Array( cols + 1 ), _ => Array.from( 
-      Array( rows + 1 ), _ => null ) );
+      Array( rows + 1 ), _ => 
+        Array( 4 ) ) );
 
-  // TODO: Should we only be checking left/top or right/bottom to avoid doubling work?
-  //       Would need to special case one of the outer edges for this
+  const layer = 1;
   
   for ( let row = 0; row < rows; row ++ ) {
     for ( let col = 0; col < cols; col ++ ) {
-      // const current = tiles[ col ][ row ];
-      const current = 1;
-
-      // Left edge (going down)
-      if ( 0 == col || current != tiles[ col - 1 ][ row ] ) {
-        edges[ col ][ row ] = [ col, row, col, row + 1 ];
-      }
-
-      // Top edge (going left)
-      if ( 0 == row || current != tiles[ col ][ row - 1 ] ) {
-        edges[ col + 1 ][ row ] = [ col + 1, row, col, row ];
-      }
-
-      // Right edge (going up)
-      if ( cols == col + 1 || current != tiles[ col + 1 ][ row ] ) {
-        edges[ col + 1 ][ row + 1 ] = [ col + 1, row + 1, col + 1, row ];
-      }
-
-      // Bottom edge (going right)
-      if ( rows == row + 1 || current != tiles[ col ][ row + 1 ] ) {
-        edges[ col ][ row + 1 ] = [ col, row + 1, col + 1, row + 1 ];
+      const current = tiles[ col ][ row ];
+      
+      if ( current == layer ) {
+        // Left edge (going down)
+        if ( 0 == col || current != tiles[ col - 1 ][ row ] ) {
+          edges[ col ][ row ][ DirIndex.Down ] = [ col, row, col, row + 1 ];
+        }
+        
+        // Top edge (going left)
+        if ( 0 == row || current != tiles[ col ][ row - 1 ] ) {
+          edges[ col + 1 ][ row ][ DirIndex.Left ] = [ col + 1, row, col, row ];
+        }
+        
+        // Right edge (going up)
+        if ( cols == col + 1 || current != tiles[ col + 1 ][ row ] ) {
+          edges[ col + 1 ][ row + 1 ][ DirIndex.Up ] = [ col + 1, row + 1, col + 1, row ];
+        }
+        
+        // Bottom edge (going right)
+        if ( rows == row + 1 || current != tiles[ col ][ row + 1 ] ) {
+          edges[ col ][ row + 1 ][ DirIndex.Right ] = [ col, row + 1, col + 1, row + 1 ];
+        }
       }
     }
   }
+
+  const nextEdge = new Map();
+
+  for ( let row = 0; row <= rows; row ++ ) {
+    for ( let col = 0; col <= cols; col ++ ) {
+      for ( let dir = 0; dir < 4; dir ++ ) {
+        const current = edges[ col ][ row ][ dir ];
+
+        if ( current ) {
+          const nextCorner = edges[ current[ 2 ] ][ current[ 3 ] ];
+
+          // TODO: Try +1 vs -1
+          const checkDir = 1;
+          for ( let nextDirIndex = 0; nextDirIndex < 4; nextDirIndex ++ ) {
+            const nextDir = Utility.modulo( dir + nextDirIndex * checkDir, 4 );
+
+            const next = nextCorner[ nextDir ];
+            if ( next ) {
+              nextEdge.set( current, next );
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const grass = new Path2D();
 
   const unvisited = new Set();
   const visited = new Set();
 
   for ( let row = 0; row <= rows; row ++ ) {
     for ( let col = 0; col <= cols; col ++ ) {
-      const edge = edges[ col ][ row ];
-      if ( edge ) {
-        unvisited.add( edge );
-      }
+      edges[ col ][ row ].forEach( edge => {
+        if ( edge ) {
+          unvisited.add( edge );
+        }
+      } );
     }
   }
+
+  while ( unvisited.size > 0 ) {
+    let [ edge ] = unvisited;
+
+    while ( !visited.has( edge ) ) {
+      unvisited.delete( edge );
+      visited.add( edge );
+      
+      console.log( `grass.lineTo( ${ edge[ 2 ] }, ${ edge[ 3 ] } )` );
+      grass.lineTo( edge[ 2 ], edge[ 3 ] );
+
+      edge = nextEdge.get( edge );
+    }
+
+    console.log( `grass.lineTo( ${ edge[ 0 ] }, ${ edge[ 1 ] } )` );
+    grass.lineTo( edge[ 0 ], edge[ 1 ] );
+    console.log( `grass.closePath()` );
+    grass.closePath();
+  }
+  
 
   canvas.draw = ( ctx ) => {
     ctx.scale( TILE_SIZE, TILE_SIZE );
     ctx.translate( 1, 1 );
     ctx.lineWidth = 1 / TILE_SIZE;
 
-    const grass = new Path2D();
-
-    while ( unvisited.size > 0 ) {
-      let [ edge ] = unvisited;
-
-      while ( !visited.has( edge ) ) {
-        unvisited.delete( edge );
-        visited.add( edge );
-        
-        grass.lineTo( edge[ 2 ], edge[ 3 ] );
-
-        edge = edges[ edge[ 2 ] ][ edge[ 3 ] ];
-      }
-
-      grass.lineTo( edge[ 0 ], edge[ 1 ] );
-      grass.closePath();
-    }
-
     ctx.fillStyle = 'green';
     ctx.fill( grass, 'evenodd' );
 
-    ctx.fillStyle = ctx.lineStyle = 'black';
+    ctx.fillStyle = ctx.strokeStyle = 'black';
 
     for ( let row = 0; row <= rows; row ++ ) {
       for ( let col = 0; col <= cols; col ++ ) {
-        const edge = edges[ col ][ row ];
-        if ( edge ) {
-          Utility.drawArrow( ctx, ...edge );
-        }
+        edges[ col ][ row ].forEach( edge => {
+          if ( edge ) {
+            ctx.fillStyle = ctx.strokeStyle = 'black';
+            Utility.drawArrow( ctx, ...edge );
+
+            // const next = nextEdge.get( edge );
+            // ctx.fillStyle = ctx.strokeStyle = 'pink';
+            // Utility.drawArrow( ctx, edge[ 0 ], edge[ 1 ], next[ 2 ], next[ 3 ] );
+          }
+        } );
       }
     }
   }

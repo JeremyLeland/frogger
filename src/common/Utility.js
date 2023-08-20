@@ -12,3 +12,7 @@ export function drawArrow( ctx, x1, y1, x2, y2 ) {
   ctx.closePath();
   ctx.fill();
 }
+
+export function modulo( a, n ) {
+  return ( ( a % n ) + n ) % n;
+}
