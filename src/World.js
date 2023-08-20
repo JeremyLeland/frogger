@@ -12,29 +12,14 @@ arrow.closePath();
 const ARROW_COLOR = '#ff05';
 const TILE_BORDER = 1 / 64;
 
-function drawDashedArrow( ctx, x1, y1, x2, y2 ) {
-  ctx.beginPath();
-  ctx.moveTo( x1, y1 );
-  ctx.lineTo( x2, y2 );
-  ctx.setLineDash( [ 0.1, 0.1 ] );
-  ctx.stroke();
-  ctx.setLineDash( [] );
-
-  const HEAD = 0.5;
-  const angle = Math.atan2( y1 - y2, x1 - x2 );
-  ctx.beginPath();
-  ctx.moveTo( x2, y2 );
-  ctx.arc( x2, y2, 0.1, angle - HEAD, angle + HEAD );
-  ctx.closePath();
-  ctx.fill();
-}
-
 import { Direction } from './Entity.js';
 import { Tiles } from './Tiles.js';
 import { Entity } from './Entity.js';
 import { Entities } from './Entities.js';
 import { Death } from './Frog.js';
 import { Player } from './Player.js';
+
+import * as Utility from './common/Utility.js';
 
 const DirArray = [
   Direction.Up,
@@ -418,7 +403,9 @@ export class World
           ctx.restore();
           
           if ( tile.warp ) {
-            drawDashedArrow( ctx, c, r, tile.warp.col, tile.warp.row );
+            ctx.setLineDash( [ 0.1, 0.1 ] );
+            Utility.drawArrow( ctx, c, r, tile.warp.col, tile.warp.row );
+            ctx.setLineDash( [] );
           }
         }
       }
