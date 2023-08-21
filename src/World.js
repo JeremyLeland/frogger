@@ -19,6 +19,7 @@ import { Entities } from './Entities.js';
 import { Death } from './Frog.js';
 import { Player } from './Player.js';
 
+import * as Constants from './Constants.js';
 import * as Utility from './common/Utility.js';
 
 const DirArray = [
@@ -105,7 +106,7 @@ export class World
 
     this.maxTime = json.time ?? 15000;
     
-    this.lives = 4;
+    this.lives = Constants.MaxLives;
     
     [ this.spawnCol, this.spawnRow ] = json.player ?? [ Math.floor( this.cols / 2 ), Math.floor( this.rows / 2 ) ];
     this.respawnPlayer();
@@ -303,7 +304,7 @@ export class World
     this.rescued.push( entity );
     this.entities = this.entities.filter( e => e != entity );
 
-    this.lives = Math.min( 4, this.lives + 1 );
+    this.lives = Math.min( Constants.MaxLives, this.lives + 1 );
 
     this.needsRespawn = true;
     this.victory = this.entities.filter( e => e.canRescue ).length == 0;

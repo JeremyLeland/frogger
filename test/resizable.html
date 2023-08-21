@@ -38,7 +38,7 @@
     width: 100%;
     background-color: #000b;
     font-size: 7vmin;
-    /* visibility: hidden; */
+    visibility: hidden;
   }
 
   .full {
@@ -69,6 +69,10 @@
 <script type="module">
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
   import { World } from '../src/World.js';
+  import { Froggy } from '../src/Froggy.js';
+  import { Frog } from '../src/Frog.js';
+  import { Direction } from '../src/Entity.js';
+  import * as Constants from '../src/Constants.js';
 
   const canvas = new AnimatedCanvas( 100, 100, document.getElementById( 'canvas' ) );
   const world = await World.fromFile( '../levels/classic/retro.json' );
@@ -79,6 +83,49 @@
     ctx.save();
     ctx.scale( scale, scale );
     world.draw( ctx );
+
+    ctx.translate( 0, 15 );
+    ctx.fillStyle = 'gray';
+    ctx.fillRect( 0, 0, 15, 1 );
+
+    ctx.translate( 0.5, 0.5 );
+    ctx.lineWidth = 1 / scale;
+
+    // Froggies
+    for ( let i = 0; i < Constants.NumFroggies; i ++ ) {
+      if ( world.rescued.find( e => e.froggyIndex == i ) ) {
+        ctx.save();
+        ctx.rotate( Direction.Down.angle );
+        Froggy.drawFroggy( ctx, i );
+        ctx.restore();
+      }
+      ctx.translate( 1, 0 );
+    }
+    
+    // Timer
+    const timerGrad = ctx.createLinearGradient( 0, 0, 3, 0 );
+    timerGrad.addColorStop( 0, 'red' );
+    timerGrad.addColorStop( 0.5, 'yellow' );
+    timerGrad.addColorStop( 1, 'green' );
+
+    ctx.fillStyle = timerGrad;
+    ctx.fillRect( 0, -0.15, 4 * ( world.timeLeft / world.maxTime ), 0.3 );
+    // ctx.lineWidth = 0.02;
+    ctx.strokeRect( 0, -0.15, 4, 0.3 );
+
+    ctx.translate( 5, 0 );
+
+    // Lives
+    for ( let i = 4; i > 0; i -- ) {
+      if ( i <= world.lives ) {
+        ctx.save();
+        ctx.rotate( Direction.Up.angle );
+        Frog.drawFrog( ctx );
+        ctx.restore();
+      }
+      ctx.translate( 1, 0 );
+    }
+
     ctx.restore();
   }
 

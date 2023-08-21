@@ -15,7 +15,9 @@ export class Froggy extends Frog {
   update( dt, world ) { }     // quick way to avoid animation for now
 
   static drawFroggy( ctx, colorIndex ) {
+    ctx.save();
     ctx.scale( Froggy.Size, Froggy.Size );
     Frog.drawFrog( ctx, Froggy.Colors[ colorIndex ] );
+    ctx.restore();
   }
 }
