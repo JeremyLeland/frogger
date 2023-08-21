@@ -1,11 +1,23 @@
 <link rel="stylesheet" href="./grid.css">
 
 <style>
+  #wrapper {
+    display: grid;
+    grid-template-columns: auto 140px;
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+  #world {
+    overflow: auto;
+    max-height: 100vh;
+  }
   #ui {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 140px;
+    /* position: absolute; */
+    /* top: 0; */
+    /* right: 0; */
+    /* width: 140px; */
+    overflow: auto;
+    max-height: 100vh;
   }
   .grid {
     display: grid;
@@ -14,14 +26,16 @@
 </style>
 
 <body>
-  <div id="world">
-    <canvas id="canvas"></canvas>
-  </div>
-  <div id="ui">
-    Tiles
-    <div id="tiles" class="grid"></div>
-    Entities
-    <div id="entities" class="grid"></div>
+  <div id="wrapper">
+    <div id="world">
+      <canvas id="canvas"></canvas>
+    </div>
+    <div id="ui">
+      Tiles
+      <div id="tiles" class="grid"></div>
+      Entities
+      <div id="entities" class="grid"></div>
+    </div>
   </div>
 </body>
 
@@ -36,6 +50,7 @@
 
   import { FroggerCanvas } from './src/FroggerCanvas.js';
   
+  const TILE_SIZE = 48;
 
   World.DebugGrid = true;
 
@@ -45,17 +60,18 @@
 
   const worldCanvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
   worldCanvas.showCropped = true;
+  worldCanvas.showUI = false;
+  worldCanvas.scale = 48;
 
   let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( { cols: 15, rows: 15 } );
-  worldCanvas.setWorld( world );
-  
+  worldCanvas.world = world; 
 
   //
   // Load/Save/Clear
   //
   function clearLevel() {
     world = new World( { cols: 17, rows: 17, crop: [ 1, 1, 15, 15 ] } );
-    worldCanvas.setWorld( world );
+    worldCanvas.world = world;
     levelResized();
   }
 
@@ -93,7 +109,7 @@
     mode = Mode.Edit;
     worldCanvas.stop();
     world = World.fromString( localStorage.getItem( 'currentLevel' ) );
-    worldCanvas.setWorld( world );
+    worldCanvas.world = world;
     redraw();
   }
 
@@ -121,7 +137,7 @@
   }
   
   function levelResized() {
-    worldCanvas.setSize( world.cols * Constants.TileSize, world.rows * Constants.TileSize );
+    worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
     updateCropUI();
     redraw();
   }
@@ -133,7 +149,6 @@
     localStorage.setItem( 'currentLevel', JSON.stringify( world.toJson() ) );
   }
 
-  redraw();
 
   let activeBrush = 'Grass', activeType = 'Tiles';
   
@@ -237,7 +252,7 @@
     const reader = new FileReader();
     reader.onload = ( e ) => {
       world = World.fromString( e.target.result );
-      worldCanvas.setWorld( world );
+      worldCanvas.world = world;
       levelResized();
     };
     reader.readAsText( loadInput.files[ 0 ] );
@@ -359,5 +374,9 @@
   };
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
+
+
+  levelResized();
+  redraw();
 
 </script>

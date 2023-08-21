@@ -5,9 +5,6 @@
 </head>
 
 <style>
-  body {
-    font-size: 16px;
-  }
 
   svg {
     margin-top: 20%;
@@ -31,7 +28,7 @@
     text-shadow: 1px 1px 1px black;
 
     font-family: 'Silly';
-    font-size: 32px;
+    font-size: 5vmin;
     
     border-radius: 25px;
     border-top: 2px #00cc00 solid;
@@ -56,30 +53,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-size: 2.5vmin;
   }
 </style>
 
 <body onunload="">
   <div id="wrapper">
-    <div id="game">
-      <canvas id="canvas"></canvas>
-      <div id="victory" class="message center">
-        <span class="bar center">Victory!</span>
-      </div>
-      <div id="defeat" class="message center">
-        <span class="bar center">Defeat!</span>
-      </div>
-    </div>
-    <div id="ui">
-      <div id="rescued"></div>
-      <div id="timer" class="center">
-        <div id="timerBar">
-          <div id="timeLeft"></div>
-        </div>
-      </div>
-      <div id="lives"></div>
-    </div>
-    <div id="paused" class="center">Paused</div>
+    <canvas id="canvas"></canvas>
+    <div id="victory" class="message center bar">Victory!</div>
+    <div id="defeat" class="message center bar">Defeat!</div>
+    <div id="paused" class="message center full">Paused</div>
     <div id="splash">
       <svg viewBox="0 -5 85 30">
         <defs>
@@ -107,14 +90,12 @@
 <script type="module">
   import { Direction } from './src/Entity.js';
   import { World } from './src/World.js';
-  import { UI } from './src/UI.js';
   
   import { FroggerCanvas } from './src/FroggerCanvas.js';
 
   let world;
 
   const canvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
-  const ui = new UI();
 
   //
   // Levels
@@ -138,11 +119,9 @@
     canvas.stop();
 
     world = await World.fromFile( path );
-    canvas.setWorld( world );
+    canvas.world = world;
     canvas.start();
 
-    ui.reset();
-    world.ui = ui;
     splashUI.style.visibility = 'hidden';
   }
 
@@ -218,10 +197,10 @@
   }
 
   document.addEventListener( 'keydown', e => {
-    if ( world.victory ) {
+    if ( world?.victory ) {
       nextLevel();
     }
-    else if ( world.defeat ) {
+    else if ( world?.defeat ) {
       // previousLevel();   // maybe this is too mean
       startLevel();  // just restart for now
     }
@@ -232,5 +211,14 @@
 
   window.addEventListener( 'blur', pause );
   window.addEventListener( 'focus', resume );
+
+  const wrapper = document.getElementById( 'wrapper' );
+  window.onresize = ( e ) => {
+    const width = Math.floor( wrapper.clientWidth );
+    const height = Math.floor( wrapper.clientHeight );
+    canvas.setSize( width, height );
+    canvas.scale = height / 16;
+  };
+  window.onresize();
 
 </script>

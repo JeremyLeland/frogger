@@ -278,13 +278,6 @@ export class World
     // TODO: Lose when lives < 0
     this.lives--;
     this.defeat = this.lives < 0;
-
-    if ( this.ui ) {
-      this.ui.setLives( this.lives );
-      if ( this.defeat ) {
-        this.ui.showDefeat();
-      }
-    }
   }
 
   respawnPlayer() {
@@ -308,15 +301,6 @@ export class World
 
     this.needsRespawn = true;
     this.victory = this.entities.filter( e => e.canRescue ).length == 0;
-
-    if ( this.ui ) {
-      this.ui.showFroggy( entity.froggyIndex );
-      this.ui.setLives( this.lives );
-
-      if ( this.victory ) {
-        this.ui.showVictory();
-      }
-    }
   }
 
   update( dt ) {
@@ -325,9 +309,6 @@ export class World
 
     if ( !this.needsRespawn ) {
       this.timeLeft = Math.max( 0, this.timeLeft - dt );
-      if ( this.ui ) {
-        this.ui.setTimeLeft( this.timeLeft / this.maxTime );
-      }
       
       if ( this.timeLeft == 0 ) {
         this.killPlayer( Death.Expired );
