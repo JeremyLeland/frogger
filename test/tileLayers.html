@@ -16,136 +16,162 @@
     'blue',
     'green',
   ];
-  const cols = 3, rows = 3;
+  const cols = 4, rows = 4;
   const tiles = [
-    [ 0, 1, 1 ],
-    [ 1, 0, 1 ],
-    [ 1, 1, 0 ],
+    [ 0, 1, 1, 0 ],
+    [ 1, 0, 1, 1 ],
+    [ 1, 1, 0, 1 ],
+    [ 1, 1, 0, 1 ],
   ];
 
-  // Is this per layer? YES
+  const CORNER_RADIUS = 0.25;
 
-  // Store the edges coming from each corner, indexed by direction
-  const edges = Array.from( 
-    Array( cols + 1 ), _ => Array.from( 
-      Array( rows + 1 ), _ => 
-        Array( 4 ) ) );
+  const layerEdges = [];  // DEBUG only
 
-  const layer = 1;
-  
-  for ( let row = 0; row < rows; row ++ ) {
-    for ( let col = 0; col < cols; col ++ ) {
-      const current = tiles[ col ][ row ];
-      
-      if ( current == layer ) {
-        // Left edge (going down)
-        if ( 0 == col || current != tiles[ col - 1 ][ row ] ) {
-          edges[ col ][ row ][ DirIndex.Down ] = [ col, row, col, row + 1 ];
-        }
+  const layerPaths = colors.map( ( color, index ) => {
+    // Store the edges coming from each corner, indexed by direction
+    const edges = Array.from( 
+      Array( cols + 1 ), _ => Array.from( 
+        Array( rows + 1 ), _ => 
+          Array( 4 ) ) );
+
+    layerEdges.push( edges );
+
+    for ( let row = 0; row < rows; row ++ ) {
+      for ( let col = 0; col < cols; col ++ ) {
+        const current = tiles[ col ][ row ];
         
-        // Top edge (going left)
-        if ( 0 == row || current != tiles[ col ][ row - 1 ] ) {
-          edges[ col + 1 ][ row ][ DirIndex.Left ] = [ col + 1, row, col, row ];
-        }
-        
-        // Right edge (going up)
-        if ( cols == col + 1 || current != tiles[ col + 1 ][ row ] ) {
-          edges[ col + 1 ][ row + 1 ][ DirIndex.Up ] = [ col + 1, row + 1, col + 1, row ];
-        }
-        
-        // Bottom edge (going right)
-        if ( rows == row + 1 || current != tiles[ col ][ row + 1 ] ) {
-          edges[ col ][ row + 1 ][ DirIndex.Right ] = [ col, row + 1, col + 1, row + 1 ];
+        if ( current == index ) {
+          // Left edge (going down)
+          if ( 0 == col || current != tiles[ col - 1 ][ row ] ) {
+            edges[ col ][ row ][ DirIndex.Down ] = [ col, row, col, row + 1 ];
+          }
+          
+          // Top edge (going left)
+          if ( 0 == row || current != tiles[ col ][ row - 1 ] ) {
+            edges[ col + 1 ][ row ][ DirIndex.Left ] = [ col + 1, row, col, row ];
+          }
+          
+          // Right edge (going up)
+          if ( cols == col + 1 || current != tiles[ col + 1 ][ row ] ) {
+            edges[ col + 1 ][ row + 1 ][ DirIndex.Up ] = [ col + 1, row + 1, col + 1, row ];
+          }
+          
+          // Bottom edge (going right)
+          if ( rows == row + 1 || current != tiles[ col ][ row + 1 ] ) {
+            edges[ col ][ row + 1 ][ DirIndex.Right ] = [ col, row + 1, col + 1, row + 1 ];
+          }
         }
       }
     }
-  }
 
-  const nextEdge = new Map();
+    const nextEdge = new Map();
 
-  for ( let row = 0; row <= rows; row ++ ) {
-    for ( let col = 0; col <= cols; col ++ ) {
-      for ( let dir = 0; dir < 4; dir ++ ) {
-        const current = edges[ col ][ row ][ dir ];
+    for ( let row = 0; row <= rows; row ++ ) {
+      for ( let col = 0; col <= cols; col ++ ) {
+        for ( let dir = 0; dir < 4; dir ++ ) {
+          const current = edges[ col ][ row ][ dir ];
 
-        if ( current ) {
-          const nextCorner = edges[ current[ 2 ] ][ current[ 3 ] ];
+          if ( current ) {
+            const nextCorner = edges[ current[ 2 ] ][ current[ 3 ] ];
 
-          // TODO: Try +1 vs -1
-          const checkDir = 1;
-          for ( let nextDirIndex = 0; nextDirIndex < 4; nextDirIndex ++ ) {
-            const nextDir = Utility.modulo( dir + nextDirIndex * checkDir, 4 );
+            // TODO: Try +1 vs -1
+            const checkDir = 1;
+            for ( let nextDirIndex = 0; nextDirIndex < 4; nextDirIndex ++ ) {
+              const nextDir = Utility.modulo( dir + nextDirIndex * checkDir, 4 );
 
-            const next = nextCorner[ nextDir ];
-            if ( next ) {
-              nextEdge.set( current, next );
-              break;
+              const next = nextCorner[ nextDir ];
+              if ( next ) {
+                nextEdge.set( current, next );
+                break;
+              }
             }
           }
         }
       }
     }
-  }
 
-  const grass = new Path2D();
+    const unvisited = new Set();
+    const visited = new Set();
 
-  const unvisited = new Set();
-  const visited = new Set();
+    for ( let row = 0; row <= rows; row ++ ) {
+      for ( let col = 0; col <= cols; col ++ ) {
+        edges[ col ][ row ].forEach( edge => {
+          if ( edge ) {
+            unvisited.add( edge );
+          }
+        } );
+      }
+    }
 
-  for ( let row = 0; row <= rows; row ++ ) {
-    for ( let col = 0; col <= cols; col ++ ) {
-      edges[ col ][ row ].forEach( edge => {
-        if ( edge ) {
-          unvisited.add( edge );
+    const path = new Path2D();
+
+    while ( unvisited.size > 0 ) {
+      let [ edge ] = unvisited;
+
+      const startDX = edge[ 2 ] - edge[ 0 ];
+      const startDY = edge[ 3 ] - edge[ 1 ];
+      path.lineTo( edge[ 0 ] + startDX * CORNER_RADIUS, edge[ 1 ] + startDY * CORNER_RADIUS );
+
+      while ( !visited.has( edge ) ) {
+        unvisited.delete( edge );
+        visited.add( edge );
+        
+        // console.log( `path.lineTo( ${ edge[ 2 ] }, ${ edge[ 3 ] } )` );
+        // path.lineTo( edge[ 2 ], edge[ 3 ] );
+
+        const prev = edge;
+        edge = nextEdge.get( edge );
+
+        const prevDX = prev[ 2 ] - prev[ 0 ];
+        const prevDY = prev[ 3 ] - prev[ 1 ];
+        const nextDX = edge[ 2 ] - edge[ 0 ];
+        const nextDY = edge[ 3 ] - edge[ 1 ];
+
+        if ( prevDX != nextDX || prevDY != nextDY ) {
+          if ( 0 == prev[ 2 ] || 0 == prev[ 3 ] || prev[ 2 ] == cols || prev[ 3 ] == rows ) {
+            path.lineTo( prev[ 2 ], prev[ 3 ] );  
+          }
+          else {
+            path.lineTo( prev[ 2 ] - prevDX * CORNER_RADIUS, prev[ 3 ] - prevDY * CORNER_RADIUS );
+            // TODO: quadraticCurve here
+            path.lineTo( edge[ 0 ] + nextDX * CORNER_RADIUS, edge[ 1 ] + nextDY * CORNER_RADIUS );
+          }
         }
-      } );
-    }
-  }
+      }
 
-  while ( unvisited.size > 0 ) {
-    let [ edge ] = unvisited;
-
-    while ( !visited.has( edge ) ) {
-      unvisited.delete( edge );
-      visited.add( edge );
-      
-      console.log( `grass.lineTo( ${ edge[ 2 ] }, ${ edge[ 3 ] } )` );
-      grass.lineTo( edge[ 2 ], edge[ 3 ] );
-
-      edge = nextEdge.get( edge );
+      // console.log( `path.lineTo( ${ edge[ 0 ] }, ${ edge[ 1 ] } )` );
+      // path.lineTo( edge[ 0 ], edge[ 1 ] );
+      // console.log( `path.closePath()` );
+      path.closePath();
     }
 
-    console.log( `grass.lineTo( ${ edge[ 0 ] }, ${ edge[ 1 ] } )` );
-    grass.lineTo( edge[ 0 ], edge[ 1 ] );
-    console.log( `grass.closePath()` );
-    grass.closePath();
-  }
-  
+    return path;
+  } );
+
 
   canvas.draw = ( ctx ) => {
     ctx.scale( TILE_SIZE, TILE_SIZE );
     ctx.translate( 1, 1 );
     ctx.lineWidth = 1 / TILE_SIZE;
 
-    ctx.fillStyle = 'green';
-    ctx.fill( grass, 'evenodd' );
+    colors.forEach( ( color, index ) => {
+      ctx.fillStyle = color;
+      ctx.fill( layerPaths[ index ], 'evenodd' );
+    
+      
+      // ctx.fillStyle = ctx.strokeStyle = 'white';
 
-    ctx.fillStyle = ctx.strokeStyle = 'black';
-
-    for ( let row = 0; row <= rows; row ++ ) {
-      for ( let col = 0; col <= cols; col ++ ) {
-        edges[ col ][ row ].forEach( edge => {
-          if ( edge ) {
-            ctx.fillStyle = ctx.strokeStyle = 'black';
-            Utility.drawArrow( ctx, ...edge );
-
-            // const next = nextEdge.get( edge );
-            // ctx.fillStyle = ctx.strokeStyle = 'pink';
-            // Utility.drawArrow( ctx, edge[ 0 ], edge[ 1 ], next[ 2 ], next[ 3 ] );
-          }
-        } );
-      }
-    }
+      // for ( let row = 0; row <= rows; row ++ ) {
+      //   for ( let col = 0; col <= cols; col ++ ) {
+      //     layerEdges[ index ][ col ][ row ].forEach( edge => {
+      //       if ( edge ) {
+      //         Utility.drawArrow( ctx, ...edge );
+      //       }
+      //     } );
+      //   }
+      // }
+    } );
   }
 
   canvas.redraw();
