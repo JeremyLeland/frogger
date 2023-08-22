@@ -13,7 +13,8 @@ const ARROW_COLOR = '#ff05';
 const TILE_BORDER = 1 / 64;
 
 import { Direction } from './Entity.js';
-import { Tiles } from './Tiles.js';
+import { Props } from './Props.js';
+import { TileMap } from './TileMap.js';
 import { Entity } from './Entity.js';
 import { Entities } from './Entities.js';
 import { Death } from './Frog.js';
@@ -56,6 +57,8 @@ export class World
   defeat = false;
   victory = false;
 
+  #tileMap;
+
   constructor( json ) {
     this.cols = json.cols;
     this.rows = json.rows;
@@ -97,6 +100,8 @@ export class World
     json.warps?.forEach( coords => 
       this.tiles[ coords[ 0 ] ][ coords [ 1 ] ].warp = { col: coords[ 2 ], row: coords[ 3 ] }
     );
+
+    this.#tileMap = new TileMap( this.tiles );
 
     for ( const type in json.entities ) {
       json.entities[ type ]?.forEach( coords => 
@@ -324,25 +329,17 @@ export class World
       ctx.translate( -this.crop.minCol, -this.crop.minRow );
     }
 
-    // Was trying to not draw cropped tiles, but that threw off positioning...
-    const startCol = 0; //showCropped ? 0 : this.crop.minCol;
-    const startRow = 0; // showCropped ? 0 : this.crop.minRow;
-    const endCol = this.cols - 1; //showCropped ? this.cols - 1 : this.crop.maxCol;
-    const endRow = this.rows - 1; //showCropped ? this.rows - 1 : this.crop.maxRow;
+    this.#tileMap.draw( ctx );
 
     ctx.save();
 
-    for ( let r = startRow; r <= endRow; r ++ ) {
+    for ( let row = 0; row < this.rows; row ++ ) {
       ctx.save();
       
-      for ( let c = startCol; c <= endCol; c ++ ) {
-        const tile = this.tiles[ c ][ r ];
-        const nTile = r > 0 ? this.tiles[ c ][ r - 1 ] : null;
-        const wTile = c > 0 ? this.tiles[ c - 1 ][ r ] : null;
-        
-        if ( tile.tileInfoKey ) {
-          Tiles[ tile.tileInfoKey ].draw( ctx, tile, nTile, wTile );
-        }
+      for ( let col = 0; col < this.cols; col ++ ) {
+    
+        const prop = Props[ this.tiles[ col ][ row ].tileInfoKey ];
+        prop?.draw( ctx );
 
         ctx.translate( 1, 0 );
       }
@@ -363,8 +360,8 @@ export class World
       ctx.textAlign = 'center';
       ctx.font = '10px Arial';      // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
       
-      for ( let r = startRow; r <= endRow; r ++ ) {
-        for ( let c = startCol; c <= endCol; c ++ ) {
+      for ( let r = 0; r < this.rows; r ++ ) {
+        for ( let c = 0; c < this.cols; c ++ ) {
           const tile = this.tiles[ c ][ r ];
 
           ctx.save();

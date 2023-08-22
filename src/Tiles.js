@@ -1,4 +1,4 @@
-import { Direction } from "../src/Entity.js";
+import { Direction } from "./Entity.js";
 
 const BUSH_SIDES = 7;
 const BUSH_SIZE = 0.4, SIDE_SIZE = 0.6;

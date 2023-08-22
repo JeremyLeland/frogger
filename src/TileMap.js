@@ -16,7 +16,7 @@ const LAYERS = [
 ];
 
 const COLORS = [
-  'blue',
+  'darkblue',
   '#333',
   'dimgray',
   'green',
@@ -26,6 +26,7 @@ export class TileMap {
   #layerPaths;
   #layerEdges = [];
 
+  #sidewalkSquares = new Path2D();
   #lanesPath = new Path2D();
 
   constructor( tiles ) {
@@ -159,13 +160,16 @@ export class TileMap {
           
           if ( tile?.dir ) {
             if ( nTile && nTile.tileInfoKey == 'Road' && tile.dir != Direction.Up && nTile.dir && nTile.dir != Direction.Down ) {
-              this.#lanesPath.rect( col -ROAD_LINE_LEN / 2, row -0.5 - ROAD_LINE_WIDTH / 2, ROAD_LINE_LEN, ROAD_LINE_WIDTH );
+              this.#lanesPath.rect( col - ROAD_LINE_LEN / 2, row - 0.5 - ROAD_LINE_WIDTH / 2, ROAD_LINE_LEN, ROAD_LINE_WIDTH );
             }
             
             if ( wTile && wTile.tileInfoKey == 'Road' && tile.dir != Direction.Left && wTile.dir && wTile.dir != Direction.Right ) {
-              this.#lanesPath.rect( col -0.5 - ROAD_LINE_WIDTH / 2, row -ROAD_LINE_LEN / 2, ROAD_LINE_WIDTH, ROAD_LINE_LEN );
+              this.#lanesPath.rect( col - 0.5 - ROAD_LINE_WIDTH / 2, row - ROAD_LINE_LEN / 2, ROAD_LINE_WIDTH, ROAD_LINE_LEN );
             }
           }
+        }
+        else if ( tile.tileInfoKey == 'Sidewalk' ) {
+          this.#sidewalkSquares.rect( col - 0.4, row - 0.4, 0.8, 0.8 );
         }
       }
     }
@@ -193,5 +197,8 @@ export class TileMap {
 
     ctx.fillStyle = 'yellow';
     ctx.fill( this.#lanesPath );
+
+    ctx.fillStyle = 'gray';
+    ctx.fill( this.#sidewalkSquares );
   }
 }
