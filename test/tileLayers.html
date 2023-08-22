@@ -16,12 +16,14 @@
     'blue',
     'green',
   ];
-  const cols = 4, rows = 4;
+  const cols = 6, rows = 6;
   const tiles = [
-    [ 0, 1, 1, 0 ],
-    [ 1, 0, 1, 1 ],
-    [ 1, 1, 0, 0 ],
-    [ 1, 1, 0, 1 ],
+    [ 1, 0, 1, 1, 1, 1, ],
+    [ 1, 0, 1, 0, 0, 1, ],
+    [ 1, 0, 1, 0, 0, 1, ],
+    [ 1, 0, 1, 0, 0, 1, ],
+    [ 1, 0, 1, 0, 0, 1, ],
+    [ 1, 0, 1, 1, 1, 1, ],
   ];
 
   const CORNER_RADIUS = 0.25;
@@ -111,7 +113,7 @@
 
       const startDX = edge[ 2 ] - edge[ 0 ];
       const startDY = edge[ 3 ] - edge[ 1 ];
-      path.lineTo( edge[ 0 ] + startDX * CORNER_RADIUS, edge[ 1 ] + startDY * CORNER_RADIUS );
+      path.moveTo( edge[ 0 ] + startDX * CORNER_RADIUS, edge[ 1 ] + startDY * CORNER_RADIUS );
 
       while ( !visited.has( edge ) ) {
         unvisited.delete( edge );
@@ -130,18 +132,18 @@
 
         if ( prevDX != nextDX || prevDY != nextDY ) {
           if ( 0 == prev[ 2 ] || 0 == prev[ 3 ] || prev[ 2 ] == cols || prev[ 3 ] == rows ) {
-            path.lineTo( prev[ 2 ], prev[ 3 ] );  
+            console.log( `path.lineTo( ${ prev[ 2 ] }, ${ prev[ 3 ] } )` );
+            path.lineTo( prev[ 2 ], prev[ 3 ] );
           }
           else {
+            console.log('moo');
             path.lineTo( prev[ 2 ] - prevDX * CORNER_RADIUS, prev[ 3 ] - prevDY * CORNER_RADIUS );
             path.quadraticCurveTo( prev[ 2 ], prev[ 3 ], edge[ 0 ] + nextDX * CORNER_RADIUS, edge[ 1 ] + nextDY * CORNER_RADIUS );
           }
         }
       }
 
-      // console.log( `path.lineTo( ${ edge[ 0 ] }, ${ edge[ 1 ] } )` );
-      // path.lineTo( edge[ 0 ], edge[ 1 ] );
-      // console.log( `path.closePath()` );
+      console.log( `path.closePath()` );
       path.closePath();
     }
 

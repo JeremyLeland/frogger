@@ -1,0 +1,33 @@
+<title>Load levels</title>
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import { World } from '../src/World.js';
+  import { TileMap } from '../src/TileMap.js';
+  
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+
+  World.DebugGrid = true;
+
+  const TILE_SIZE = 48;
+
+  const world = await World.fromFile( '../levels/classic/retro.json' );
+  const tileMap = new TileMap( world.tiles );
+
+  const canvas = new AnimatedCanvas();
+  
+  canvas.draw = ( ctx ) => {
+    ctx.save();
+    ctx.scale( TILE_SIZE, TILE_SIZE );
+    ctx.translate( 0.5, 0.5 );
+
+    ctx.lineWidth = 1 / TILE_SIZE;
+
+    tileMap.draw( ctx );
+
+    ctx.restore();
+  };
+
+  canvas.redraw();
+
+</script>
