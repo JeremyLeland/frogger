@@ -1,3 +1,5 @@
+import { Direction } from '../src/Entity.js';
+import { Tiles } from '../src/Tiles.js';
 import * as Utility from '../src/common/Utility.js';
 
 const DirIndex = {
@@ -24,6 +26,8 @@ export class TileMap {
   #layerPaths;
   #layerEdges = [];
 
+  #lanesPath = new Path2D();
+
   constructor( tiles ) {
     const cols = tiles.length;
     const rows = tiles[ 0 ].length;
@@ -39,26 +43,26 @@ export class TileMap {
   
       for ( let row = 0; row < rows; row ++ ) {
         for ( let col = 0; col < cols; col ++ ) {
-          const current = tiles[ col ][ row ].tileInfoKey;   // TODO: Account for bush, lilypad
+          const currentBase = Tiles[ tiles[ col ][ row ].tileInfoKey ].Base;
           
-          if ( current == layerName ) {
+          if ( currentBase == layerName ) {
             // Left edge (going down)
-            if ( 0 == col || current != tiles[ col - 1 ][ row ].tileInfoKey ) {
+            if ( 0 == col || currentBase != Tiles[ tiles[ col - 1 ][ row ].tileInfoKey ].Base ) {
               edges[ col ][ row ][ DirIndex.Down ] = [ col, row, col, row + 1 ];
             }
             
             // Top edge (going left)
-            if ( 0 == row || current != tiles[ col ][ row - 1 ].tileInfoKey ) {
+            if ( 0 == row || currentBase != Tiles[ tiles[ col ][ row - 1 ].tileInfoKey ].Base ) {
               edges[ col + 1 ][ row ][ DirIndex.Left ] = [ col + 1, row, col, row ];
             }
             
             // Right edge (going up)
-            if ( cols == col + 1 || current != tiles[ col + 1 ][ row ].tileInfoKey ) {
+            if ( cols == col + 1 || currentBase != Tiles[ tiles[ col + 1 ][ row ].tileInfoKey ].Base ) {
               edges[ col + 1 ][ row + 1 ][ DirIndex.Up ] = [ col + 1, row + 1, col + 1, row ];
             }
             
             // Bottom edge (going right)
-            if ( rows == row + 1 || current != tiles[ col ][ row + 1 ].tileInfoKey ) {
+            if ( rows == row + 1 || currentBase != Tiles[ tiles[ col ][ row + 1 ].tileInfoKey ].Base ) {
               edges[ col ][ row + 1 ][ DirIndex.Right ] = [ col, row + 1, col + 1, row + 1 ];
             }
           }
@@ -111,7 +115,7 @@ export class TileMap {
   
         const startDX = edge[ 2 ] - edge[ 0 ];
         const startDY = edge[ 3 ] - edge[ 1 ];
-        path.moveTo( edge[ 0 ] + startDX * CORNER_RADIUS, edge[ 1 ] + startDY * CORNER_RADIUS );
+        path.moveTo( -0.5 + edge[ 0 ] + startDX * CORNER_RADIUS, -0.5 + edge[ 1 ] + startDY * CORNER_RADIUS );
   
         while ( !visited.has( edge ) ) {
           unvisited.delete( edge );
@@ -127,11 +131,11 @@ export class TileMap {
   
           if ( prevDX != nextDX || prevDY != nextDY ) {
             if ( 0 == prev[ 2 ] || 0 == prev[ 3 ] || prev[ 2 ] == cols || prev[ 3 ] == rows ) {
-              path.lineTo( prev[ 2 ], prev[ 3 ] );  
+              path.lineTo( -0.5 + prev[ 2 ], -0.5 + prev[ 3 ] );  
             }
             else {
-              path.lineTo( prev[ 2 ] - prevDX * CORNER_RADIUS, prev[ 3 ] - prevDY * CORNER_RADIUS );
-              path.quadraticCurveTo( prev[ 2 ], prev[ 3 ], edge[ 0 ] + nextDX * CORNER_RADIUS, edge[ 1 ] + nextDY * CORNER_RADIUS );
+              path.lineTo( -0.5 + prev[ 2 ] - prevDX * CORNER_RADIUS, -0.5 + prev[ 3 ] - prevDY * CORNER_RADIUS );
+              path.quadraticCurveTo( -0.5 + prev[ 2 ], -0.5 + prev[ 3 ], -0.5 + edge[ 0 ] + nextDX * CORNER_RADIUS, -0.5 + edge[ 1 ] + nextDY * CORNER_RADIUS );
             }
           }
         }
@@ -141,7 +145,33 @@ export class TileMap {
   
       return path;
     } );
+
+    const ROAD_LINE_WIDTH = 0.15, ROAD_LINE_LEN = 0.5;
+
+    for ( let row = 0; row < rows; row ++ ) {
+      for ( let col = 0; col < cols; col ++ ) {
+
+        const tile  = tiles[ col ][ row ];
+
+        if ( tile.tileInfoKey == 'Road' ) {
+          const nTile = row > 0 ? tiles[ col ][ row - 1 ] : null;
+          const wTile = col > 0 ? tiles[ col - 1 ][ row ] : null;
+          
+          if ( tile?.dir ) {
+            if ( nTile && nTile.tileInfoKey == 'Road' && tile.dir != Direction.Up && nTile.dir && nTile.dir != Direction.Down ) {
+              this.#lanesPath.rect( col -ROAD_LINE_LEN / 2, row -0.5 - ROAD_LINE_WIDTH / 2, ROAD_LINE_LEN, ROAD_LINE_WIDTH );
+            }
+            
+            if ( wTile && wTile.tileInfoKey == 'Road' && tile.dir != Direction.Left && wTile.dir && wTile.dir != Direction.Right ) {
+              this.#lanesPath.rect( col -0.5 - ROAD_LINE_WIDTH / 2, row -ROAD_LINE_LEN / 2, ROAD_LINE_WIDTH, ROAD_LINE_LEN );
+            }
+          }
+        }
+      }
+    }
   }
+
+  
 
   draw( ctx ) {
     LAYERS.forEach( ( layerName, index ) => {
@@ -160,5 +190,8 @@ export class TileMap {
       //   }
       // }
     } );
+
+    ctx.fillStyle = 'yellow';
+    ctx.fill( this.#lanesPath );
   }
 }

@@ -27,12 +27,14 @@ const ROAD_LINE_WIDTH = 0.15, ROAD_LINE_LEN = 0.5;
 
 export const Tiles = {
   Grass: {
+    Base: 'Grass',
     draw: ( ctx ) => {
       ctx.fillStyle = 'forestgreen';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
     }
   },
   Bush: {
+    Base: 'Grass',
     Solid: true,
     draw: ( ctx ) => {
       Tiles.Grass.draw( ctx );    
@@ -51,6 +53,7 @@ export const Tiles = {
     }
   },
   Sidewalk: {
+    Base: 'Sidewalk',
     draw: ( ctx ) => {
       ctx.fillStyle = 'darkgray';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
@@ -59,6 +62,7 @@ export const Tiles = {
     }
   },
   Road: {
+    Base: 'Road',
     draw: ( ctx, tile, nTile, wTile ) => {
       ctx.fillStyle = '#333';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
@@ -77,6 +81,7 @@ export const Tiles = {
     }
   },
   Water: {
+    Base: 'Water',
     KillsPlayer: true,
     draw: ( ctx ) => {
       ctx.fillStyle = 'darkblue';
@@ -84,6 +89,7 @@ export const Tiles = {
     }
   },
   Lilypad: {
+    Base: 'Water',
     draw: ( ctx ) => {
       Tiles.Water.draw( ctx );
 
