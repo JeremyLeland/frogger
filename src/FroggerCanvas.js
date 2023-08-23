@@ -30,21 +30,48 @@ export class FroggerCanvas extends AnimatedCanvas {
   
   constructor( canvas ) {
     super( 100, 100, canvas );
-    
+ 
     document.addEventListener( 'keydown', ( e ) => {
-      if ( this.world ) {
-
-        if ( this.world.needsRespawn ) {
-          this.world.respawnPlayer();
-        }
-        else {
-          const dir = KeyDir[ e.code ];
-          if ( dir ) {
-            this.world.player.move( dir );
-          }
-        }
+      const dir = KeyDir[ e.code ];
+      if ( dir ) {
+        this.#requestPlayerMove( dir );
       }
     } );
+
+    let startX, startY, endX, endY;
+    document.addEventListener( 'touchstart', ( e ) => {
+      const pos = e.touches?.[ 0 ] ?? e;
+      startX = pos.clientX;
+      startY = pos.clientY;
+    } );
+
+    document.addEventListener( 'touchmove', ( e ) => {
+      const pos = e.touches?.[ 0 ] ?? e;
+      endX = pos.clientX;
+      endY = pos.clientY;
+    } );
+
+    document.addEventListener( 'touchend', ( e ) => {
+      const dx = endX - startX;
+      const dy = endY - startY;
+
+      const dir = Math.abs( dx ) > Math.abs( dy ) ?
+        ( dx < 0 ? Direction.Left : Direction.Right ) :
+        ( dy < 0 ? Direction.Up   : Direction.Down  );
+      
+      this.#requestPlayerMove( dir );
+    } );
+  }
+
+  #requestPlayerMove( dir ) {
+    if ( this.world ) {
+      if ( this.world.needsRespawn ) {
+        this.world.respawnPlayer();
+      }
+      else {
+        this.world.player.move( dir );
+      }
+    }
   }
 
   update( dt ) {

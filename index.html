@@ -25,7 +25,7 @@
 
     color: white;
     background-color: #00aa00;
-    text-shadow: 1px 1px 1px black;
+    text-shadow: 0.25vmin 0.25vmin 0.25vmin black;
 
     font-family: 'Silly';
     font-size: 5vmin;
@@ -39,7 +39,11 @@
     margin: 4% 0% 4% 0%;
   }
 
-  .disabled {
+  button:focus {
+    outline: lime solid 0.5vmin;
+  }
+
+  button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
@@ -81,7 +85,7 @@
       <button id="continue">Continue</button>
       <button id="new">New Game</button>
       <span style="position: absolute; bottom: 0">
-        (c) Jeremy Leland <a href="https://github.com/JeremyLeland/frogger">GitHub</a>
+        (c) Jeremy Leland <a style="color: lime" href="https://github.com/JeremyLeland/frogger">GitHub</a>
       </span>
     </div>
   </div>
@@ -96,6 +100,34 @@
   let world;
 
   const canvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
+
+  //
+  // Splash screen
+  //
+  const splashUI = document.getElementById( 'splash' );
+  const continueButton = document.getElementById( 'continue' );
+  const newButton = document.getElementById( 'new' );
+  
+  newButton.addEventListener( 'click', newGame );
+  continueButton.addEventListener( 'click', continueGame );
+
+  function showSplash() {
+    splashUI.style.visibility = 'visible';
+    if ( localStorage.getItem( 'levelIndex' ) ) {
+      continueButton.disabled = false;
+      continueButton.focus();
+    }
+    else {
+      continueButton.disabled = true;
+      newButton.focus();
+    }
+  }
+
+  function hideSpash() {
+    splashUI.style.visibility = 'hidden';
+  }
+
+  showSplash();
 
   //
   // Levels
@@ -113,8 +145,6 @@
     './levels/classic/superhighway.json',
   ];
 
-  const splashUI = document.getElementById( 'splash' );
-
   async function loadLevel( path ) {
     canvas.stop();
 
@@ -122,7 +152,7 @@
     canvas.world = world;
     canvas.start();
 
-    splashUI.style.visibility = 'hidden';
+    hideSpash();
   }
 
   function startLevel() {
@@ -136,8 +166,15 @@
   }
   
   function nextLevel() {
-    levelIndex = Math.min( levels.length - 1, levelIndex + 1 );
-    startLevel();
+    if ( levelIndex == levels.length - 1 ) {
+      canvas.stop();
+      localStorage.removeItem( 'levelIndex' );
+      showSplash();
+    }
+    else {
+      levelIndex ++;
+      startLevel();
+    }
   }
 
   function continueGame() {
@@ -150,20 +187,7 @@
     startLevel();
   }
 
-  const continueButton = document.getElementById( 'continue' );
-  const newButton = document.getElementById( 'new' );
   
-  newButton.addEventListener( 'click', newGame );
-
-  if ( localStorage.getItem( 'levelIndex' ) ) {
-    continueButton.addEventListener( 'click', continueGame );
-    continueButton.focus();
-  }
-  else {
-    continueButton.classList.add( 'disabled' );
-    newButton.focus();
-  }
-
   const KeyBindings = {
     KeyG: () => World.DebugGrid = !World.DebugGrid,
     KeyN: nextLevel,
@@ -196,6 +220,8 @@
     }
   }
 
+  // TODO: Don't split this weirdly between FroggerCanvas and here.
+  //       Maybe move more of this functionality to FroggerCavas?
   document.addEventListener( 'keydown', e => {
     if ( world?.victory ) {
       nextLevel();
@@ -206,6 +232,16 @@
     }
     else {
       KeyBindings[ e.code ]?.()
+    }
+  } );
+
+  // TODO: Don't duplicate this, have a common code path
+  document.addEventListener( 'touchstart', ( e ) => {
+    if ( world?.victory ) {
+      nextLevel();
+    }
+    else if ( world?.defeat ) {
+      startLevel();
     }
   } );
 
