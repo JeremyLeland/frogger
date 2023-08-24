@@ -1,4 +1,4 @@
-<title>Frogger v0.8</title>
+<title>Frogger v0.85</title>
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="./ui.css">
@@ -17,7 +17,7 @@
 
   text {
     fill: url( #gradient );
-    filter: drop-shadow( 0.75px 0.75px 0.1px black );
+    filter: drop-shadow( 0.15vmin 0.15vmin 0.01vmin black );
   }
 
   button {
@@ -43,10 +43,18 @@
     outline: lime solid 0.5vmin;
   }
 
+  button:hover { background-color: lime; }
+
   button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  a { 
+    color: lime;
+    text-decoration: none;
+  }
+  a:hover { color: greenyellow }
 
   #splash {
     position: absolute;
@@ -85,7 +93,7 @@
       <button id="continue">Continue</button>
       <button id="new">New Game</button>
       <span style="position: absolute; bottom: 0">
-        (c) Jeremy Leland <a style="color: lime" href="https://github.com/JeremyLeland/frogger">GitHub</a>
+        © 2023 Jeremy Leland &nbsp; &nbsp; <a href="https://github.com/JeremyLeland/frogger">GitHub</a>
       </span>
     </div>
   </div>

@@ -71,7 +71,7 @@ export class Entity {
     const sx = /*Math.sign( t.a ) **/ Math.hypot( t.a, t.b );
     ctx.lineWidth = 1 / sx;
 
-    this.drawEntity( ctx );
+    this.drawEntity( ctx, this.animationTime );
 
     ctx.restore();
   }

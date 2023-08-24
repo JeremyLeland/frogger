@@ -6,11 +6,11 @@
   
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
 
-  World.DebugGrid = true;
+  // World.DebugGrid = true;
 
-  const TILE_SIZE = 64;
+  const TILE_SIZE = 48;
 
-  const world = await World.fromFile( '../levels/test/test1.json' );
+  const world = await World.fromFile( '../levels/classic/retro.json' );
 
   const canvas = new AnimatedCanvas();
 
@@ -21,13 +21,12 @@
   canvas.draw = ( ctx ) => {
     ctx.save();
     ctx.scale( TILE_SIZE, TILE_SIZE );
-    ctx.translate( 0.5, 0.5 );
 
     world.draw( ctx );
 
     ctx.restore();
   };
 
-  canvas.redraw();
+  canvas.start();
 
 </script>
