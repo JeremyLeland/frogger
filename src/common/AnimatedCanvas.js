@@ -30,7 +30,8 @@ export class AnimatedCanvas {
   }
 
   redraw() {
-    this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
+    // Don't need this because we're drawing the level over everything
+    // this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
 
     this.ctx.save();
     this.draw( this.ctx );

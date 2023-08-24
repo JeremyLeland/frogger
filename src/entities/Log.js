@@ -32,11 +32,15 @@ end.lineTo( -0.5, LOG_WIDTH );
 //   }
 // }
 
+let bodyGrad;
+
 function setGradient( ctx ) {
-  const bodyGrad = ctx.createLinearGradient( 0, -1, 0, 1 );
-  bodyGrad.addColorStop( 0, 'black' );
-  bodyGrad.addColorStop( 0.5, 'saddlebrown' );
-  bodyGrad.addColorStop( 1, 'black' );
+  if ( !bodyGrad ) {
+    bodyGrad = ctx.createLinearGradient( 0, -1, 0, 1 );
+    bodyGrad.addColorStop( 0, 'black' );
+    bodyGrad.addColorStop( 0.5, 'saddlebrown' );
+    bodyGrad.addColorStop( 1, 'black' );
+  }
 
   ctx.fillStyle = bodyGrad;
 }

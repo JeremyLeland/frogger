@@ -50,18 +50,16 @@ export const Death = {
 
 export class Frog extends Entity {
   isAlive = true;
-  
-  drawEntity( ctx ) {
-    Frog.drawFrog( ctx, this.color, this.animationTime, this.isAlive, this.mannerOfDeath );
-  }
 
-  static drawFrog( ctx, color = 'green', animationTime = 0, isAlive = true, mannerOfDeath ) {
-    // TODO: Is there a way to reuse this? Is it worth it performance-wise?
+  static getFrogGradient( ctx, color ) {
     const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
     gradient.addColorStop( 0, color );
     gradient.addColorStop( 1, 'black' );
+    return gradient;
+  }
 
-    ctx.fillStyle = gradient;
+  static drawFrog( ctx, bodyGradient, animationTime = 0, isAlive = true, mannerOfDeath ) {
+    ctx.fillStyle = bodyGradient;
     
     const footOffset = -0.1 * Math.sin( animationTime * Math.PI );
 

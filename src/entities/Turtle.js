@@ -46,11 +46,15 @@ for ( let i = 0; i < 6; i ++ ) {
 
 detail.lineTo( DETAIL_W_1, 0 );
 
+let bodyGrad, shellGrad;
+
 export class Turtle {
   static drawTurtle( ctx, animationTime = 0 ) {
-    const bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
-    bodyGrad.addColorStop( 0, 'green' );
-    bodyGrad.addColorStop( 1, 'black' );
+    if ( !bodyGrad ) {
+      bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
+      bodyGrad.addColorStop( 0, 'green' );
+      bodyGrad.addColorStop( 1, 'black' );
+    }
 
     ctx.translate( -0.05, 0 );
 
@@ -71,9 +75,11 @@ export class Turtle {
     ctx.fill( head );
     ctx.stroke( head );
 
-    const shellGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
-    shellGrad.addColorStop( 0, 'darkolivegreen' );
-    shellGrad.addColorStop( 0.5, 'black' );
+    if ( !shellGrad ) {
+      shellGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
+      shellGrad.addColorStop( 0, 'darkolivegreen' );
+      shellGrad.addColorStop( 0.5, 'black' );
+    }
 
     ctx.fillStyle = shellGrad;
 

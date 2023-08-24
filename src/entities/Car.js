@@ -10,12 +10,19 @@ windshield.roundRect( -0.35, -0.3, 0.65, 0.6, 0.2 );
 const roof = new Path2D();
 roof.roundRect( -0.25, -0.3, 0.4, 0.6, 0.2 );
 
-function drawCar( ctx, color ) {
-  const bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
-  bodyGrad.addColorStop( 0, color );
-  bodyGrad.addColorStop( 1, 'black' );
+const colors = [ 'red', 'yellow', 'lime', 'dodgerblue' ];
+const bodyGrad = Array( colors.length );
+
+function drawCar( ctx, colorIndex ) {
+  if ( !bodyGrad[ colorIndex ] ) {
+    const grad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
+    grad.addColorStop( 0, colors[ colorIndex ] );
+    grad.addColorStop( 1, 'black' );
+
+    bodyGrad[ colorIndex ] = grad;
+  }
   
-  ctx.fillStyle = bodyGrad;
+  ctx.fillStyle = bodyGrad[ colorIndex ];
   ctx.fill( body );
   ctx.stroke( body );
   
@@ -23,16 +30,16 @@ function drawCar( ctx, color ) {
   ctx.fill( windshield );
   ctx.stroke( windshield );
   
-  ctx.fillStyle = bodyGrad;
+  ctx.fillStyle = bodyGrad[ colorIndex ];
   ctx.fill( roof );
   ctx.stroke( roof );
 }
 
 export class Car {
   static HitDist = 0.75;
-  
-  static drawRedCar( ctx ) { drawCar( ctx, 'red' ) }
-  static drawYellowCar( ctx ) { drawCar( ctx, 'yellow' ) }
-  static drawGreenCar( ctx ) { drawCar( ctx, 'lime' ) }
-  static drawBlueCar( ctx ) { drawCar( ctx, 'dodgerblue' ) }
+
+  static drawRedCar( ctx ) { drawCar( ctx, 0 ) }
+  static drawYellowCar( ctx ) { drawCar( ctx, 1 ) }
+  static drawGreenCar( ctx ) { drawCar( ctx, 2 ) }
+  static drawBlueCar( ctx ) { drawCar( ctx, 3 ) }
 }

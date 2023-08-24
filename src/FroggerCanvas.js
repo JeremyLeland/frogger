@@ -2,7 +2,7 @@ import * as Constants from './Constants.js';
 import { Direction } from './Entity.js';
 import { AnimatedCanvas } from './common/AnimatedCanvas.js';
 
-import { Frog } from './Frog.js';
+import { Player } from './Player.js';
 import { Froggy } from './Froggy.js';
 
 const KeyDir = {
@@ -129,7 +129,7 @@ export class FroggerCanvas extends AnimatedCanvas {
         if ( i <= this.world.lives ) {
           ctx.save();
           ctx.rotate( Direction.Up.angle );
-          Frog.drawFrog( ctx );
+          Player.drawPlayer( ctx );
           ctx.restore();
         }
         ctx.translate( 1, 0 );

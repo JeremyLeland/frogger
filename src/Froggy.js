@@ -1,8 +1,10 @@
 import { Frog } from './Frog.js';
 
+const colors = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ];
+const bodyGrad = Array( colors.length );
+
 export class Froggy extends Frog {
   static Count = 6;
-  static Colors = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ];
   
   static Size = 0.7;
   
@@ -12,12 +14,13 @@ export class Froggy extends Frog {
     this.color = Froggy.Colors[ this.froggyIndex ];
   }
 
-  update( dt, world ) { }     // quick way to avoid animation for now
-
   static drawFroggy( ctx, colorIndex ) {
     ctx.save();
     ctx.scale( Froggy.Size, Froggy.Size );
-    Frog.drawFrog( ctx, Froggy.Colors[ colorIndex ] );
+
+    bodyGrad[ colorIndex ] ??= Frog.getFrogGradient( ctx, colors[ colorIndex ] );
+
+    Frog.drawFrog( ctx, bodyGrad[ colorIndex ] );
     ctx.restore();
   }
 }

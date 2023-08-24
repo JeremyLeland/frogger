@@ -5,11 +5,19 @@ import { Death, Frog } from './Frog.js';
 const MOVE_SPEED = 0.003;
 const JUMP_TIME = 1 / MOVE_SPEED;
 
+let bodyGrad;
+
 import { Tiles } from './Tiles.js';
 
 export class Player extends Frog {
   #jumpTimeLeft = 0;
   #jumpQueue = [];
+
+  static drawPlayer( ctx ) {
+    bodyGrad ??= Frog.getFrogGradient( ctx, 'green' );
+
+    Frog.drawFrog( ctx, bodyGrad );
+  }
 
   move( dir ) {
     if ( dir != this.#jumpQueue.at( -1 ) ) {
@@ -106,5 +114,11 @@ export class Player extends Frog {
         }
       }
     }
+  }
+
+  drawEntity( ctx ) {
+    bodyGrad ??= Frog.getFrogGradient( ctx, 'green' );
+
+    Frog.drawFrog( ctx, bodyGrad, this.animationTime, this.isAlive, this.mannerOfDeath );
   }
 }
