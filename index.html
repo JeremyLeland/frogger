@@ -102,6 +102,7 @@
 <script type="module">
   import { Direction } from './src/Entity.js';
   import { World } from './src/World.js';
+  import * as Utility from './src/common/Utility.js';
   
   import { FroggerCanvas } from './src/FroggerCanvas.js';
 
@@ -121,7 +122,7 @@
 
   function showSplash() {
     splashUI.style.visibility = 'visible';
-    if ( localStorage.getItem( 'levelIndex' ) ) {
+    if ( localStorage.getItem( 'levelsInfo' ) ) {
       continueButton.disabled = false;
       continueButton.focus();
     }
@@ -140,18 +141,51 @@
   //
   // Levels
   //
-  let levelIndex = 0;
-  const levels = [
-    './levels/classic/road.json',
-    './levels/classic/retro.json',
-    './levels/classic/pond.json',
-    './levels/classic/median.json',
-    './levels/classic/river.json',
-    './levels/classic/intersection.json',
-    './levels/classic/islands.json',
-    './levels/classic/roundabout.json',
-    './levels/classic/superhighway.json',
-  ];
+  let levelsInfo;
+  let levels;
+
+  async function continueGame() {
+    levelsInfo = JSON.parse( localStorage.getItem( 'levelsInfo' ) );
+    startLevelCollection();
+  }
+
+  function newGame() {
+    levelsInfo = {
+      path: './levels/classic/',
+      index: 0,
+    };
+    startLevelCollection();
+  }
+
+  async function startLevelCollection() {
+    const playlist = await Utility.jsonFromPath( levelsInfo.path + 'playlist.json' );
+    levels = playlist.levels;
+    startLevel();
+  }
+
+  function startLevel() {
+    localStorage.setItem( 'levelsInfo', JSON.stringify( levelsInfo ) );
+    loadLevel( levelsInfo.path + levels[ levelsInfo.index ] );
+  }
+
+  function prevLevel() {
+    if ( levelsInfo.index > 0 ) {
+      levelsInfo.index --;
+      startLevel();
+    }
+  }
+  
+  function nextLevel() {
+    if ( levelsInfo.index == levels.length - 1 ) {
+      canvas.stop();
+      localStorage.removeItem( 'levelsInfo' );
+      showSplash();
+    }
+    else {
+      levelsInfo.index ++;
+      startLevel();
+    }
+  }
 
   async function loadLevel( path ) {
     canvas.stop();
@@ -163,37 +197,7 @@
     hideSpash();
   }
 
-  function startLevel() {
-    localStorage.setItem( 'levelIndex', levelIndex );
-    loadLevel( levels[ levelIndex ] );
-  }
 
-  function prevLevel() {
-    levelIndex = Math.max( 0, levelIndex - 1 );
-    startLevel();
-  }
-  
-  function nextLevel() {
-    if ( levelIndex == levels.length - 1 ) {
-      canvas.stop();
-      localStorage.removeItem( 'levelIndex' );
-      showSplash();
-    }
-    else {
-      levelIndex ++;
-      startLevel();
-    }
-  }
-
-  function continueGame() {
-    levelIndex = parseInt( localStorage.getItem( 'levelIndex' ) );
-    startLevel();
-  }
-
-  function newGame() {
-    levelIndex = 0;
-    startLevel();
-  }
 
   
   const KeyBindings = {

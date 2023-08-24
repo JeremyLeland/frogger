@@ -1,0 +1,14 @@
+{
+  "name": "Classic",
+  "levels": [
+    "road.json",
+    "retro.json",
+    "pond.json",
+    "median.json",
+    "river.json",
+    "intersection.json",
+    "islands.json",
+    "roundabout.json",
+    "superhighway.json"
+  ]
+}

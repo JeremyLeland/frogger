@@ -16,3 +16,7 @@ export function drawArrow( ctx, x1, y1, x2, y2 ) {
 export function modulo( a, n ) {
   return ( ( a % n ) + n ) % n;
 }
+
+export async function jsonFromPath( path ) {
+  return JSON.parse( await ( await fetch( path ) ).text() );
+}
