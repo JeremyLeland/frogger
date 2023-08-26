@@ -272,9 +272,11 @@
   window.addEventListener( 'focus', resume );
 
   window.addEventListener( 'beforeunload', ( e ) => {
-    const worldStateString = JSON.stringify( world.getWorldstateJson() );
-    localStorage.setItem( 'worldState', worldStateString );
-    console.log( worldStateString );
+    if ( world ) {
+      const worldStateString = JSON.stringify( world.getWorldstateJson() );
+      localStorage.setItem( 'worldState', worldStateString );
+      // console.log( worldStateString );
+    }
   } );
 
   const wrapper = document.getElementById( 'wrapper' );
