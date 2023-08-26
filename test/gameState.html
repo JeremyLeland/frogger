@@ -1,6 +1,8 @@
 <title>Restore a game</title>
 <link rel="stylesheet" href="../grid.css">
 
+<body onunload=""></body>
+
 <script type="module">
   import { World } from '../src/World.js';
   
@@ -11,6 +13,8 @@
   const TILE_SIZE = 48;
 
   const world = await World.fromFile( '../levels/classic/retro.json' );
+
+  // localStorage.clear();
 
   const worldStateStr = localStorage.getItem( 'worldState' );
   if ( worldStateStr ) {

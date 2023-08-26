@@ -23,14 +23,6 @@ import { Player } from './Player.js';
 import * as Constants from './Constants.js';
 import * as Utility from './common/Utility.js';
 
-const DirArray = [
-  Direction.Up,
-  Direction.Left,
-  Direction.Down,
-  Direction.Right
-];
-const DirMap = new Map( DirArray.map( ( e, i ) => [ e, i + 1 ] ) );
-
 export class World
 {
   static DebugGrid = false;
@@ -93,7 +85,7 @@ export class World
         const row = Math.floor( index / json.cols );
 
         if ( dirIndex > 0 ) {
-          this.tiles[ col ][ row ].dir = DirArray[ dirIndex - 1 ];
+          this.tiles[ col ][ row ].dir = dirIndex - 1;
         }
       }
     } );
@@ -127,7 +119,7 @@ export class World
           tileInfoKeys.set( tile.tileInfoKey, tileInfoKeys.size );
         }
         jsonTiles.push( tileInfoKeys.get( tile.tileInfoKey ) );
-        jsonDirs.push( tile.dir ? DirMap.get( tile.dir ) : 0 );
+        jsonDirs.push( tile.dir ? tile.dir + 1 : 0 );
 
         if ( tile.warp ) {
           jsonWarps.push( [ col, row, tile.warp.col, tile.warp.row ] );
@@ -151,18 +143,16 @@ export class World
 
   applyWorldState( json ) {
     this.entities = this.getEntitiesFromJson( json.entities );
-
-    json.player.dir = DirArray[ json.player.dir ];
-
     this.player = new Player( Entities.Player, json.player );
     this.rescued = json.rescued;
+    this.timeLeft = json.timeLeft;
     this.lives = json.lives;
   }
 
   getWorldstateJson() {
     return {
       entities: this.getEntitiesJson(),
-      player: { x: this.player.x, y: this.player.y, dir: DirMap.get( this.player.dir ) },
+      player: { x: this.player.x, y: this.player.y, dir: this.player.dir },
       rescued: this.rescued,
       timeLeft: this.timeLeft,
       lives: this.lives,

@@ -1,12 +1,13 @@
 export const Direction = {
-  Left: 0, Up: 1, Right: 2, Down: 3
+  // Left: 0, Up: 1, Right: 2, Down: 3
+  Up: 0, Left: 1, Down: 2, Right: 3
 };
 
 export const Dir = [
-  /*Left:*/   { x: -1, y:  0, angle:  Math.PI     },
   /*Up:*/     { x:  0, y: -1, angle: -Math.PI / 2 },
-  /*Right:*/  { x:  1, y:  0, angle:  0           },
+  /*Left:*/   { x: -1, y:  0, angle:  Math.PI     },
   /*Down:*/   { x:  0, y:  1, angle:  Math.PI / 2 },
+  /*Right:*/  { x:  1, y:  0, angle:  0           },
 ];
 
 export class Entity {

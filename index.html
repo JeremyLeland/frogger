@@ -154,6 +154,9 @@
       path: './levels/classic/',
       index: 0,
     };
+
+    const worldStateStr = localStorage.removeItem( 'worldState' );
+
     startLevelCollection();
   }
 
@@ -179,6 +182,7 @@
     if ( levelsInfo.index == levels.length - 1 ) {
       canvas.stop();
       localStorage.removeItem( 'levelsInfo' );
+      
       showSplash();
     }
     else {
@@ -191,6 +195,13 @@
     canvas.stop();
 
     world = await World.fromFile( path );
+
+    const worldStateStr = localStorage.getItem( 'worldState' );
+    if ( worldStateStr ) {
+      world.applyWorldState( JSON.parse( worldStateStr ) );
+      localStorage.removeItem( 'worldState' );
+    }
+
     canvas.world = world;
     canvas.start();
 
@@ -259,6 +270,12 @@
 
   window.addEventListener( 'blur', pause );
   window.addEventListener( 'focus', resume );
+
+  window.addEventListener( 'beforeunload', ( e ) => {
+    const worldStateString = JSON.stringify( world.getWorldstateJson() );
+    localStorage.setItem( 'worldState', worldStateString );
+    console.log( worldStateString );
+  } );
 
   const wrapper = document.getElementById( 'wrapper' );
   window.onresize = ( e ) => {
