@@ -1,9 +1,14 @@
 import { Froggy } from './Froggy.js';
+import { Player } from './Player.js';
 import { Log } from './entities/Log.js';
 import { Turtle } from './entities/Turtle.js';
 import { Car } from './entities/Car.js';
 
 export const Entities = {
+  Player: {
+    drawEntity: Player.drawPlayer
+  },
+
   // Rides
   Turtle: {
     Speed: 0.001,
@@ -66,6 +71,7 @@ for ( let i = 0; i < Froggy.Count; i ++ ) {
     canRescue: true,
     hitDist: 0.5,
     froggyIndex: i,
+    zIndex: -1,
     drawEntity: function( ctx ) { Froggy.drawFroggy( ctx, i ) }
   }
 }

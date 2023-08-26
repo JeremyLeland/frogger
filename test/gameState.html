@@ -1,0 +1,43 @@
+<title>Restore a game</title>
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import { World } from '../src/World.js';
+  
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+
+  // World.DebugGrid = true;
+
+  const TILE_SIZE = 48;
+
+  const world = await World.fromFile( '../levels/classic/retro.json' );
+
+  const worldStateStr = localStorage.getItem( 'worldState' );
+  if ( worldStateStr ) {
+    world.applyWorldState( JSON.parse( worldStateStr ) );
+  }
+
+  const canvas = new AnimatedCanvas();
+
+  canvas.update = ( dt ) => {
+    world.update( dt );
+  }
+  
+  canvas.draw = ( ctx ) => {
+    ctx.save();
+    ctx.scale( TILE_SIZE, TILE_SIZE );
+
+    world.draw( ctx );
+
+    ctx.restore();
+  };
+
+  canvas.start();
+
+  window.addEventListener( 'beforeunload', ( e ) => {
+    const worldStateString = JSON.stringify( world.getWorldstateJson() );
+    localStorage.setItem( 'worldState', worldStateString );
+    console.log( worldStateString );
+  } );
+
+</script>

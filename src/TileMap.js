@@ -158,12 +158,12 @@ export class TileMap {
           const nTile = row > 0 ? tiles[ col ][ row - 1 ] : null;
           const wTile = col > 0 ? tiles[ col - 1 ][ row ] : null;
           
-          if ( tile?.dir ) {
-            if ( nTile && nTile.tileInfoKey == 'Road' && tile.dir != Direction.Up && nTile.dir && nTile.dir != Direction.Down ) {
+          if ( tile?.dir != undefined ) {
+            if ( nTile && nTile.tileInfoKey == 'Road' && tile.dir != Direction.Up && nTile.dir != Direction.Down ) {
               this.#lanesPath.rect( col - ROAD_LINE_LEN / 2, row - 0.5 - ROAD_LINE_WIDTH / 2, ROAD_LINE_LEN, ROAD_LINE_WIDTH );
             }
             
-            if ( wTile && wTile.tileInfoKey == 'Road' && tile.dir != Direction.Left && wTile.dir && wTile.dir != Direction.Right ) {
+            if ( wTile && wTile.tileInfoKey == 'Road' && tile.dir != Direction.Left && wTile.dir != Direction.Right ) {
               this.#lanesPath.rect( col - 0.5 - ROAD_LINE_WIDTH / 2, row - ROAD_LINE_LEN / 2, ROAD_LINE_WIDTH, ROAD_LINE_LEN );
             }
           }

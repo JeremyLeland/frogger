@@ -33,7 +33,7 @@ export class FroggerCanvas extends AnimatedCanvas {
  
     document.addEventListener( 'keydown', ( e ) => {
       const dir = KeyDir[ e.code ];
-      if ( dir ) {
+      if ( dir != undefined ) {
         this.#requestPlayerMove( dir );
       }
     } );
@@ -103,9 +103,9 @@ export class FroggerCanvas extends AnimatedCanvas {
 
       // Froggies
       for ( let i = 0; i < Constants.NumFroggies; i ++ ) {
-        if ( this.world.rescued.find( e => e.froggyIndex == i ) ) {
+        if ( this.world.rescued.includes( i ) ) {
           ctx.save();
-          ctx.rotate( Direction.Down.angle );
+          ctx.rotate( Math.PI / 2 );
           Froggy.drawFroggy( ctx, i );
           ctx.restore();
         }
@@ -128,7 +128,7 @@ export class FroggerCanvas extends AnimatedCanvas {
       for ( let i = 4; i > 0; i -- ) {
         if ( i <= this.world.lives ) {
           ctx.save();
-          ctx.rotate( Direction.Up.angle );
+          ctx.rotate( -Math.PI / 2 );
           Player.drawPlayer( ctx );
           ctx.restore();
         }

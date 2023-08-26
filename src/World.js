@@ -79,6 +79,7 @@ export class World
       maxRow: json.rows - 1,
     }
 
+    // TODO: Move all this to tileMap?
     json.tiles?.forEach( ( tileIndex, index ) => {
       const col = index % json.cols;
       const row = Math.floor( index / json.cols );
@@ -103,18 +104,13 @@ export class World
 
     this.#tileMap = new TileMap( this.tiles );
 
-    for ( const type in json.entities ) {
-      json.entities[ type ]?.forEach( coords => 
-        this.addEntity( type, coords[ 0 ], coords[ 1 ] ) 
-      );
-    }
-
     this.maxTime = json.time ?? 15000;
-    
-    this.lives = Constants.MaxLives;
-    
     [ this.spawnCol, this.spawnRow ] = json.player ?? [ Math.floor( this.cols / 2 ), Math.floor( this.rows / 2 ) ];
+
+    this.entities = this.getEntitiesFromJson( json.entities );
+    this.lives = Constants.MaxLives;    
     this.respawnPlayer();
+    // TODO: Don't spawn automaticaly?
   }
 
   toJson() {
@@ -122,7 +118,6 @@ export class World
     const jsonTiles = [];
     const jsonDirs = [];
     const jsonWarps = [];
-    const jsonEntities = {};
 
     for ( let index = 0, row = 0; row < this.rows; row ++ ) {
       for ( let col = 0; col < this.cols; col ++, index ++ ) {
@@ -139,11 +134,6 @@ export class World
         }
       }
     }
-
-    this.entities.forEach( entity => {
-      jsonEntities[ entity.entityKey ] ??= [];
-      jsonEntities[ entity.entityKey ].push( [ entity.x, entity.y ] );
-    } );
     
     return {
       cols: this.cols,
@@ -153,10 +143,53 @@ export class World
       tiles: jsonTiles,
       directions: jsonDirs,
       warps: jsonWarps,
-      entities: jsonEntities,
+      entities: this.getEntitiesJson(),
       player: [ this.spawnCol, this.spawnRow ],
       time: this.maxTime,
     };
+  }
+
+  applyWorldState( json ) {
+    this.entities = this.getEntitiesFromJson( json.entities );
+
+    json.player.dir = DirArray[ json.player.dir ];
+
+    this.player = new Player( Entities.Player, json.player );
+    this.rescued = json.rescued;
+    this.lives = json.lives;
+  }
+
+  getWorldstateJson() {
+    return {
+      entities: this.getEntitiesJson(),
+      player: { x: this.player.x, y: this.player.y, dir: DirMap.get( this.player.dir ) },
+      rescued: this.rescued,
+      timeLeft: this.timeLeft,
+      lives: this.lives,
+    }
+  }
+
+  getEntitiesFromJson( json ) {
+    const entities = [];
+
+    for ( const entityKey in json ) {
+      json[ entityKey ]?.forEach( coords => 
+        entities.push( new Entity( Entities[ entityKey ], { x: coords[ 0 ], y: coords[ 1 ] } ) ) 
+      );
+    }
+
+    return entities;
+  }
+
+  getEntitiesJson() {
+    const jsonEntities = {};
+
+    this.entities.forEach( entity => {
+      jsonEntities[ entity.info.entityKey ] ??= [];
+      jsonEntities[ entity.info.entityKey ].push( [ entity.x, entity.y ] );
+    } );
+
+    return jsonEntities;
   }
 
   getTile( col, row ) {
@@ -193,13 +226,13 @@ export class World
     this.removeEntity( col, row );
 
     this.entities.push(
-      Object.assign( 
-        new Entity( {
+      new Entity( 
+        Entities[ type ], 
+        {
           x: col,
           y: row,
           dir: this.tiles[ col ]?.[ row ]?.dir ?? Direction.Right,
-        } ), 
-        Entities[ type ]
+        }
       )
     );
   }
@@ -290,7 +323,7 @@ export class World
 
     this.timeLeft = this.maxTime;
 
-    this.player = new Player( {
+    this.player = new Player( Entities.Player, {
       x: this.spawnCol, 
       y: this.spawnRow, 
       color: 'green',
@@ -298,14 +331,14 @@ export class World
     } );
   }
 
-  rescue( entity ) {
-    this.rescued.push( entity );
-    this.entities = this.entities.filter( e => e != entity );
+  rescue( froggy ) {
+    this.rescued.push( froggy.info.froggyIndex );
+    this.entities = this.entities.filter( e => e != froggy );
 
     this.lives = Math.min( Constants.MaxLives, this.lives + 1 );
 
     this.needsRespawn = true;
-    this.victory = this.entities.filter( e => e.canRescue ).length == 0;
+    this.victory = this.entities.filter( e => e.info.canRescue ).length == 0;
   }
 
   update( dt ) {
@@ -350,9 +383,9 @@ export class World
 
     ctx.restore();
     
-    this.entities.filter( e => e.zIndex < this.player.zIndex ).forEach( e => e.draw( ctx ) );
+    this.entities.filter( e => e.info.zIndex < this.player.zIndex ).forEach( e => e.draw( ctx ) );
     this.player?.draw( ctx );
-    this.entities.filter( e => e.zIndex >= this.player.zIndex ).forEach( e => e.draw( ctx ) );
+    this.entities.filter( e => e.info.zIndex >= this.player.zIndex ).forEach( e => e.draw( ctx ) );
 
     if ( World.DebugGrid ) {
       ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;

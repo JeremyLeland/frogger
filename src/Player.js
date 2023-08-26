@@ -1,5 +1,6 @@
 
 
+import { Dir } from './Entity.js';
 import { Death, Frog } from './Frog.js';
 
 const MOVE_SPEED = 0.003;
@@ -9,14 +10,16 @@ let bodyGrad;
 
 import { Tiles } from './Tiles.js';
 
+// TODO: This can't be a Frog if I use it this way -- make it just do the drawing, move the update code somewhere else?
+
 export class Player extends Frog {
   #jumpTimeLeft = 0;
   #jumpQueue = [];
 
-  static drawPlayer( ctx ) {
+  static drawPlayer( ctx, animationAction, animationTime ) {
     bodyGrad ??= Frog.getFrogGradient( ctx, 'green' );
 
-    Frog.drawFrog( ctx, bodyGrad );
+    Frog.drawFrog( ctx, bodyGrad, animationTime, animationAction );
   }
 
   move( dir ) {
@@ -27,7 +30,7 @@ export class Player extends Frog {
 
   kill( mannerOfDeath ) {
     this.isAlive = false;
-    this.mannerOfDeath = mannerOfDeath;
+    this.animationAction = mannerOfDeath;   // TODO: This will be a string or number or something else...
     this.animationTime = 0;   // TODO: death splat animation?
     this.zIndex = -2;
     this.#jumpQueue = [];
@@ -52,16 +55,16 @@ export class Player extends Frog {
         this.dy = 0;
 
         const collidingWith = world.entities.find( 
-          e => Math.abs( e.x - this.x ) < e.hitDist && Math.abs( e.y - this.y ) < e.hitDist
+          e => Math.abs( e.x - this.x ) < e.info.hitDist && Math.abs( e.y - this.y ) < e.info.hitDist
         );
 
-        if ( collidingWith?.canRescue ) {
+        if ( collidingWith?.info.canRescue ) {
           world.rescue( collidingWith );
           this.#jumpQueue = [];
         }
-        else if ( collidingWith?.killsPlayer ) {
-          if ( ( this.dir.x == 0 && collidingWith.dir.x == 0 ) ||
-               ( this.dir.y == 0 && collidingWith.dir.y == 0 ) ) {
+        else if ( collidingWith?.info.killsPlayer ) {
+          // If difference is even, they are facing parallel
+          if ( Math.abs( this.dir - collidingWith.dir ) % 2 == 0 ) {
             world.killPlayer( Death.SquishedHorizontal );
           }
           else {
@@ -95,15 +98,15 @@ export class Player extends Frog {
           this.dir = dir;
 
           // Take into account ride speed while determining next tile
-          const nextX = this.x + dir.x + ( this.ride?.dx ?? 0 ) * JUMP_TIME;
-          const nextY = this.y + dir.y + ( this.ride?.dy ?? 0 ) * JUMP_TIME;
+          const nextX = this.x + Dir[ dir ].x + ( this.ride?.dx ?? 0 ) * JUMP_TIME;
+          const nextY = this.y + Dir[ dir ].y + ( this.ride?.dy ?? 0 ) * JUMP_TIME;
           const nextTile = world.getTile( Math.round( nextX ), Math.round( nextY ) );
 
           if ( nextTile && !Tiles[ nextTile.tileInfoKey ].Solid ) {
             this.#jumpTimeLeft += JUMP_TIME;
             
-            this.dx = dir.x * MOVE_SPEED;
-            this.dy = dir.y * MOVE_SPEED;
+            this.dx = Dir[ dir ].x * MOVE_SPEED;
+            this.dy = Dir[ dir ].y * MOVE_SPEED;
             
             if ( this.ride ) {
               this.dx += this.ride.dx;
@@ -114,11 +117,5 @@ export class Player extends Frog {
         }
       }
     }
-  }
-
-  drawEntity( ctx ) {
-    bodyGrad ??= Frog.getFrogGradient( ctx, 'green' );
-
-    Frog.drawFrog( ctx, bodyGrad, this.animationTime, this.isAlive, this.mannerOfDeath );
   }
 }

@@ -49,7 +49,7 @@ detail.lineTo( DETAIL_W_1, 0 );
 let bodyGrad, shellGrad;
 
 export class Turtle {
-  static drawTurtle( ctx, animationTime = 0 ) {
+  static drawTurtle( ctx, animationAction, animationTime = 0 ) {
     if ( !bodyGrad ) {
       bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
       bodyGrad.addColorStop( 0, 'green' );

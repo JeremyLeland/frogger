@@ -58,7 +58,7 @@ export class Frog extends Entity {
     return gradient;
   }
 
-  static drawFrog( ctx, bodyGradient, animationTime = 0, isAlive = true, mannerOfDeath ) {
+  static drawFrog( ctx, bodyGradient, animationTime = 0, mannerOfDeath ) {
     ctx.fillStyle = bodyGradient;
     
     const footOffset = -0.1 * Math.sin( animationTime * Math.PI );
@@ -123,18 +123,18 @@ export class Frog extends Entity {
       ctx.stroke( body );
     }
       
-    if ( isAlive ) {
+    if ( mannerOfDeath ) {
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = EYE_SIZE / 2;
+      ctx.stroke( exes );
+    }
+    else {
       ctx.fillStyle = 'white';
       ctx.fill( sclera );
       ctx.stroke( sclera );
       
       ctx.fillStyle = 'black';
       ctx.fill( pupils );
-    }
-    else {
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = EYE_SIZE / 2;
-      ctx.stroke( exes );
     }
 
     if ( mannerOfDeath == Death.Drowned ) {
