@@ -16,7 +16,7 @@ export class Entity {
   y = 0;
 
   // TODO: Store this as dir index, not value (for easier serialization)
-  dir = Direction.Right;
+  // dir = Direction.Right;
 
   dx = 0;
   dy = 0;
@@ -47,9 +47,39 @@ export class Entity {
           const newTile = world.getTile( this.x, this.y );
           if ( newTile?.dir ) {
             this.dir = newTile.dir;
+
+            if ( this.dir == 0 || this.dir == undefined || this.dir == null ) {
+              debugger;
+            }
           }
           else {
             // find where to warp to
+
+            let prevX = Math.round( this.x );
+            let prevY = Math.round( this.y );
+            let prevDir = this.dir;
+            let prevTile;
+            
+            do {
+              prevX -= Dir[ prevDir ].x;
+              prevY -= Dir[ prevDir ].y;
+              prevTile = world.getTile( prevX, prevY );
+
+              if ( prevTile ) {
+                prevDir = prevTile.dir;
+              }
+            }
+            while ( prevTile );
+
+            // TODO: Go back once more to get offscreen
+
+            this.x = prevX;
+            this.y = prevY;
+            this.dir = prevDir;
+
+            if ( this.dir == 0 || this.dir == undefined || this.dir == null ) {
+              debugger;
+            }
           }
         }
 

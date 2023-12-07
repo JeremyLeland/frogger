@@ -183,7 +183,7 @@ export class World
         {
           x: col,
           y: row,
-          dir: this.tiles[ col ]?.[ row ]?.dir ?? Direction.Right,
+          // dir: this.tiles[ col ]?.[ row ]?.dir ?? Direction.Right,
         }
       )
     );
