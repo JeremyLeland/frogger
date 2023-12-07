@@ -1,13 +1,14 @@
 export const Direction = {
   // Left: 0, Up: 1, Right: 2, Down: 3
-  Up: 0, Left: 1, Down: 2, Right: 3
+  None: 0, Up: 1, Left: 2, Down: 3, Right: 4
 };
 
 export const Dir = [
-  /*Up:*/     { x:  0, y: -1, angle: -Math.PI / 2 },
-  /*Left:*/   { x: -1, y:  0, angle:  Math.PI     },
-  /*Down:*/   { x:  0, y:  1, angle:  Math.PI / 2 },
-  /*Right:*/  { x:  1, y:  0, angle:  0           },
+  /* none */  {},
+  /*Up:*/     { x:  0, y: -1, angle: -Math.PI / 2, dist: ( x, y ) => y - Math.ceil( y - 1 ) },
+  /*Left:*/   { x: -1, y:  0, angle:  Math.PI    , dist: ( x, y ) => x - Math.ceil( x - 1 ) },
+  /*Down:*/   { x:  0, y:  1, angle:  Math.PI / 2, dist: ( x, y ) => Math.floor( y + 1 ) - y },
+  /*Right:*/  { x:  1, y:  0, angle:  0          , dist: ( x, y ) => Math.floor( x + 1 ) - x },
 ];
 
 export class Entity {
@@ -32,38 +33,59 @@ export class Entity {
   }
 
   update( dt, world ) {
-    this.x += this.dx * dt;
-    this.y += this.dy * dt;
+    this.dir ??= world.getTile( this.x, this.y ).dir;
+    
+    if ( this.info.Speed ) {
+      while ( dt > 0 ) {
+        const dist = Dir[ this.dir ].dist( this.x, this.y );
+        const time = Math.min( dist / this.info.Speed, dt );
+        
+        this.x += Dir[ this.dir ].x * this.info.Speed * time;
+        this.y += Dir[ this.dir ].y * this.info.Speed * time;
+        
+        if ( time < dt ) {
+          const newTile = world.getTile( this.x, this.y );
+          if ( newTile?.dir ) {
+            this.dir = newTile.dir;
+          }
+          else {
+            // find where to warp to
+          }
+        }
+
+        dt -= time;
+      }
+    }
 
     this.animationTime += dt;
 
-    const col = Math.max( 0, Math.min( world.tiles.length - 1, Math.round( this.x - Dir[ this.dir ].x * 0.49 ) ) );
-    const row = Math.max( 0, Math.min( world.tiles[ 0 ].length - 1, Math.round( this.y - Dir[ this.dir ].y * 0.49 ) ) );
-    let tile = world.tiles[ col ][ row ];
+    // const col = Math.max( 0, Math.min( world.tiles.length - 1, Math.round( this.x - Dir[ this.dir ].x * 0.49 ) ) );
+    // const row = Math.max( 0, Math.min( world.tiles[ 0 ].length - 1, Math.round( this.y - Dir[ this.dir ].y * 0.49 ) ) );
+    // let tile = world.tiles[ col ][ row ];
 
-    if ( this.currentTile != tile ) {
-      this.currentTile = tile;
+    // if ( this.currentTile != tile ) {
+    //   this.currentTile = tile;
  
-      if ( tile.warp ) {
-        this.x = tile.warp.col;
-        this.y = tile.warp.row;
+    //   if ( tile.warp ) {
+    //     this.x = tile.warp.col;
+    //     this.y = tile.warp.row;
         
-        tile = world.tiles[ tile.warp.col ][ tile.warp.row ];
-      }
+    //     tile = world.tiles[ tile.warp.col ][ tile.warp.row ];
+    //   }
       
-      if ( tile.dir != undefined ) {
-        if ( this.dir != tile.dir ) {
-          this.x = Math.round( this.x );
-          this.y = Math.round( this.y );
-        }
-        this.dir = tile.dir;
+    //   if ( tile.dir ) {
+    //     if ( this.dir != tile.dir ) {
+    //       this.x = Math.round( this.x );
+    //       this.y = Math.round( this.y );
+    //     }
+    //     this.dir = tile.dir;
 
-        if ( this.info.Speed ) {
-          this.dx = Dir[ tile.dir ].x * this.info.Speed;
-          this.dy = Dir[ tile.dir ].y * this.info.Speed;
-        }
-      }
-    }
+    //     if ( this.info.Speed ) {
+    //       this.dx = Dir[ tile.dir ].x * this.info.Speed;
+    //       this.dy = Dir[ tile.dir ].y * this.info.Speed;
+    //     }
+    //   }
+    // }
   }
 
   draw( ctx ) {
