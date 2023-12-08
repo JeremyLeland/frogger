@@ -152,18 +152,18 @@ export class TileMap {
     for ( let row = 0; row < rows; row ++ ) {
       for ( let col = 0; col < cols; col ++ ) {
 
-        const tile  = tiles[ col ][ row ];
+        const tile = tiles[ col ][ row ];
 
         if ( tile.tileInfoKey == 'Road' ) {
           const nTile = row > 0 ? tiles[ col ][ row - 1 ] : null;
           const wTile = col > 0 ? tiles[ col - 1 ][ row ] : null;
           
-          if ( tile?.dir != undefined ) {
-            if ( nTile && nTile.tileInfoKey == 'Road' && tile.dir != Direction.Up && nTile.dir != Direction.Down ) {
+          if ( tile?.dir ) {
+            if ( nTile && nTile.tileInfoKey == 'Road' && tile.dir != Direction.Up && nTile.dir && nTile.dir != Direction.Down ) {
               this.#lanesPath.rect( col - ROAD_LINE_LEN / 2, row - 0.5 - ROAD_LINE_WIDTH / 2, ROAD_LINE_LEN, ROAD_LINE_WIDTH );
             }
             
-            if ( wTile && wTile.tileInfoKey == 'Road' && tile.dir != Direction.Left && wTile.dir != Direction.Right ) {
+            if ( wTile && wTile.tileInfoKey == 'Road' && tile.dir != Direction.Left && wTile.dir && wTile.dir != Direction.Right ) {
               this.#lanesPath.rect( col - 0.5 - ROAD_LINE_WIDTH / 2, row - ROAD_LINE_LEN / 2, ROAD_LINE_WIDTH, ROAD_LINE_LEN );
             }
           }
@@ -181,18 +181,6 @@ export class TileMap {
     LAYERS.forEach( ( layerName, index ) => {
       ctx.fillStyle = COLORS[ index ];
       ctx.fill( this.#layerPaths[ index ], 'evenodd' );
-
-      // ctx.fillStyle = ctx.strokeStyle = 'white';
-
-      // for ( let row = 0; row < this.#layerEdges[ index ][ 0 ].length; row ++ ) {
-      //   for ( let col = 0; col < this.#layerEdges[ index ].length; col ++ ) {
-      //     this.#layerEdges[ index ][ col ][ row ].forEach( edge => {
-      //       if ( edge ) {
-      //         Utility.drawArrow( ctx, ...edge );
-      //       }
-      //     } );
-      //   }
-      // }
     } );
 
     ctx.fillStyle = 'yellow';
