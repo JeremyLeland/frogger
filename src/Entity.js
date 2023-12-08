@@ -33,6 +33,8 @@ export class Entity {
 
   update( dt, world ) {
     this.dir ??= world.getTile( this.x, this.y ).dir;
+
+    this.animationTime += dt;
     
     if ( this.info.Speed ) {
       while ( dt > 0 ) {
@@ -95,8 +97,6 @@ export class Entity {
         dt -= time;
       }
     }
-
-    this.animationTime += dt;
   }
 
   draw( ctx ) {
