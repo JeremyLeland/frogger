@@ -154,10 +154,13 @@ export class World
     return jsonEntities;
   }
 
-  getTile( col, row ) {
+  getTile( x, y ) {
+    const col = Math.round( x );
+    const row = Math.round( y );
+
     if ( 0 <= col && col <= this.cols && 
          0 <= row && row <= this.rows ) {
-      return this.tiles[ Math.round( col ) ]?.[ Math.round( row ) ];
+      return this.tiles[ col ]?.[ row ];
     }
   }
 
