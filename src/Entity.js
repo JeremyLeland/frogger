@@ -41,8 +41,11 @@ export class Entity {
         const dist = Dir[ this.dir ].dist( this.x, this.y );
         const time = Math.min( dist / this.info.Speed, dt );
         
-        this.x += Dir[ this.dir ].x * this.info.Speed * time;
-        this.y += Dir[ this.dir ].y * this.info.Speed * time;
+        this.dx = Dir[ this.dir ].x * this.info.Speed;
+        this.dy = Dir[ this.dir ].y * this.info.Speed;
+
+        this.x += this.dx * time;
+        this.y += this.dy * time;
         
         if ( time < dt ) {
           const newTile = world.getTile( this.x, this.y );
