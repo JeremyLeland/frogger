@@ -32,8 +32,6 @@ export class Entity {
   }
 
   update( dt, world ) {
-    this.dir ??= world.getTile( this.x, this.y ).dir;
-
     this.animationTime += dt;
     
     if ( this.info.Speed ) {
@@ -67,21 +65,25 @@ export class Entity {
             let tries = 0;
             
             do {
-              const fromBackDir = prevDir;
-              const fromLeftDir = prevDir == 1 ? 4 : prevDir - 1;
-              const fromRightDir = prevDir == 4 ? 1 : prevDir + 1;
-
-              for ( const testDir of [ fromBackDir, fromLeftDir, fromRightDir ] ) {
-                const testX = prevX - Dir[ testDir ].x;
-                const testY = prevY - Dir[ testDir ].y;
-                const testTile = world.getTile( testX, testY );
-
-                if ( testTile?.dir == testDir ) {
-                  prevDir = testDir;
-                  break;
+              // Only check for incoming directions if current tile could change direction
+              // Otherwise, just keep going back
+              if ( world.getTile( prevX, prevY )?.dir ) {
+                const fromBackDir = prevDir;
+                const fromLeftDir = prevDir == 1 ? 4 : prevDir - 1;
+                const fromRightDir = prevDir == 4 ? 1 : prevDir + 1;
+                
+                for ( const testDir of [ fromBackDir, fromLeftDir, fromRightDir ] ) {
+                  const testX = prevX - Dir[ testDir ].x;
+                  const testY = prevY - Dir[ testDir ].y;
+                  const testTile = world.getTile( testX, testY );
+                  
+                  if ( testTile?.dir == testDir ) {
+                    prevDir = testDir;
+                    break;
+                  }
                 }
               }
-
+                
               prevX -= Dir[ prevDir ].x;
               prevY -= Dir[ prevDir ].y;
             }

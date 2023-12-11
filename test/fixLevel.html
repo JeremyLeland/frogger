@@ -4,34 +4,57 @@
 
   const level = await ( await fetch( '../levels/classic/median.json' ) ).json();
 
-  level.cols -= 2;
+  //
+  // First pass -- removing crop
+  //
+
+  // level.cols -= 2;
   // level.rows -= 2;
 
-  [ level.tiles, level.directions ].forEach( array => {
+  // [ level.tiles, level.directions ].forEach( array => {
 
-    // array.splice( 0, level.cols + 2 );    // top row
+  //   array.splice( 0, level.cols + 2 );    // top row
     
-    for ( let row = 0; row < level.rows; row ++ ) {
-      array.splice( row * level.cols + 0, 1 );      // first col
-      array.splice( ( row + 1 ) * level.cols, 1 );  // last col
-    }
+  //   for ( let row = 0; row < level.rows; row ++ ) {
+  //     array.splice( row * level.cols + 0, 1 );      // first col
+  //     array.splice( ( row + 1 ) * level.cols, 1 );  // last col
+  //   }
     
-    // array.splice( level.rows * level.cols );    // bottom row
-  } );
+  //   array.splice( level.rows * level.cols );    // bottom row
+  // } );
 
-  delete level.crop;
-  delete level.warps;
+  // delete level.crop;
+  // delete level.warps;
+
+  // for ( const entityKey in level.entities ) {
+  //   level.entities[ entityKey ]?.forEach( coords => {
+  //     coords[ 0 ] --;
+  //     // coords[ 1 ] --;
+  //   } );
+  // }
+
+  // level.player[ 0 ] --;
+  // level.player[ 1 ] --;
+  
+  //
+  // Second pass -- fully specify entities
+  //
+
+  const entities = [];
 
   for ( const entityKey in level.entities ) {
     level.entities[ entityKey ]?.forEach( coords => {
-      coords[ 0 ] --;
-      // coords[ 1 ] --;
+      entities.push( {
+        type: entityKey,
+        x: coords[ 0 ],
+        y: coords[ 1 ],
+        dir: level.directions[ coords[ 0 ] + coords[ 1 ] * level.cols ],
+      } );
     } );
   }
 
-  level.player[ 0 ] --;
-  // level.player[ 1 ] --;
-  
+  level.entities = entities;
+
   console.log( JSON.stringify( level ) );
 
 </script>

@@ -76,7 +76,7 @@ export class World
     this.#tileMap = new TileMap( this.tiles );
 
     this.maxTime = json.time ?? 15000;
-    [ this.spawnCol, this.spawnRow ] = json.player ?? [ Math.floor( this.cols / 2 ), Math.floor( this.rows / 2 ) ];
+    this.spawn = json.spawn;
 
     this.entities = this.getEntitiesFromJson( json.entities );
     this.lives = Constants.MaxLives;    
@@ -132,15 +132,7 @@ export class World
   }
 
   getEntitiesFromJson( json ) {
-    const entities = [];
-
-    for ( const entityKey in json ) {
-      json[ entityKey ]?.forEach( coords => 
-        entities.push( new Entity( Entities[ entityKey ], { x: coords[ 0 ], y: coords[ 1 ] } ) ) 
-      );
-    }
-
-    return entities;
+    return json.map( e => new Entity( Entities[ e.type ], e ) );
   }
 
   getEntitiesJson() {
@@ -257,10 +249,10 @@ export class World
     this.timeLeft = this.maxTime;
 
     this.player = new Player( Entities.Player, {
-      x: this.spawnCol, 
-      y: this.spawnRow, 
+      x: this.spawn.x, 
+      y: this.spawn.y,
+      dir: this.spawn.dir, 
       color: 'green',
-      dir: this.tiles[ this.spawnCol ][ this.spawnRow ].dir ?? Direction.Right
     } );
   }
 
