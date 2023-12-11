@@ -136,14 +136,7 @@ export class World
   }
 
   getEntitiesJson() {
-    const jsonEntities = {};
-
-    this.entities.forEach( entity => {
-      jsonEntities[ entity.info.entityKey ] ??= [];
-      jsonEntities[ entity.info.entityKey ].push( [ entity.x, entity.y ] );
-    } );
-
-    return jsonEntities;
+    return this.entities.map( e => ( { type: e.type, x: e.x, y: e.y, dir: e.dir } ) );
   }
 
   getTile( x, y ) {

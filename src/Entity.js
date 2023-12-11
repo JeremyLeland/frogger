@@ -32,6 +32,8 @@ export class Entity {
   }
 
   update( dt, world ) {
+    
+    // TODO: Base animation frame on distance to next tile (calculated below)
     this.animationTime += dt;
     
     if ( this.info.Speed ) {
