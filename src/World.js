@@ -97,7 +97,7 @@ export class World
           tileInfoKeys.set( tile.tileInfoKey, tileInfoKeys.size );
         }
         jsonTiles.push( tileInfoKeys.get( tile.tileInfoKey ) );
-        jsonDirs.push( tile.dir );
+        jsonDirs.push( tile.dir ?? 0 );
       }
     }
     
@@ -108,7 +108,7 @@ export class World
       tiles: jsonTiles,
       directions: jsonDirs,
       entities: this.getEntitiesJson(),
-      player: [ this.spawnCol, this.spawnRow ],
+      spawn: this.spawn,
       time: this.maxTime,
     };
   }
@@ -124,7 +124,7 @@ export class World
   getWorldstateJson() {
     return {
       entities: this.getEntitiesJson(),
-      player: { x: this.player.x, y: this.player.y, dir: this.player.dir },
+      spawn: { x: this.player.x, y: this.player.y, dir: this.player.dir },
       rescued: this.rescued,
       timeLeft: this.timeLeft,
       lives: this.lives,

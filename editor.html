@@ -62,7 +62,15 @@
   worldCanvas.showUI = false;
   worldCanvas.scale = 48;
 
-  let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( { cols: 15, rows: 15 } );
+  const EmptyLevel = {
+    cols: 15,
+    rows: 15,
+    entities: [],
+    spawn: { x: 7, y: 7, dir: 1 },
+    time: 15000,
+  }
+
+  let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( EmptyLevel );
   worldCanvas.world = world; 
 
   //
@@ -144,6 +152,8 @@
 
     // Save progress
     localStorage.setItem( 'currentLevel', JSON.stringify( world.toJson() ) );
+
+    console.log( localStorage.getItem( 'currentLevel' ) );
   }
 
 
