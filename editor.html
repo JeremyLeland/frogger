@@ -59,18 +59,25 @@
   
 
   const worldCanvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
-  worldCanvas.showCropped = true;
   worldCanvas.showUI = false;
   worldCanvas.scale = 48;
 
-  let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( { cols: 15, rows: 15 } );
+  const EmptyLevel = {
+    cols: 15,
+    rows: 15,
+    entities: [],
+    spawn: { x: 7, y: 7, dir: 1 },
+    time: 15000,
+  }
+
+  let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( EmptyLevel );
   worldCanvas.world = world; 
 
   //
   // Load/Save/Clear
   //
   function clearLevel() {
-    world = new World( { cols: 17, rows: 17, crop: [ 1, 1, 15, 15 ] } );
+    world = new World( { cols: 15, rows: 15 } );
     worldCanvas.world = world;
     levelResized();
   }
@@ -117,7 +124,6 @@
 
   function setDirection( dir ) {
     world.setDirection( dir, mouseCol, mouseRow );
-    world.clearWarp( mouseCol, mouseRow );
     redraw();
   }
 
@@ -138,7 +144,6 @@
   
   function levelResized() {
     worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
-    updateCropUI();
     redraw();
   }
   
@@ -147,6 +152,8 @@
 
     // Save progress
     localStorage.setItem( 'currentLevel', JSON.stringify( world.toJson() ) );
+
+    console.log( localStorage.getItem( 'currentLevel' ) );
   }
 
 
@@ -203,37 +210,12 @@
     entitiesDiv.appendChild( button );
   }
 
-  const warpButton = document.createElement( 'button' );
-  warpButton.textContent = 'Warp';
-  warpButton.addEventListener( 'click', ( e ) => {
-    activeBrush = activeType = 'warp';
-  } );
-  uiDiv.appendChild( warpButton );
-
   const playerButton = document.createElement( 'button' );
   playerButton.textContent = 'Player';
   playerButton.addEventListener( 'click', ( e ) => {
     activeBrush = activeType = 'player';
   } );
   uiDiv.appendChild( playerButton );
-
-  uiDiv.appendChild( document.createTextNode( 'Crop: ' ) );
-
-  const cropUI = [];
-  [ 'minCol', 'minRow', 'maxCol', 'maxRow' ].forEach( val => {
-    const numInputUI = document.createElement( 'input' );
-    numInputUI.type = 'number';
-    numInputUI.style.width = 50;
-    numInputUI.oninput = _ => {
-      world.crop[ val ] = parseInt( numInputUI.value );
-      levelResized()
-    };
-
-    cropUI[ val ] = numInputUI;
-
-    uiDiv.appendChild( numInputUI );
-  } );
-  updateCropUI();
 
   uiDiv.appendChild( document.createTextNode( 'Time: ' ) );
 
@@ -276,33 +258,12 @@
     parent.appendChild( button );
   }
 
-  function updateCropUI() {
-    for ( const val in world.crop ) {
-      cropUI[ val ].value = world.crop[ val ];
-    }
-
-    cropUI.minCol.min = 0;
-    cropUI.minCol.max = world.crop.maxCol;
-    cropUI.maxCol.min = world.crop.minCol;
-    cropUI.maxCol.max = world.cols - 1;
-    cropUI.minRow.min = 0;
-    cropUI.minRow.max = world.crop.maxRow;
-    cropUI.maxRow.min = world.crop.minRow;
-    cropUI.maxRow.max = world.rows - 1;
-  }
-  
-
   let mouseCol = 0, mouseRow = 0, mouseDown = false, mouseButton = 0;
   let lastCol, lastRow;
-  let warpStart;
 
   worldCanvas.canvas.addEventListener( 'mousemove', ( e ) => {
     mouseCol = Math.floor( e.offsetX / Constants.TileSize );
     mouseRow = Math.floor( e.offsetY / Constants.TileSize );
-
-    if ( mouseDown && activeBrush == 'warp') {
-      // TODO: Draw warp-in-progress?
-    }
 
     doMouse();
   } );
@@ -311,10 +272,6 @@
     mouseDown = true;
     mouseButton = e.button;
 
-    if ( activeBrush == 'warp' ) {
-      warpStart ??= { col: mouseCol, row: mouseRow };
-    }
-
     doMouse();
   } );
 
@@ -322,19 +279,11 @@
     mouseDown = false;
     mouseButton = null;
     lastCol = lastRow = null;
-
-    if ( activeBrush == 'warp' ) {
-      world.setWarp( warpStart.col, warpStart.row, mouseCol, mouseRow );
-      warpStart = null;
-      redraw();
-    }
   } );
 
   // TODO: Moving entities with Click-Drag?
   // (how do I know not to change the tile instead? modifier key?)
 
-
-  // TODO: Inhibit adding entities if currently playing
   function doMouse() {
     if ( mode == Mode.Edit && mouseDown && ( mouseCol != lastCol || mouseRow != lastRow ) ) {
       lastCol = mouseCol;

@@ -12,7 +12,7 @@ arrow.closePath();
 const ARROW_COLOR = '#ff05';
 const TILE_BORDER = 1 / 64;
 
-import { Direction } from './Entity.js';
+import { Direction, Dir } from './Entity.js';
 import { Props } from './Props.js';
 import { TileMap } from './TileMap.js';
 import { Entity } from './Entity.js';
@@ -21,7 +21,6 @@ import { Death } from './Frog.js';
 import { Player } from './Player.js';
 
 import * as Constants from './Constants.js';
-import * as Utility from './common/Utility.js';
 
 export class World
 {
@@ -41,7 +40,6 @@ export class World
   rescued = [];
   player;
   tiles;
-  crop;
   maxTime;
   timeLeft = 0;
   
@@ -59,17 +57,6 @@ export class World
       Array( json.cols ), () => Array.from( 
         Array( json.rows ), () => ( { tileInfoKey: 'Grass' } ) ) );
 
-    this.crop = json.crop ? {
-      minCol: json.crop[ 0 ],
-      minRow: json.crop[ 1 ],
-      maxCol: json.crop[ 2 ],
-      maxRow: json.crop[ 3 ],
-    } : {
-      minCol: 0,
-      minRow: 0,
-      maxCol: json.cols - 1,
-      maxRow: json.rows - 1,
-    }
 
     // TODO: Move all this to tileMap?
     json.tiles?.forEach( ( tileIndex, index ) => {
@@ -80,24 +67,16 @@ export class World
     } );
 
     json.directions?.forEach( ( dirIndex, index ) => {
-      if ( dirIndex > 0 ) {
-        const col = index % json.cols;
-        const row = Math.floor( index / json.cols );
+      const col = index % json.cols;
+      const row = Math.floor( index / json.cols );
 
-        if ( dirIndex > 0 ) {
-          this.tiles[ col ][ row ].dir = dirIndex - 1;
-        }
-      }
+      this.tiles[ col ][ row ].dir = dirIndex;
     } );
-
-    json.warps?.forEach( coords => 
-      this.tiles[ coords[ 0 ] ][ coords [ 1 ] ].warp = { col: coords[ 2 ], row: coords[ 3 ] }
-    );
 
     this.#tileMap = new TileMap( this.tiles );
 
     this.maxTime = json.time ?? 15000;
-    [ this.spawnCol, this.spawnRow ] = json.player ?? [ Math.floor( this.cols / 2 ), Math.floor( this.rows / 2 ) ];
+    this.spawn = json.spawn;
 
     this.entities = this.getEntitiesFromJson( json.entities );
     this.lives = Constants.MaxLives;    
@@ -109,7 +88,6 @@ export class World
     const tileInfoKeys = new Map();
     const jsonTiles = [];
     const jsonDirs = [];
-    const jsonWarps = [];
 
     for ( let index = 0, row = 0; row < this.rows; row ++ ) {
       for ( let col = 0; col < this.cols; col ++, index ++ ) {
@@ -119,24 +97,18 @@ export class World
           tileInfoKeys.set( tile.tileInfoKey, tileInfoKeys.size );
         }
         jsonTiles.push( tileInfoKeys.get( tile.tileInfoKey ) );
-        jsonDirs.push( tile.dir ? tile.dir + 1 : 0 );
-
-        if ( tile.warp ) {
-          jsonWarps.push( [ col, row, tile.warp.col, tile.warp.row ] );
-        }
+        jsonDirs.push( tile.dir ?? 0 );
       }
     }
     
     return {
       cols: this.cols,
       rows: this.rows,
-      crop: [ this.crop.minCol, this.crop.minRow, this.crop.maxCol, this.crop.maxRow ],
       tileInfoKeys: Array.from( tileInfoKeys.keys() ),
       tiles: jsonTiles,
       directions: jsonDirs,
-      warps: jsonWarps,
       entities: this.getEntitiesJson(),
-      player: [ this.spawnCol, this.spawnRow ],
+      spawn: this.spawn,
       time: this.maxTime,
     };
   }
@@ -152,7 +124,7 @@ export class World
   getWorldstateJson() {
     return {
       entities: this.getEntitiesJson(),
-      player: { x: this.player.x, y: this.player.y, dir: this.player.dir },
+      spawn: { x: this.player.x, y: this.player.y, dir: this.player.dir },
       rescued: this.rescued,
       timeLeft: this.timeLeft,
       lives: this.lives,
@@ -160,32 +132,20 @@ export class World
   }
 
   getEntitiesFromJson( json ) {
-    const entities = [];
-
-    for ( const entityKey in json ) {
-      json[ entityKey ]?.forEach( coords => 
-        entities.push( new Entity( Entities[ entityKey ], { x: coords[ 0 ], y: coords[ 1 ] } ) ) 
-      );
-    }
-
-    return entities;
+    return json.map( e => new Entity( Entities[ e.type ], e ) );
   }
 
   getEntitiesJson() {
-    const jsonEntities = {};
-
-    this.entities.forEach( entity => {
-      jsonEntities[ entity.info.entityKey ] ??= [];
-      jsonEntities[ entity.info.entityKey ].push( [ entity.x, entity.y ] );
-    } );
-
-    return jsonEntities;
+    return this.entities.map( e => ( { type: e.type, x: e.x, y: e.y, dir: e.dir } ) );
   }
 
-  getTile( col, row ) {
-    if ( this.crop.minCol <= col && col <= this.crop.maxCol && 
-         this.crop.minRow <= row && row <= this.crop.maxRow ) {
-      return this.tiles[ col ][ row ];
+  getTile( x, y ) {
+    const col = Math.round( x );
+    const row = Math.round( y );
+
+    if ( 0 <= col && col <= this.cols && 
+         0 <= row && row <= this.rows ) {
+      return this.tiles[ col ]?.[ row ];
     }
   }
 
@@ -202,16 +162,6 @@ export class World
     }
   }
 
-  setWarp( startCol, startRow, endCol, endRow ) {
-    const start = this.tiles[ startCol ][ startRow ];
-    start.dir = null;
-    start.warp = { col: endCol, row: endRow };
-  }
-
-  clearWarp( col, row ) {
-    this.tiles[ col ][ row ].warp = null;
-  }
-
   addEntity( type, col, row ) {
     this.removeEntity( col, row );
 
@@ -221,7 +171,7 @@ export class World
         {
           x: col,
           y: row,
-          dir: this.tiles[ col ]?.[ row ]?.dir ?? Direction.Right,
+          // dir: this.tiles[ col ]?.[ row ]?.dir ?? Direction.Right,
         }
       )
     );
@@ -230,8 +180,6 @@ export class World
   removeEntity( col, row ) {
     this.entities = this.entities.filter( e => e.x != col || e.y != row );
   }
-
-  // TODO: Fix warps when adding/removing!
 
   addColumn( col ) {
     this.tiles.splice( col, 0, 
@@ -247,16 +195,6 @@ export class World
 
   #adjustColumns( col, delta ) {
     this.cols += delta;
-    this.crop.maxCol += delta;
-
-    for ( let r = 0; r < this.rows; r ++ ) {
-      for ( let c = 0; c < this.cols; c ++ ) {
-        const tile = this.tiles[ c ][ r ];
-        if ( tile.warp?.col >= col ) {
-            tile.warp.col += delta;
-        }
-      }
-    }
 
     this.entities.filter( e => e.x >= col ).forEach( e => e.x += delta );
     if ( this.player.x >= col ) {
@@ -282,16 +220,6 @@ export class World
 
   #adjustRows( row, delta ) {
     this.rows += delta;
-    this.crop.maxRow += delta;
-
-    for ( let r = 0; r < this.rows; r ++ ) {
-      for ( let c = 0; c < this.cols; c ++ ) {
-        const tile = this.tiles[ c ][ r ];
-        if ( tile.warp?.row >= row ) {
-            tile.warp.row += delta;
-        }
-      }
-    }
 
     this.entities.filter( e => e.y >= row ).forEach( e => e.y += delta );
     if ( this.player.y >= row ) {
@@ -314,10 +242,10 @@ export class World
     this.timeLeft = this.maxTime;
 
     this.player = new Player( Entities.Player, {
-      x: this.spawnCol, 
-      y: this.spawnRow, 
+      x: this.spawn.x, 
+      y: this.spawn.y,
+      dir: this.spawn.dir, 
       color: 'green',
-      dir: this.tiles[ this.spawnCol ][ this.spawnRow ].dir ?? Direction.Right
     } );
   }
 
@@ -344,13 +272,9 @@ export class World
     }
   }
 
-  draw( ctx, showCropped = false ) {
+  draw( ctx ) {
     ctx.save();
     ctx.translate( 0.5, 0.5 );
-
-    if ( !showCropped ) {
-      ctx.translate( -this.crop.minCol, -this.crop.minRow );
-    }
 
     this.#tileMap.draw( ctx );
 
@@ -394,7 +318,7 @@ export class World
 
           if ( tile.dir ) {
             ctx.save();
-            ctx.rotate( tile.dir.angle );
+            ctx.rotate( Dir[ tile.dir ].angle );
             ctx.fill( arrow );
             ctx.restore();
           }
@@ -403,39 +327,10 @@ export class World
           ctx.fillText( `(${ c },${ r })`, 0, 20 );
 
           ctx.restore();
-          
-          if ( tile.warp ) {
-            ctx.setLineDash( [ 0.1, 0.1 ] );
-            Utility.drawArrow( ctx, c, r, tile.warp.col, tile.warp.row );
-            ctx.setLineDash( [] );
-          }
         }
       }
     }
 
     ctx.restore();
-
-    if ( showCropped ) {
-      // TODO: Precalculate this path? Would need to update whenever resized
-      ctx.beginPath();
-      ctx.moveTo( this.crop.minCol,     this.crop.minRow     );
-      ctx.lineTo( this.crop.minCol,     this.crop.maxRow + 1 );
-      ctx.lineTo( this.crop.maxCol + 1, this.crop.maxRow + 1 );
-      ctx.lineTo( this.crop.maxCol + 1, this.crop.minRow     );
-      ctx.lineTo( this.crop.minCol,     this.crop.minRow     );
-      
-      ctx.setLineDash( [ 0.1, 0.1 ] );
-      ctx.lineWidth = 0.05;
-      ctx.stroke();
-      
-      ctx.lineTo( 0, 0 );
-      ctx.lineTo( this.cols, 0 );
-      ctx.lineTo( this.cols, this.rows );
-      ctx.lineTo( 0, this.rows );
-      ctx.lineTo( 0, 0 );
-      
-      ctx.fillStyle = "#000b";
-      ctx.fill();
-    }
   }
 }
