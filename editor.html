@@ -153,7 +153,7 @@
     // Save progress
     localStorage.setItem( 'currentLevel', JSON.stringify( world.toJson() ) );
 
-    console.log( localStorage.getItem( 'currentLevel' ) );
+    // console.log( localStorage.getItem( 'currentLevel' ) );
   }
 
 
@@ -195,7 +195,7 @@
     icon.ctx.scale( 48, 48 );
     icon.ctx.translate( 0.5, 0.5 );
     icon.ctx.lineWidth = 1 / 48;
-    Entities[ id ].drawEntity( icon.ctx );
+    Entities[ id ].draw( icon.ctx );
     button.appendChild( icon.canvas );
     button.appendChild( document.createElement( 'br' ) );
 

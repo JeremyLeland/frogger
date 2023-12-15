@@ -6,7 +6,8 @@ import { Car } from './entities/Car.js';
 
 export const Entities = {
   Player: {
-    drawEntity: Player.drawPlayer
+    zIndex: 0,
+    draw: Player.drawPlayer
   },
 
   // Rides
@@ -14,25 +15,25 @@ export const Entities = {
     Speed: 0.001,
     hitDist: 0.5,   // if this is < 0.5, you can fall between turtles
     zIndex: -1,
-    drawEntity: Turtle.drawTurtle
+    draw: Turtle.drawTurtle
   },
   LogStart: {
     Speed: 0.001,
     hitDist: 0.5,
     zIndex: -1,
-    drawEntity: Log.drawStart
+    draw: Log.drawStart
   },
   LogMiddle: {
     Speed: 0.001,
     hitDist: 0.5,
     zIndex: -1,
-    drawEntity: Log.drawMiddle
+    draw: Log.drawMiddle
   },
   LogEnd: {
     Speed: 0.001,
     hitDist: 0.5,
     zIndex: -1,
-    drawEntity: Log.drawEnd
+    draw: Log.drawEnd
   },
 
   // Cars
@@ -41,28 +42,28 @@ export const Entities = {
     killsPlayer: true,
     hitDist: Car.HitDist,
     zIndex: 1,
-    drawEntity: Car.drawRedCar
+    draw: Car.drawRedCar
   },
   YellowCar: {
     Speed: 0.003,
     killsPlayer: true,
     hitDist: Car.HitDist,
     zIndex: 1,
-    drawEntity: Car.drawYellowCar
+    draw: Car.drawYellowCar
   },
   GreenCar: {
     Speed: 0.0025,
     killsPlayer: true,
     hitDist: Car.HitDist,
     zIndex: 1,
-    drawEntity: Car.drawGreenCar
+    draw: Car.drawGreenCar
   },
   BlueCar: {
     Speed: 0.002,
     killsPlayer: true,
     hitDist: Car.HitDist,
     zIndex: 1,
-    drawEntity: Car.drawBlueCar
+    draw: Car.drawBlueCar
   }
 };
 
@@ -72,7 +73,7 @@ for ( let i = 0; i < Froggy.Count; i ++ ) {
     hitDist: 0.5,
     froggyIndex: i,
     zIndex: -1,
-    drawEntity: function( ctx ) { Froggy.drawFroggy( ctx, i ) }
+    draw: function( ctx ) { Froggy.drawFroggy( ctx, i ) }
   }
 }
 

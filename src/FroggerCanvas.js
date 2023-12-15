@@ -34,7 +34,7 @@ export class FroggerCanvas extends AnimatedCanvas {
     document.addEventListener( 'keydown', ( e ) => {
       const dir = KeyDir[ e.code ];
       if ( dir != undefined ) {
-        this.#requestPlayerMove( dir );
+        this.world?.requestPlayerMove( dir );
       }
     } );
 
@@ -59,19 +59,8 @@ export class FroggerCanvas extends AnimatedCanvas {
         ( dx < 0 ? Direction.Left : Direction.Right ) :
         ( dy < 0 ? Direction.Up   : Direction.Down  );
       
-      this.#requestPlayerMove( dir );
+      this.world?.requestPlayerMove( dir );
     } );
-  }
-
-  #requestPlayerMove( dir ) {
-    if ( this.world ) {
-      if ( this.world.needsRespawn ) {
-        this.world.respawnPlayer();
-      }
-      else {
-        this.world.player.move( dir );
-      }
-    }
   }
 
   update( dt ) {

@@ -116,9 +116,10 @@ export class Entity {
 
     // https://math.stackexchange.com/questions/13150/extracting-rotation-scale-values-from-2d-transformation-matrix/13165#13165
     // Assuming uniform scale
-    const t = ctx.getTransform();
-    const sx = /*Math.sign( t.a ) **/ Math.hypot( t.a, t.b );
-    ctx.lineWidth = 1 / sx;
+    // const t = ctx.getTransform();
+    // const sx = /*Math.sign( t.a ) **/ Math.hypot( t.a, t.b );
+    // ctx.lineWidth = 1 / sx;
+    // ctx.lineWidth = 0.02;
 
     this.info.drawEntity( ctx, this.animationAction, this.animationTime );
 

@@ -14,6 +14,7 @@ const TILE_BORDER = 1 / 64;
 
 import { Direction, Dir } from './Entity.js';
 import { Props } from './Props.js';
+import { Tiles } from './Tiles.js';
 import { TileMap } from './TileMap.js';
 import { Entity } from './Entity.js';
 import { Entities } from './Entities.js';
@@ -21,6 +22,15 @@ import { Death } from './Frog.js';
 import { Player } from './Player.js';
 
 import * as Constants from './Constants.js';
+
+const PlayerStatus = {
+  Alive: 'alive',
+  Rescued: 'rescued',
+  Expired: 'expired',
+  Drowned: 'drowned',
+  SquishedHorizontal: 'squishedHorizontal',
+  SquishedVertical: 'squishedVertical',
+};
 
 export class World
 {
@@ -79,6 +89,13 @@ export class World
     this.spawn = json.spawn;
 
     this.entities = this.getEntitiesFromJson( json.entities );
+
+    this.player = {
+      type: 'Player',
+      color: 'green',
+      status: PlayerStatus.Idle,
+    };
+
     this.lives = Constants.MaxLives;    
     this.respawnPlayer();
     // TODO: Don't spawn automaticaly?
@@ -132,6 +149,7 @@ export class World
   }
 
   getEntitiesFromJson( json ) {
+    // Object.assign( new Entity(), e )
     return json.map( e => new Entity( Entities[ e.type ], e ) );
   }
 
@@ -227,25 +245,16 @@ export class World
     }
   }
 
-  killPlayer( mannerOfDeath ) {
-    this.player.kill( mannerOfDeath );
-    this.needsRespawn = true;
-    
-    // TODO: Lose when lives < 0
-    this.lives--;
-    this.defeat = this.lives < 0;
-  }
-
   respawnPlayer() {
-    this.needsRespawn = false;
-
     this.timeLeft = this.maxTime;
 
-    this.player = new Player( Entities.Player, {
-      x: this.spawn.x, 
+    Object.assign( this.player, {
+      x: this.spawn.x,
       y: this.spawn.y,
-      dir: this.spawn.dir, 
-      color: 'green',
+      dir: this.spawn.dir,
+      status: PlayerStatus.Alive,
+      jumpTimeLeft: 0,
+      jumpQueue: [],
     } );
   }
 
@@ -259,15 +268,187 @@ export class World
     this.victory = this.entities.filter( e => e.info.canRescue ).length == 0;
   }
 
-  update( dt ) {
-    this.entities.forEach( entity => entity.update( dt, this ) );
-    this.player?.update( dt, this );
+  requestPlayerMove( dir ) {
+    if ( this.player.status != PlayerStatus.Alive ) {
+      this.respawnPlayer();
+    }
+    else {
+      if ( dir != this.player.jumpQueue.at( -1 ) ) {
+        this.player.jumpQueue.push( dir );
+      }
+    }
+  }
 
-    if ( !this.needsRespawn ) {
-      this.timeLeft = Math.max( 0, this.timeLeft - dt );
+  update( dt ) {
+    //
+    // Entities
+    //
+
+    this.entities.forEach( entity => {
+      // TODO: Base animation frame on distance to next tile (calculated below)
+      entity.animationTime += dt;
       
-      if ( this.timeLeft == 0 ) {
-        this.killPlayer( Death.Expired );
+      const speed = Entities[ entity.type ].Speed;
+
+      if ( speed ) {
+        let totalTime = dt;
+        while ( totalTime > 0 ) {
+          const dist = Dir[ entity.dir ].dist( entity.x, entity.y );
+          const time = Math.min( dist / speed, totalTime );
+          
+          entity.dx = Dir[ entity.dir ].x * speed;
+          entity.dy = Dir[ entity.dir ].y * speed;
+
+          entity.x += entity.dx * time;
+          entity.y += entity.dy * time;
+          
+          if ( time < totalTime ) {
+            const newTile = this.getTile( entity.x, entity.y );
+            if ( newTile ) {
+              if ( newTile.dir ) {
+                entity.dir = newTile.dir;
+              }
+            }
+            else {
+              // Attempt to work backwards to find where to warp to
+
+              // NOTE: entity gets messy because the old frogger allowed multiple paths to
+              //       share a direction-less tile. We need to do extra work to accomodate
+              //       entity case.
+
+              let prevX = Math.round( entity.x );
+              let prevY = Math.round( entity.y );
+              let prevDir = entity.dir;
+              let tries = 0;
+              
+              do {
+                // Only check for incoming directions if current tile could change direction
+                // Otherwise, just keep going back
+                if ( this.getTile( prevX, prevY )?.dir ) {
+                  const fromBackDir = prevDir;
+                  const fromLeftDir = prevDir == 1 ? 4 : prevDir - 1;
+                  const fromRightDir = prevDir == 4 ? 1 : prevDir + 1;
+                  
+                  for ( const testDir of [ fromBackDir, fromLeftDir, fromRightDir ] ) {
+                    const testX = prevX - Dir[ testDir ].x;
+                    const testY = prevY - Dir[ testDir ].y;
+                    const testTile = this.getTile( testX, testY );
+                    
+                    if ( testTile?.dir == testDir ) {
+                      prevDir = testDir;
+                      break;
+                    }
+                  }
+                }
+                  
+                prevX -= Dir[ prevDir ].x;
+                prevY -= Dir[ prevDir ].y;
+              }
+              while ( this.getTile( prevX, prevY ) && ++tries < 100 );
+
+              if ( tries == 100 ) {
+                debugger;
+              }
+
+              entity.x = prevX;
+              entity.y = prevY;
+              entity.dir = prevDir;
+            }
+          }
+
+          totalTime -= time;
+        }
+      }
+    } );
+
+    //
+    // Player
+    //
+
+    // TODO: Put constants somewhere else
+    const MOVE_SPEED = 0.003;
+    const JUMP_TIME = 1 / MOVE_SPEED;
+
+    if ( this.player.status == PlayerStatus.Alive ) {
+      this.player.x += this.player.dx * dt;
+      this.player.y += this.player.dy * dt;
+
+      if ( this.player.jumpTimeLeft > 0 ) {
+        this.player.jumpTimeLeft -= dt;
+        this.player.animationTime = this.player.jumpTimeLeft * MOVE_SPEED;
+        this.player.zIndex = 2;
+      }
+
+      if ( this.player.jumpTimeLeft <= 0 ) {
+        this.player.jumpTimeLeft = 0;
+        this.player.zIndex = 0;
+
+        this.player.dx = 0;
+        this.player.dy = 0;
+
+        const collidingWith = this.entities.find( 
+          e => Math.abs( e.x - this.player.x ) < Entities[ e.type ].hitDist && Math.abs( e.y - this.player.y ) < Entities[ e.type ].hitDist
+        );
+
+        if ( collidingWith ) {   
+          if ( Entities[ collidingWith.type ]?.canRescue ) {
+            this.rescue( collidingWith );
+            this.player.status = PlayerStatus.Rescued;
+          }
+          else if ( Entities[ collidingWith.type ]?.killsPlayer ) {
+            // If difference is even, they are facing parallel
+            this.player.status = Math.abs( this.player.dir - collidingWith.dir ) % 2 == 0 ? 
+              PlayerStatus.SquishedHorizontal : PlayerStatus.SquishedVertical;
+          }
+          else {
+            this.player.x = collidingWith.x;
+            this.player.y = collidingWith.y;
+            this.player.dx = collidingWith.dx;
+            this.player.dy = collidingWith.dy;
+          }
+        }
+        else {
+          const tileX = Math.round( this.player.x );
+          const tileY = Math.round( this.player.y );
+
+          const tile = this.getTile( tileX, tileY );
+          if ( !tile || Tiles[ tile.tileInfoKey ].KillsPlayer ) {
+            this.player.status = PlayerStatus.Drowned;
+          }
+          else {
+            this.player.x = tileX;
+            this.player.y = tileY;
+          }
+        }
+
+        if ( this.player.status == PlayerStatus.Alive && this.player.jumpQueue.length > 0 ) {
+          const dir = this.player.jumpQueue.shift();
+          this.player.dir = dir;
+
+          // Take into account ride speed while determining next tile
+          const nextX = this.player.x + Dir[ dir ].x + this.player.dx * JUMP_TIME;
+          const nextY = this.player.y + Dir[ dir ].y + this.player.dy * JUMP_TIME;
+          const nextTile = this.getTile( Math.round( nextX ), Math.round( nextY ) );
+
+          if ( nextTile && !Tiles[ nextTile.tileInfoKey ].Solid ) {
+            this.player.jumpTimeLeft += JUMP_TIME;
+            
+            this.player.dx += Dir[ dir ].x * MOVE_SPEED;
+            this.player.dy += Dir[ dir ].y * MOVE_SPEED;
+          }
+        }
+      }
+
+      if ( this.player.status == PlayerStatus.Alive ) {
+        this.timeLeft = Math.max( 0, this.timeLeft - dt );
+
+        if ( this.timeLeft == 0 ) {
+          this.player.status = Death.Expired;
+        }
+      }
+
+      if ( this.player.status != PlayerStatus.Alive ) {
+        this.lives --;
       }
     }
   }
@@ -275,6 +456,7 @@ export class World
   draw( ctx ) {
     ctx.save();
     ctx.translate( 0.5, 0.5 );
+    ctx.lineWidth = 0.02;
 
     this.#tileMap.draw( ctx );
 
@@ -288,6 +470,10 @@ export class World
         const prop = Props[ this.tiles[ col ][ row ].tileInfoKey ];
         prop?.draw( ctx );
 
+        if ( this.spawn.x == col && this.spawn.y == row ) {
+          Props[ 'Bullseye' ].draw( ctx );
+        }
+
         ctx.translate( 1, 0 );
       }
 
@@ -297,9 +483,17 @@ export class World
 
     ctx.restore();
     
-    this.entities.filter( e => e.info.zIndex < this.player.zIndex ).forEach( e => e.draw( ctx ) );
-    this.player?.draw( ctx );
-    this.entities.filter( e => e.info.zIndex >= this.player.zIndex ).forEach( e => e.draw( ctx ) );
+    // TODO: Draw player after CanRide and before KillsPlayer, unless player is jumping (or already dead)
+
+    if ( this.player.status != PlayerStatus.Alive ) {
+      drawEntity( ctx, this.player );
+    }
+
+    this.entities.forEach( entity => drawEntity( ctx, entity ) );
+
+    if ( this.player.status == PlayerStatus.Alive ) {
+      drawEntity( ctx, this.player );
+    }
 
     if ( World.DebugGrid ) {
       ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
@@ -333,4 +527,18 @@ export class World
 
     ctx.restore();
   }
+}
+
+function drawEntity( ctx, entity ) {
+  ctx.save();
+  ctx.translate( entity.x, entity.y );
+  ctx.rotate( Dir[ entity.dir ]?.angle ?? 0 );
+  // ctx.scale( entity.size, entity.size );   // nothing changes size for now
+
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 0.02;
+
+  Entities[ entity.type ].draw( ctx, entity.animationAction, entity.animationTime );
+
+  ctx.restore();
 }
