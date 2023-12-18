@@ -1,7 +1,7 @@
 
 
 import { Dir } from './Entity.js';
-import { Death, Frog } from './Frog.js';
+import { Frog } from './Frog.js';
 
 const MOVE_SPEED = 0.003;
 const JUMP_TIME = 1 / MOVE_SPEED;
@@ -19,7 +19,7 @@ export class Player extends Frog {
   static drawPlayer( ctx, animationAction, animationTime ) {
     bodyGrad ??= Frog.getFrogGradient( ctx, 'green' );
 
-    Frog.drawFrog( ctx, bodyGrad, animationTime, animationAction );
+    Frog.drawFrog( ctx, bodyGrad, animationAction, animationTime );
   }
 
   move( dir ) {

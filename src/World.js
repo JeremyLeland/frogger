@@ -18,19 +18,10 @@ import { Tiles } from './Tiles.js';
 import { TileMap } from './TileMap.js';
 import { Entity } from './Entity.js';
 import { Entities } from './Entities.js';
-import { Death } from './Frog.js';
+import { Frog } from './Frog.js';
 import { Player } from './Player.js';
 
 import * as Constants from './Constants.js';
-
-const PlayerStatus = {
-  Alive: 'alive',
-  Rescued: 'rescued',
-  Expired: 'expired',
-  Drowned: 'drowned',
-  SquishedHorizontal: 'squishedHorizontal',
-  SquishedVertical: 'squishedVertical',
-};
 
 export class World
 {
@@ -89,12 +80,6 @@ export class World
     this.spawn = json.spawn;
 
     this.entities = this.getEntitiesFromJson( json.entities );
-
-    this.player = {
-      type: 'Player',
-      color: 'green',
-      status: PlayerStatus.Idle,
-    };
 
     this.lives = Constants.MaxLives;    
     this.respawnPlayer();
@@ -248,14 +233,20 @@ export class World
   respawnPlayer() {
     this.timeLeft = this.maxTime;
 
-    Object.assign( this.player, {
+    this.needsRespawn = false;
+
+    this.player = {
+      type: 'Player',
       x: this.spawn.x,
       y: this.spawn.y,
+      dx: 0,
+      dy: 0,
       dir: this.spawn.dir,
-      status: PlayerStatus.Alive,
+      color: 'green',
+      status: Frog.Status.Alive,
       jumpTimeLeft: 0,
       jumpQueue: [],
-    } );
+    };
   }
 
   rescue( froggy ) {
@@ -269,7 +260,7 @@ export class World
   }
 
   requestPlayerMove( dir ) {
-    if ( this.player.status != PlayerStatus.Alive ) {
+    if ( this.needsRespawn || this.player.status != Frog.Status.Alive ) {
       this.respawnPlayer();
     }
     else {
@@ -369,7 +360,7 @@ export class World
     const MOVE_SPEED = 0.003;
     const JUMP_TIME = 1 / MOVE_SPEED;
 
-    if ( this.player.status == PlayerStatus.Alive ) {
+    if ( this.player.status == Frog.Status.Alive ) {
       this.player.x += this.player.dx * dt;
       this.player.y += this.player.dy * dt;
 
@@ -393,12 +384,11 @@ export class World
         if ( collidingWith ) {   
           if ( Entities[ collidingWith.type ]?.canRescue ) {
             this.rescue( collidingWith );
-            this.player.status = PlayerStatus.Rescued;
           }
           else if ( Entities[ collidingWith.type ]?.killsPlayer ) {
             // If difference is even, they are facing parallel
             this.player.status = Math.abs( this.player.dir - collidingWith.dir ) % 2 == 0 ? 
-              PlayerStatus.SquishedHorizontal : PlayerStatus.SquishedVertical;
+              Frog.Status.SquishedHorizontal : Frog.Status.SquishedVertical;
           }
           else {
             this.player.x = collidingWith.x;
@@ -413,7 +403,7 @@ export class World
 
           const tile = this.getTile( tileX, tileY );
           if ( !tile || Tiles[ tile.tileInfoKey ].KillsPlayer ) {
-            this.player.status = PlayerStatus.Drowned;
+            this.player.status = Frog.Status.Drowned;
           }
           else {
             this.player.x = tileX;
@@ -421,7 +411,7 @@ export class World
           }
         }
 
-        if ( this.player.status == PlayerStatus.Alive && this.player.jumpQueue.length > 0 ) {
+        if ( this.player.status == Frog.Status.Alive && this.player.jumpQueue.length > 0 ) {
           const dir = this.player.jumpQueue.shift();
           this.player.dir = dir;
 
@@ -439,15 +429,15 @@ export class World
         }
       }
 
-      if ( this.player.status == PlayerStatus.Alive ) {
+      if ( !this.needsRespawn && this.player.status == Frog.Status.Alive ) {
         this.timeLeft = Math.max( 0, this.timeLeft - dt );
 
         if ( this.timeLeft == 0 ) {
-          this.player.status = Death.Expired;
+          this.player.status = Frog.Status.Expired;
         }
       }
 
-      if ( this.player.status != PlayerStatus.Alive ) {
+      if ( this.player.status != Frog.Status.Alive ) {
         this.lives --;
       }
     }
@@ -484,14 +474,15 @@ export class World
     ctx.restore();
     
     // TODO: Draw player after CanRide and before KillsPlayer, unless player is jumping (or already dead)
+    this.player.animationAction = this.player.status;
 
-    if ( this.player.status != PlayerStatus.Alive ) {
+    if ( this.player.status != Frog.Status.Alive ) {
       drawEntity( ctx, this.player );
     }
 
     this.entities.forEach( entity => drawEntity( ctx, entity ) );
 
-    if ( this.player.status == PlayerStatus.Alive ) {
+    if ( this.player.status == Frog.Status.Alive ) {
       drawEntity( ctx, this.player );
     }
 
