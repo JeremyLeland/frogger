@@ -12,7 +12,7 @@ arrow.closePath();
 const ARROW_COLOR = '#ff05';
 const TILE_BORDER = 1 / 64;
 
-import { Direction, Dir } from './Entity.js';
+import { Dir } from './Entity.js';
 import { Props } from './Props.js';
 import { Tiles } from './Tiles.js';
 import { TileMap } from './TileMap.js';
@@ -22,6 +22,8 @@ import { Frog } from './Frog.js';
 import { Player } from './Player.js';
 
 import * as Constants from './Constants.js';
+
+let animationTime = 0;
 
 export class World
 {
@@ -45,6 +47,7 @@ export class World
   timeLeft = 0;
   
   needsRespawn = false;
+  // TODO: Spawn timer?
   defeat = false;
   victory = false;
 
@@ -79,7 +82,7 @@ export class World
     this.maxTime = json.time ?? 15000;
     this.spawn = json.spawn;
 
-    this.entities = this.getEntitiesFromJson( json.entities );
+    this.entities = json.entities;
 
     this.lives = Constants.MaxLives;    
     this.respawnPlayer();
@@ -116,8 +119,8 @@ export class World
   }
 
   applyWorldState( json ) {
-    this.entities = this.getEntitiesFromJson( json.entities );
-    this.player = new Player( Entities.Player, json.player );
+    this.entities = json.entities;
+    this.player = json.player;
     this.rescued = json.rescued;
     this.timeLeft = json.timeLeft;
     this.lives = json.lives;
@@ -125,21 +128,12 @@ export class World
 
   getWorldstateJson() {
     return {
-      entities: this.getEntitiesJson(),
-      spawn: { x: this.player.x, y: this.player.y, dir: this.player.dir },
+      entities: this.entities,
+      player: this.player,
       rescued: this.rescued,
       timeLeft: this.timeLeft,
       lives: this.lives,
     }
-  }
-
-  getEntitiesFromJson( json ) {
-    // Object.assign( new Entity(), e )
-    return json.map( e => new Entity( Entities[ e.type ], e ) );
-  }
-
-  getEntitiesJson() {
-    return this.entities.map( e => ( { type: e.type, x: e.x, y: e.y, dir: e.dir } ) );
   }
 
   getTile( x, y ) {
@@ -239,24 +233,20 @@ export class World
       type: 'Player',
       x: this.spawn.x,
       y: this.spawn.y,
-      dx: 0,
-      dy: 0,
       dir: this.spawn.dir,
       color: 'green',
       status: Frog.Status.Alive,
-      jumpTimeLeft: 0,
-      jumpQueue: [],
     };
   }
 
   rescue( froggy ) {
-    this.rescued.push( froggy.info.froggyIndex );
+    this.rescued.push( Entities[ froggy.type ].froggyIndex );
     this.entities = this.entities.filter( e => e != froggy );
 
     this.lives = Math.min( Constants.MaxLives, this.lives + 1 );
 
     this.needsRespawn = true;
-    this.victory = this.entities.filter( e => e.info.canRescue ).length == 0;
+    this.victory = this.rescued.length == Constants.NumFroggies;
   }
 
   requestPlayerMove( dir ) {
@@ -271,14 +261,13 @@ export class World
   }
 
   update( dt ) {
+    animationTime += dt;
+
     //
     // Entities
     //
 
     this.entities.forEach( entity => {
-      // TODO: Base animation frame on distance to next tile (calculated below)
-      entity.animationTime += dt;
-      
       const speed = Entities[ entity.type ].Speed;
 
       if ( speed ) {
@@ -361,6 +350,12 @@ export class World
     const JUMP_TIME = 1 / MOVE_SPEED;
 
     if ( this.player.status == Frog.Status.Alive ) {
+      this.player.dx ??= 0;
+      this.player.dy ??= 0;
+      this.player.jumpTimeLeft ??= 0;
+      this.player.jumpQueue ??= [];
+      this.player.animationTime = 0;
+
       this.player.x += this.player.dx * dt;
       this.player.y += this.player.dy * dt;
 
@@ -411,7 +406,7 @@ export class World
           }
         }
 
-        if ( this.player.status == Frog.Status.Alive && this.player.jumpQueue.length > 0 ) {
+        if ( !this.needsRespawn && this.player.status == Frog.Status.Alive && this.player.jumpQueue.length > 0 ) {
           const dir = this.player.jumpQueue.shift();
           this.player.dir = dir;
 
@@ -529,7 +524,7 @@ function drawEntity( ctx, entity ) {
   ctx.strokeStyle = 'black';
   ctx.lineWidth = 0.02;
 
-  Entities[ entity.type ].draw( ctx, entity.animationAction, entity.animationTime );
+  Entities[ entity.type ].draw( ctx, entity.animationAction, entity.animationTime ?? animationTime );
 
   ctx.restore();
 }
