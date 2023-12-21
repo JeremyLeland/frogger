@@ -39,10 +39,7 @@ exes.lineTo( EYE_OFFSET_X + EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
 exes.moveTo( EYE_OFFSET_X + EYE_SIZE, EYE_OFFSET_Y - EYE_SIZE );
 exes.lineTo( EYE_OFFSET_X - EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
 
-import { Entity } from './Entity.js';
-
-
-export class Frog extends Entity {
+export class Frog {
   static Status = {
     Alive: 'alive',
     Expired: 'expired',

@@ -16,10 +16,8 @@ import { Dir } from './Entity.js';
 import { Props } from './Props.js';
 import { Tiles } from './Tiles.js';
 import { TileMap } from './TileMap.js';
-import { Entity } from './Entity.js';
 import { Entities } from './Entities.js';
 import { Frog } from './Frog.js';
-import { Player } from './Player.js';
 
 import * as Constants from './Constants.js';
 
@@ -116,14 +114,6 @@ export class World
       spawn: this.spawn,
       time: this.maxTime,
     };
-  }
-
-  applyWorldState( json ) {
-    this.entities = json.entities;
-    this.player = json.player;
-    this.rescued = json.rescued;
-    this.timeLeft = json.timeLeft;
-    this.lives = json.lives;
   }
 
   getWorldstateJson() {

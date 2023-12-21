@@ -198,7 +198,7 @@
 
     const worldStateStr = localStorage.getItem( 'worldState' );
     if ( worldStateStr ) {
-      world.applyWorldState( JSON.parse( worldStateStr ) );
+      Object.assign( world, JSON.parse( worldStateStr ) );
       localStorage.removeItem( 'worldState' );
     }
 
@@ -207,9 +207,6 @@
 
     hideSpash();
   }
-
-
-
   
   const KeyBindings = {
     KeyG: () => World.DebugGrid = !World.DebugGrid,
