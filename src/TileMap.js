@@ -1,5 +1,4 @@
 import { Direction } from '../src/Entity.js';
-import { Tiles } from '../src/Tiles.js';
 import * as Utility from '../src/common/Utility.js';
 
 const DirIndex = {
@@ -29,41 +28,38 @@ export class TileMap {
   #sidewalkSquares = new Path2D();
   #lanesPath = new Path2D();
 
-  constructor( tiles ) {
-    const cols = tiles.length;
-    const rows = tiles[ 0 ].length;
-
+  constructor( level ) {
     this.#layerPaths = LAYERS.map( layerName => {
       // Store the edges coming from each corner, indexed by direction
       const edges = Array.from( 
-        Array( cols + 1 ), _ => Array.from( 
-          Array( rows + 1 ), _ => 
+        Array( level.cols + 1 ), _ => Array.from( 
+          Array( level.rows + 1 ), _ => 
             Array( 4 ) ) );
       
       this.#layerEdges.push( edges );
   
-      for ( let row = 0; row < rows; row ++ ) {
-        for ( let col = 0; col < cols; col ++ ) {
-          const currentBase = Tiles[ tiles[ col ][ row ].tileInfoKey ].Base;
+      for ( let row = 0; row < level.rows; row ++ ) {
+        for ( let col = 0; col < level.cols; col ++ ) {
+          const currentBase = level.getTileInfo( col, row ).Base;
           
           if ( currentBase == layerName ) {
             // Left edge (going down)
-            if ( 0 == col || currentBase != Tiles[ tiles[ col - 1 ][ row ].tileInfoKey ].Base ) {
+            if ( 0 == col || currentBase != level.getTileInfo( col - 1, row ).Base ) {
               edges[ col ][ row ][ DirIndex.Down ] = [ col, row, col, row + 1 ];
             }
             
             // Top edge (going left)
-            if ( 0 == row || currentBase != Tiles[ tiles[ col ][ row - 1 ].tileInfoKey ].Base ) {
+            if ( 0 == row || currentBase != level.getTileInfo( col, row - 1 ).Base ) {
               edges[ col + 1 ][ row ][ DirIndex.Left ] = [ col + 1, row, col, row ];
             }
             
             // Right edge (going up)
-            if ( cols == col + 1 || currentBase != Tiles[ tiles[ col + 1 ][ row ].tileInfoKey ].Base ) {
+            if ( level.cols == col + 1 || currentBase != level.getTileInfo( col + 1, row ).Base ) {
               edges[ col + 1 ][ row + 1 ][ DirIndex.Up ] = [ col + 1, row + 1, col + 1, row ];
             }
             
             // Bottom edge (going right)
-            if ( rows == row + 1 || currentBase != Tiles[ tiles[ col ][ row + 1 ].tileInfoKey ].Base ) {
+            if ( level.rows == row + 1 || currentBase != level.getTileInfo( col, row + 1 ).Base ) {
               edges[ col ][ row + 1 ][ DirIndex.Right ] = [ col, row + 1, col + 1, row + 1 ];
             }
           }
@@ -72,8 +68,8 @@ export class TileMap {
   
       const nextEdge = new Map();
   
-      for ( let row = 0; row <= rows; row ++ ) {
-        for ( let col = 0; col <= cols; col ++ ) {
+      for ( let row = 0; row <= level.rows; row ++ ) {
+        for ( let col = 0; col <= level.cols; col ++ ) {
           for ( let dir = 0; dir < 4; dir ++ ) {
             const current = edges[ col ][ row ][ dir ];
   
@@ -99,8 +95,8 @@ export class TileMap {
       const unvisited = new Set();
       const visited = new Set();
   
-      for ( let row = 0; row <= rows; row ++ ) {
-        for ( let col = 0; col <= cols; col ++ ) {
+      for ( let row = 0; row <= level.rows; row ++ ) {
+        for ( let col = 0; col <= level.cols; col ++ ) {
           edges[ col ][ row ].forEach( edge => {
             if ( edge ) {
               unvisited.add( edge );
@@ -131,7 +127,7 @@ export class TileMap {
           const nextDY = edge[ 3 ] - edge[ 1 ];
   
           if ( prevDX != nextDX || prevDY != nextDY ) {
-            if ( 0 == prev[ 2 ] || 0 == prev[ 3 ] || prev[ 2 ] == cols || prev[ 3 ] == rows ) {
+            if ( 0 == prev[ 2 ] || 0 == prev[ 3 ] || prev[ 2 ] == level.cols || prev[ 3 ] == level.rows ) {
               path.lineTo( -0.5 + prev[ 2 ], -0.5 + prev[ 3 ] );  
             }
             else {
@@ -149,36 +145,43 @@ export class TileMap {
 
     const ROAD_LINE_WIDTH = 0.15, ROAD_LINE_LEN = 0.5;
 
-    for ( let row = 0; row < rows; row ++ ) {
-      for ( let col = 0; col < cols; col ++ ) {
+    for ( let row = 0; row < level.rows; row ++ ) {
+      for ( let col = 0; col < level.cols; col ++ ) {
 
-        const tile = tiles[ col ][ row ];
+        const index = col + row * level.cols;
+        const tileInfoKey = level.tileInfoKeys[ level.tiles[ index ] ];
+        const dir = level.directions[ index ];
 
-        if ( tile.tileInfoKey == 'Road' ) {
-          const nTile = row > 0 ? tiles[ col ][ row - 1 ] : null;
-          const wTile = col > 0 ? tiles[ col - 1 ][ row ] : null;
-          
-          if ( tile?.dir ) {
-            if ( nTile && nTile.tileInfoKey == 'Road' && tile.dir != Direction.Up && nTile.dir && nTile.dir != Direction.Down ) {
+        if ( tileInfoKey == 'Road' && dir > 0 ) {
+          if ( row > 0 ) {
+            const nIndex = col + ( row - 1 ) * level.cols;
+            const nTileInfoKey = level.tileInfoKeys[ level.tiles[ nIndex ] ];
+            const nTileDir = level.directions[ nIndex ];
+
+            if ( nTileInfoKey == 'Road' && dir != Direction.Up && nTileDir && nTileDir != Direction.Down ) {
               this.#lanesPath.rect( col - ROAD_LINE_LEN / 2, row - 0.5 - ROAD_LINE_WIDTH / 2, ROAD_LINE_LEN, ROAD_LINE_WIDTH );
             }
-            
-            if ( wTile && wTile.tileInfoKey == 'Road' && tile.dir != Direction.Left && wTile.dir && wTile.dir != Direction.Right ) {
+          }
+          
+          if ( col > 0 ) {
+            const wIndex = ( col - 1 ) + row * level.cols;
+            const wTileInfoKey = level.tileInfoKeys[ level.tiles[ wIndex ] ];
+            const wTileDir = level.directions[ wIndex ];
+
+            if ( wTileInfoKey == 'Road' && dir != Direction.Left && wTileDir && wTileDir != Direction.Right ) {
               this.#lanesPath.rect( col - 0.5 - ROAD_LINE_WIDTH / 2, row - ROAD_LINE_LEN / 2, ROAD_LINE_WIDTH, ROAD_LINE_LEN );
             }
           }
         }
-        else if ( tile.tileInfoKey == 'Sidewalk' ) {
+        else if ( tileInfoKey == 'Sidewalk' ) {
           this.#sidewalkSquares.rect( col - 0.4, row - 0.4, 0.8, 0.8 );
         }
       }
     }
   }
 
-  
-
   draw( ctx ) {
-    LAYERS.forEach( ( layerName, index ) => {
+    LAYERS.forEach( ( _, index ) => {
       ctx.fillStyle = COLORS[ index ];
       ctx.fill( this.#layerPaths[ index ], 'evenodd' );
     } );

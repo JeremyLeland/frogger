@@ -41,6 +41,7 @@ export class World
   rescued = [];
   player;
   tiles;
+  directions;
   maxTime;
   timeLeft = 0;
   
@@ -55,27 +56,30 @@ export class World
     this.cols = json.cols;
     this.rows = json.rows;
 
-    this.tiles = Array.from( 
-      Array( json.cols ), () => Array.from( 
-        Array( json.rows ), () => ( { tileInfoKey: 'Grass' } ) ) );
+    // this.tiles = Array.from( 
+    //   Array( json.cols ), () => Array.from( 
+    //     Array( json.rows ), () => ( { tileInfoKey: 'Grass' } ) ) );
 
+    this.tileInfoKeys = json.tileInfoKeys;
+    this.tiles = json.tiles;
+    this.directions = json.directions;
 
     // TODO: Move all this to tileMap?
-    json.tiles?.forEach( ( tileIndex, index ) => {
-      const col = index % json.cols;
-      const row = Math.floor( index / json.cols );
+    // json.tiles?.forEach( ( tileIndex, index ) => {
+    //   const col = index % json.cols;
+    //   const row = Math.floor( index / json.cols );
 
-      this.tiles[ col ][ row ].tileInfoKey = json.tileInfoKeys[ tileIndex ];
-    } );
+    //   this.tiles[ col ][ row ].tileInfoKey = json.tileInfoKeys[ tileIndex ];
+    // } );
 
-    json.directions?.forEach( ( dirIndex, index ) => {
-      const col = index % json.cols;
-      const row = Math.floor( index / json.cols );
+    // json.directions?.forEach( ( dirIndex, index ) => {
+    //   const col = index % json.cols;
+    //   const row = Math.floor( index / json.cols );
 
-      this.tiles[ col ][ row ].dir = dirIndex;
-    } );
+    //   this.tiles[ col ][ row ].dir = dirIndex;
+    // } );
 
-    this.#tileMap = new TileMap( this.tiles );
+    this.#tileMap = new TileMap( this );
 
     this.maxTime = json.time ?? 15000;
     this.spawn = json.spawn;
@@ -88,29 +92,29 @@ export class World
   }
 
   toJson() {
-    const tileInfoKeys = new Map();
-    const jsonTiles = [];
-    const jsonDirs = [];
-
-    for ( let index = 0, row = 0; row < this.rows; row ++ ) {
-      for ( let col = 0; col < this.cols; col ++, index ++ ) {
-        const tile = this.tiles[ col ][ row ];
-
-        if ( !tileInfoKeys.has( tile.tileInfoKey ) ) {
-          tileInfoKeys.set( tile.tileInfoKey, tileInfoKeys.size );
-        }
-        jsonTiles.push( tileInfoKeys.get( tile.tileInfoKey ) );
-        jsonDirs.push( tile.dir ?? 0 );
-      }
-    }
+//    const tileInfoKeys = new Map();
+//    const jsonTiles = [];
+//    const jsonDirs = [];
+//
+//    for ( let index = 0, row = 0; row < this.rows; row ++ ) {
+//      for ( let col = 0; col < this.cols; col ++, index ++ ) {
+//        const tile = this.tiles[ col ][ row ];
+//
+//        if ( !tileInfoKeys.has( tile.tileInfoKey ) ) {
+//          tileInfoKeys.set( tile.tileInfoKey, tileInfoKeys.size );
+//        }
+//        jsonTiles.push( tileInfoKeys.get( tile.tileInfoKey ) );
+//        jsonDirs.push( tile.dir ?? 0 );
+//      }
+//    }
     
     return {
       cols: this.cols,
       rows: this.rows,
-      tileInfoKeys: Array.from( tileInfoKeys.keys() ),
-      tiles: jsonTiles,
-      directions: jsonDirs,
-      entities: this.getEntitiesJson(),
+      tileInfoKeys: this.tileInfoKeys, //Array.from( tileInfoKeys.keys() ),
+      tiles: this.tiles,
+      directions: this.directions,
+      entities: this.entities, //this.getEntitiesJson(),
       spawn: this.spawn,
       time: this.maxTime,
     };
@@ -126,13 +130,33 @@ export class World
     }
   }
 
-  getTile( x, y ) {
+  // getTile( x, y ) {
+  //   const col = Math.round( x );
+  //   const row = Math.round( y );
+
+  //   if ( 0 <= col && col <= this.cols && 
+  //        0 <= row && row <= this.rows ) {
+  //     return this.tiles[ col ]?.[ row ];
+  //   }
+  // }
+
+  getTileInfo( x, y ) {
     const col = Math.round( x );
     const row = Math.round( y );
 
-    if ( 0 <= col && col <= this.cols && 
-         0 <= row && row <= this.rows ) {
-      return this.tiles[ col ]?.[ row ];
+    if ( 0 <= col && col < this.cols && 
+         0 <= row && row < this.rows ) {
+      return Tiles[ this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ] ];
+    }
+  }
+
+  getDirectionInfo( x, y ) {
+    const col = Math.round( x );
+    const row = Math.round( y );
+
+    if ( 0 <= col && col < this.cols && 
+         0 <= row && row < this.rows ) {
+      return Dir[ this.directions[ col + row * this.cols ] ];
     }
   }
 
@@ -273,10 +297,13 @@ export class World
           entity.y += entity.dy * time;
           
           if ( time < totalTime ) {
-            const newTile = this.getTile( entity.x, entity.y );
-            if ( newTile ) {
-              if ( newTile.dir ) {
-                entity.dir = newTile.dir;
+            const col = Math.round( entity.x );
+            const row = Math.round( entity.y );
+
+            if ( 0 <= col && 0 <= row && col < this.cols && row < this.rows ) {
+              const newDir = this.directions[ col + row * this.cols ];
+              if ( newDir ) {
+                entity.dir = newDir;
               }
             }
             else {
@@ -294,7 +321,7 @@ export class World
               do {
                 // Only check for incoming directions if current tile could change direction
                 // Otherwise, just keep going back
-                if ( this.getTile( prevX, prevY )?.dir ) {
+                if ( this.directions[ prevX + prevY * this.cols ] ) {
                   const fromBackDir = prevDir;
                   const fromLeftDir = prevDir == 1 ? 4 : prevDir - 1;
                   const fromRightDir = prevDir == 4 ? 1 : prevDir + 1;
@@ -302,11 +329,14 @@ export class World
                   for ( const testDir of [ fromBackDir, fromLeftDir, fromRightDir ] ) {
                     const testX = prevX - Dir[ testDir ].x;
                     const testY = prevY - Dir[ testDir ].y;
-                    const testTile = this.getTile( testX, testY );
-                    
-                    if ( testTile?.dir == testDir ) {
-                      prevDir = testDir;
-                      break;
+
+                    if ( 0 <= testX && 0 <= testY && testX < this.cols && testY < this.rows ) {
+                      const dir = this.directions[ testX + testY * this.cols ];
+
+                      if ( dir == testDir ) {
+                        prevDir = testDir;
+                        break;
+                      }
                     }
                   }
                 }
@@ -314,7 +344,7 @@ export class World
                 prevX -= Dir[ prevDir ].x;
                 prevY -= Dir[ prevDir ].y;
               }
-              while ( this.getTile( prevX, prevY ) && ++tries < 100 );
+              while ( 0 <= prevX && 0 <= prevY && prevX < this.cols && prevY < this.rows && ++tries < 100 );
 
               if ( tries == 100 ) {
                 debugger;
@@ -386,8 +416,8 @@ export class World
           const tileX = Math.round( this.player.x );
           const tileY = Math.round( this.player.y );
 
-          const tile = this.getTile( tileX, tileY );
-          if ( !tile || Tiles[ tile.tileInfoKey ].KillsPlayer ) {
+          const tile = this.getTileInfo( tileX, tileY );
+          if ( !tile || tile.KillsPlayer ) {
             this.player.status = Frog.Status.Drowned;
           }
           else {
@@ -403,9 +433,10 @@ export class World
           // Take into account ride speed while determining next tile
           const nextX = this.player.x + Dir[ dir ].x + this.player.dx * JUMP_TIME;
           const nextY = this.player.y + Dir[ dir ].y + this.player.dy * JUMP_TIME;
-          const nextTile = this.getTile( Math.round( nextX ), Math.round( nextY ) );
 
-          if ( nextTile && !Tiles[ nextTile.tileInfoKey ].Solid ) {
+          const nextTile = this.getTileInfo( nextX, nextY );
+
+          if ( nextTile && !nextTile.Solid ) {
             this.player.jumpTimeLeft += JUMP_TIME;
             
             this.player.dx += Dir[ dir ].x * MOVE_SPEED;
@@ -442,7 +473,7 @@ export class World
       
       for ( let col = 0; col < this.cols; col ++ ) {
     
-        const prop = Props[ this.tiles[ col ][ row ].tileInfoKey ];
+        const prop = Props[ this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ] ];
         prop?.draw( ctx );
 
         if ( this.spawn.x == col && this.spawn.y == row ) {
@@ -479,7 +510,7 @@ export class World
       
       for ( let r = 0; r < this.rows; r ++ ) {
         for ( let c = 0; c < this.cols; c ++ ) {
-          const tile = this.tiles[ c ][ r ];
+          const tile = this.directions[ c + r * this.cols ];
 
           ctx.save();
           ctx.translate( c, r );
