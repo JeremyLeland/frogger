@@ -1,123 +1,40 @@
-const BASE_W = 0.05, HEAD_W = 0.2, NECK = 0, LEN = 0.2;
-const arrow = new Path2D();
-arrow.moveTo( -LEN,  -BASE_W );
-arrow.lineTo(  NECK, -BASE_W );
-arrow.lineTo(  NECK, -HEAD_W );
-arrow.lineTo(  LEN,   0 );
-arrow.lineTo(  NECK,  HEAD_W );
-arrow.lineTo(  NECK,  BASE_W );
-arrow.lineTo( -LEN,   BASE_W );
-arrow.closePath();
-
-const ARROW_COLOR = '#ff05';
-const TILE_BORDER = 1 / 64;
-
 import { Dir } from './Entity.js';
-import { Props } from './Props.js';
-import { Tiles } from './Tiles.js';
-import { TileMap } from './TileMap.js';
 import { Entities } from './Entities.js';
 import { Frog } from './Frog.js';
+import { Froggy } from './Froggy.js';
+import { Player } from './Player.js';
 
 import * as Constants from './Constants.js';
 
 let animationTime = 0;
 
 export class World
-{
-  static DebugGrid = false;
-
-  static async fromFile( path ) {
-    const string = await ( await fetch( path ) ).text();  // TODO: error handling
-    return World.fromString( string );
-  }
-
-  static fromString( string ) {
-    const json = JSON.parse( string );    // TODO: error handling
-    return json ? new World( json ) : null;
-  }
- 
+{ 
   entities = [];
   rescued = [];
-  player;
-  tiles;
-  directions;
-  maxTime;
   timeLeft = 0;
-  
   needsRespawn = false;
   // TODO: Spawn timer?
+  player;
+
+  // TODO: Determine these during game loop?
   defeat = false;
   victory = false;
 
-  #tileMap;
+  #level;
 
-  constructor( json ) {
-    this.cols = json.cols;
-    this.rows = json.rows;
+  // TODO: Should World just own all the Level loading stuff, so callers don't have to worry about both?
 
-    // this.tiles = Array.from( 
-    //   Array( json.cols ), () => Array.from( 
-    //     Array( json.rows ), () => ( { tileInfoKey: 'Grass' } ) ) );
+  constructor( level ) {
+    this.#level = level;
 
-    this.tileInfoKeys = json.tileInfoKeys;
-    this.tiles = json.tiles;
-    this.directions = json.directions;
+    this.timeLeft = level.time;
 
-    // TODO: Move all this to tileMap?
-    // json.tiles?.forEach( ( tileIndex, index ) => {
-    //   const col = index % json.cols;
-    //   const row = Math.floor( index / json.cols );
+    this.entities = Array.from( level.entities );
+    this.lives = Constants.MaxLives;
 
-    //   this.tiles[ col ][ row ].tileInfoKey = json.tileInfoKeys[ tileIndex ];
-    // } );
-
-    // json.directions?.forEach( ( dirIndex, index ) => {
-    //   const col = index % json.cols;
-    //   const row = Math.floor( index / json.cols );
-
-    //   this.tiles[ col ][ row ].dir = dirIndex;
-    // } );
-
-    this.#tileMap = new TileMap( this );
-
-    this.maxTime = json.time ?? 15000;
-    this.spawn = json.spawn;
-
-    this.entities = json.entities;
-
-    this.lives = Constants.MaxLives;    
     this.respawnPlayer();
     // TODO: Don't spawn automaticaly?
-  }
-
-  toJson() {
-//    const tileInfoKeys = new Map();
-//    const jsonTiles = [];
-//    const jsonDirs = [];
-//
-//    for ( let index = 0, row = 0; row < this.rows; row ++ ) {
-//      for ( let col = 0; col < this.cols; col ++, index ++ ) {
-//        const tile = this.tiles[ col ][ row ];
-//
-//        if ( !tileInfoKeys.has( tile.tileInfoKey ) ) {
-//          tileInfoKeys.set( tile.tileInfoKey, tileInfoKeys.size );
-//        }
-//        jsonTiles.push( tileInfoKeys.get( tile.tileInfoKey ) );
-//        jsonDirs.push( tile.dir ?? 0 );
-//      }
-//    }
-    
-    return {
-      cols: this.cols,
-      rows: this.rows,
-      tileInfoKeys: this.tileInfoKeys, //Array.from( tileInfoKeys.keys() ),
-      tiles: this.tiles,
-      directions: this.directions,
-      entities: this.entities, //this.getEntitiesJson(),
-      spawn: this.spawn,
-      time: this.maxTime,
-    };
   }
 
   getWorldstateJson() {
@@ -130,127 +47,21 @@ export class World
     }
   }
 
-  // getTile( x, y ) {
-  //   const col = Math.round( x );
-  //   const row = Math.round( y );
-
-  //   if ( 0 <= col && col <= this.cols && 
-  //        0 <= row && row <= this.rows ) {
-  //     return this.tiles[ col ]?.[ row ];
-  //   }
-  // }
-
-  getTileInfo( x, y ) {
-    const col = Math.round( x );
-    const row = Math.round( y );
-
-    if ( 0 <= col && col < this.cols && 
-         0 <= row && row < this.rows ) {
-      return Tiles[ this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ] ];
-    }
-  }
-
-  getDirectionInfo( x, y ) {
-    const col = Math.round( x );
-    const row = Math.round( y );
-
-    if ( 0 <= col && col < this.cols && 
-         0 <= row && row < this.rows ) {
-      return Dir[ this.directions[ col + row * this.cols ] ];
-    }
-  }
-
-  setDirection( dir, col, row ) {
-    this.tiles[ col ][ row ].dir = dir;
-
-    let affected = this.entities.find( e => e.x == col && e.y == row );
-    
-    if ( affected ) {
-      affected.dir = dir;
-    }
-    else if ( this.player.x == col && this.player.y == row ) {
-      this.player.dir = dir;
-    }
-  }
-
-  addEntity( type, col, row ) {
-    this.removeEntity( col, row );
-
-    this.entities.push(
-      new Entity( 
-        Entities[ type ], 
-        {
-          x: col,
-          y: row,
-          // dir: this.tiles[ col ]?.[ row ]?.dir ?? Direction.Right,
-        }
-      )
-    );
-  }
-
-  removeEntity( col, row ) {
-    this.entities = this.entities.filter( e => e.x != col || e.y != row );
-  }
-
-  addColumn( col ) {
-    this.tiles.splice( col, 0, 
-      Array.from( this.tiles[ col ], e => ( { tileInfoKey: e.tileInfoKey, dir: e.dir } ) ) 
-    );
-    this.#adjustColumns( col, +1 );
-  }
-
-  removeColumn( col ) {
-    this.tiles.splice( col, 1 );
-    this.#adjustColumns( col, -1 );
-  }
-
-  #adjustColumns( col, delta ) {
-    this.cols += delta;
-
-    this.entities.filter( e => e.x >= col ).forEach( e => e.x += delta );
-    if ( this.player.x >= col ) {
-      this.player.x += delta;
-    }
-  }
-
-  addRow( row ) {
-    for ( let col = 0; col < this.cols; col ++ ) {
-      const toCopy = this.tiles[ col ][ row ];
-      this.tiles[ col ].splice( row, 0, ( { tileInfoKey: toCopy.tileInfoKey, dir: toCopy.dir } ) );
-    }
-
-    this.#adjustRows( row, +1 );
-  }
-
-  removeRow( row ) {
-    for ( let col = 0; col < this.cols; col ++ ) {
-      this.tiles[ col ].splice( row, 1 );
-    }
-    this.#adjustRows( row, -1 );
-  }
-
-  #adjustRows( row, delta ) {
-    this.rows += delta;
-
-    this.entities.filter( e => e.y >= row ).forEach( e => e.y += delta );
-    if ( this.player.y >= row ) {
-      this.player.y += delta;
-    }
-  }
-
   respawnPlayer() {
-    this.timeLeft = this.maxTime;
+    this.timeLeft = this.#level.time;
 
     this.needsRespawn = false;
 
     this.player = {
       type: 'Player',
-      x: this.spawn.x,
-      y: this.spawn.y,
-      dir: this.spawn.dir,
+      // x: this.#level.spawn.x,
+      // y: this.#level.spawn.y,
+      // dir: this.#level.spawn.dir,
       color: 'green',
       status: Frog.Status.Alive,
     };
+
+    Object.assign( this.player, this.#level.spawn );
   }
 
   rescue( froggy ) {
@@ -300,8 +111,8 @@ export class World
             const col = Math.round( entity.x );
             const row = Math.round( entity.y );
 
-            if ( 0 <= col && 0 <= row && col < this.cols && row < this.rows ) {
-              const newDir = this.directions[ col + row * this.cols ];
+            if ( 0 <= col && 0 <= row && col < this.#level.cols && row < this.#level.rows ) {
+              const newDir = this.#level.directions[ col + row * this.#level.cols ];
               if ( newDir ) {
                 entity.dir = newDir;
               }
@@ -321,7 +132,8 @@ export class World
               do {
                 // Only check for incoming directions if current tile could change direction
                 // Otherwise, just keep going back
-                if ( this.directions[ prevX + prevY * this.cols ] ) {
+                // TODO: Move to Level class?
+                if ( this.#level.directions[ prevX + prevY * this.#level.cols ] ) {
                   const fromBackDir = prevDir;
                   const fromLeftDir = prevDir == 1 ? 4 : prevDir - 1;
                   const fromRightDir = prevDir == 4 ? 1 : prevDir + 1;
@@ -330,8 +142,8 @@ export class World
                     const testX = prevX - Dir[ testDir ].x;
                     const testY = prevY - Dir[ testDir ].y;
 
-                    if ( 0 <= testX && 0 <= testY && testX < this.cols && testY < this.rows ) {
-                      const dir = this.directions[ testX + testY * this.cols ];
+                    if ( 0 <= testX && 0 <= testY && testX < this.#level.cols && testY < this.#level.rows ) {
+                      const dir = this.#level.directions[ testX + testY * this.#level.cols ];
 
                       if ( dir == testDir ) {
                         prevDir = testDir;
@@ -344,7 +156,7 @@ export class World
                 prevX -= Dir[ prevDir ].x;
                 prevY -= Dir[ prevDir ].y;
               }
-              while ( 0 <= prevX && 0 <= prevY && prevX < this.cols && prevY < this.rows && ++tries < 100 );
+              while ( 0 <= prevX && 0 <= prevY && prevX < this.#level.cols && prevY < this.#level.rows && ++tries < 100 );
 
               if ( tries == 100 ) {
                 debugger;
@@ -416,7 +228,7 @@ export class World
           const tileX = Math.round( this.player.x );
           const tileY = Math.round( this.player.y );
 
-          const tile = this.getTileInfo( tileX, tileY );
+          const tile = this.#level.getTileInfo( tileX, tileY );
           if ( !tile || tile.KillsPlayer ) {
             this.player.status = Frog.Status.Drowned;
           }
@@ -434,7 +246,7 @@ export class World
           const nextX = this.player.x + Dir[ dir ].x + this.player.dx * JUMP_TIME;
           const nextY = this.player.y + Dir[ dir ].y + this.player.dy * JUMP_TIME;
 
-          const nextTile = this.getTileInfo( nextX, nextY );
+          const nextTile = this.#level.getTileInfo( nextX, nextY );
 
           if ( nextTile && !nextTile.Solid ) {
             this.player.jumpTimeLeft += JUMP_TIME;
@@ -459,35 +271,12 @@ export class World
     }
   }
 
-  draw( ctx ) {
+  draw( ctx, showUI = true ) {
     ctx.save();
     ctx.translate( 0.5, 0.5 );
     ctx.lineWidth = 0.02;
 
-    this.#tileMap.draw( ctx );
-
-    ctx.save();
-
-    for ( let row = 0; row < this.rows; row ++ ) {
-      ctx.save();
-      
-      for ( let col = 0; col < this.cols; col ++ ) {
-    
-        const prop = Props[ this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ] ];
-        prop?.draw( ctx );
-
-        if ( this.spawn.x == col && this.spawn.y == row ) {
-          Props[ 'Bullseye' ].draw( ctx );
-        }
-
-        ctx.translate( 1, 0 );
-      }
-
-      ctx.restore();
-      ctx.translate( 0, 1 );
-    }
-
-    ctx.restore();
+    this.#level.draw( ctx );
     
     // TODO: Draw player after CanRide and before KillsPlayer, unless player is jumping (or already dead)
     this.player.animationAction = this.player.status;
@@ -502,37 +291,54 @@ export class World
       drawEntity( ctx, this.player );
     }
 
-    if ( World.DebugGrid ) {
-      ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
-      ctx.lineWidth = TILE_BORDER;
-      ctx.textAlign = 'center';
-      ctx.font = '10px Arial';      // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
-      
-      for ( let r = 0; r < this.rows; r ++ ) {
-        for ( let c = 0; c < this.cols; c ++ ) {
-          const tile = this.directions[ c + r * this.cols ];
-
-          ctx.save();
-          ctx.translate( c, r );
-
-          ctx.strokeRect( -0.5, -0.5, 1, 1 );
-
-          if ( tile.dir ) {
-            ctx.save();
-            ctx.rotate( Dir[ tile.dir ].angle );
-            ctx.fill( arrow );
-            ctx.restore();
-          }
-
-          ctx.scale( 0.02, 0.02 );    // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
-          ctx.fillText( `(${ c },${ r })`, 0, 20 );
-
-          ctx.restore();
-        }
-      }
-    }
+    
 
     ctx.restore();
+
+    if ( showUI ) {
+      ctx.translate( 0, 15 );
+      ctx.fillStyle = 'gray';
+      ctx.fillRect( 0, 0, 15, 1 );
+
+      ctx.translate( 0.5, 0.5 );
+      ctx.lineWidth = 0.02;
+
+      // Froggies
+      for ( let i = 0; i < Constants.NumFroggies; i ++ ) {
+        if ( this.rescued.includes( i ) ) {
+          ctx.save();
+          ctx.rotate( Math.PI / 2 );
+          Froggy.drawFroggy( ctx, i );
+          ctx.restore();
+        }
+        ctx.translate( 1, 0 );
+      }
+      
+      // Timer
+      const timerGrad = ctx.createLinearGradient( 0, 0, 3, 0 );
+      timerGrad.addColorStop( 0, 'red' );
+      timerGrad.addColorStop( 0.5, 'yellow' );
+      timerGrad.addColorStop( 1, 'green' );
+
+      ctx.fillStyle = timerGrad;
+      ctx.fillRect( 0, -0.15, 4 * ( this.timeLeft / this.#level.time ), 0.3 );
+      ctx.strokeRect( 0, -0.15, 4, 0.3 );
+
+      ctx.translate( 5, 0 );
+
+      // Lives
+      for ( let i = 4; i > 0; i -- ) {
+        if ( i <= this.lives ) {
+          ctx.save();
+          ctx.rotate( -Math.PI / 2 );
+          Player.drawPlayer( ctx );
+          ctx.restore();
+        }
+        ctx.translate( 1, 0 );
+      }
+        
+      ctx.restore();
+    }
   }
 }
 

@@ -22,7 +22,7 @@ lilypad.arc( 0, 0, LILYPAD_SIZE, LILYPAD_ANGLE, -LILYPAD_ANGLE );
 lilypad.closePath();
 
 const BULLSEYE_COLORS = [ 'blue', 'white', 'red' ];
-const BULLSEYE_RADII = [ 0.4, 0.25, 0.1 ];
+const BULLSEYE_RADII = [ 0.4, 0.25, 0.1 ].map( e => e * 0.75 );
 
 export const Props = {
   Bush: {
@@ -58,6 +58,7 @@ export const Props = {
     draw: ( ctx ) => {
       ctx.strokeStyle = 'black';
       ctx.lineWidth = 0.02;
+      ctx.globalAlpha = 0.5;
 
       for ( let i = 0; i < 3; i ++ ) {
         ctx.beginPath();
@@ -66,6 +67,8 @@ export const Props = {
         ctx.fill();
         ctx.stroke();
       }
+
+      ctx.globalAlpha = 1;
     }
   }
 }

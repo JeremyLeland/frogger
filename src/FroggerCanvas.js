@@ -21,7 +21,6 @@ const KeyDir = {
 // Also, this is what editor will use to play test a level
 
 export class FroggerCanvas extends AnimatedCanvas {
-  showCropped = false;
   showUI = true;
   scale = 1;
 
@@ -80,51 +79,6 @@ export class FroggerCanvas extends AnimatedCanvas {
     ctx.save();
     ctx.scale( this.scale, this.scale );
     
-    this.world.draw( ctx, this.showCropped );
-
-    if ( this.showUI ) {
-      ctx.translate( 0, 15 );
-      ctx.fillStyle = 'gray';
-      ctx.fillRect( 0, 0, 15, 1 );
-
-      ctx.translate( 0.5, 0.5 );
-      ctx.lineWidth = 1 / this.scale;
-
-      // Froggies
-      for ( let i = 0; i < Constants.NumFroggies; i ++ ) {
-        if ( this.world.rescued.includes( i ) ) {
-          ctx.save();
-          ctx.rotate( Math.PI / 2 );
-          Froggy.drawFroggy( ctx, i );
-          ctx.restore();
-        }
-        ctx.translate( 1, 0 );
-      }
-      
-      // Timer
-      const timerGrad = ctx.createLinearGradient( 0, 0, 3, 0 );
-      timerGrad.addColorStop( 0, 'red' );
-      timerGrad.addColorStop( 0.5, 'yellow' );
-      timerGrad.addColorStop( 1, 'green' );
-
-      ctx.fillStyle = timerGrad;
-      ctx.fillRect( 0, -0.15, 4 * ( this.world.timeLeft / this.world.maxTime ), 0.3 );
-      ctx.strokeRect( 0, -0.15, 4, 0.3 );
-
-      ctx.translate( 5, 0 );
-
-      // Lives
-      for ( let i = 4; i > 0; i -- ) {
-        if ( i <= this.world.lives ) {
-          ctx.save();
-          ctx.rotate( -Math.PI / 2 );
-          Player.drawPlayer( ctx );
-          ctx.restore();
-        }
-        ctx.translate( 1, 0 );
-      }
-        
-      ctx.restore();
-    }
+    this.world.draw( ctx, this.showUI );
   } 
 }

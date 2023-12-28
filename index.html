@@ -101,12 +101,22 @@
 
 <script type="module">
   import { Direction } from './src/Entity.js';
+  import { Level } from './src/Level.js';
   import { World } from './src/World.js';
   import * as Utility from './src/common/Utility.js';
   
   import { FroggerCanvas } from './src/FroggerCanvas.js';
 
-  let world;
+  const GameStateKey = 'froggerGameState';
+
+  // TODO: Combine levelsInfo and worldState into one object
+  // froggerState = {
+  //   playlist,
+  //   index,
+  //   worldState: { ... }
+  // }
+
+  let level, world;
 
   const canvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
 
@@ -194,13 +204,11 @@
   async function loadLevel( path ) {
     canvas.stop();
 
-    world = await World.fromFile( path );
+    const level = Object.assign( new Level(), await ( await fetch( path ) ).json() );
 
-    const worldStateStr = localStorage.getItem( 'worldState' );
-    if ( worldStateStr ) {
-      Object.assign( world, JSON.parse( worldStateStr ) );
-      localStorage.removeItem( 'worldState' );
-    }
+    world = new World( level );
+    Object.assign( world, JSON.parse( localStorage.getItem( 'worldState' ) ) );
+    localStorage.removeItem( 'worldState' );
 
     canvas.world = world;
     canvas.start();
@@ -273,7 +281,6 @@
       const worldStateString = JSON.stringify( world.getWorldstateJson() );
       localStorage.setItem( 'worldState', worldStateString );
       console.log( worldStateString );
-      debugger;
     }
   } );
 
