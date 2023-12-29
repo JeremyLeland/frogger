@@ -72,7 +72,6 @@
 <body onunload="">
   <div id="wrapper">
     <canvas id="canvas"></canvas>
-    <div id="paused" class="message center full">Paused</div>
     <div id="splash">
       <svg viewBox="0 -5 85 30">
         <defs>
@@ -145,6 +144,9 @@
   }
 
   showSplash();
+
+
+  // TODO: Move level management into FroggerCanvas (to be FroggerGame)
 
   //
   // Levels
@@ -221,10 +223,8 @@
     Space: togglePause
   };
 
-  const pauseUI = document.getElementById( 'paused' );
-  let paused = false;
   function togglePause() {
-    if ( paused ) {
+    if ( canvas.world.paused ) {
       resume();
     }
     else {
@@ -232,18 +232,12 @@
     }
   }
   function pause() {
-    if ( !paused ) {
-      paused = true;
-      pauseUI.style.visibility = 'visible';
-      canvas.stop();
-    }
+    canvas.world.paused = true;
+    // canvas.stop();
   }
   function resume() {
-    if ( paused ) {
-      paused = false;
-      pauseUI.style.visibility = 'hidden';
-      canvas.start();
-    }
+    canvas.world.paused = false;
+    // canvas.start();
   }
 
   // TODO: Don't split this weirdly between FroggerCanvas and here.
