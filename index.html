@@ -72,9 +72,6 @@
 <body onunload="">
   <div id="wrapper">
     <canvas id="canvas"></canvas>
-    <div id="victory" class="message center bar">Victory!</div>
-    <div id="defeat" class="message center bar">Defeat!</div>
-    <div id="paused" class="message center full">Paused</div>
     <div id="splash">
       <svg viewBox="0 -5 85 30">
         <defs>
@@ -101,12 +98,22 @@
 
 <script type="module">
   import { Direction } from './src/Entity.js';
+  import { Level } from './src/Level.js';
   import { World } from './src/World.js';
   import * as Utility from './src/common/Utility.js';
   
   import { FroggerCanvas } from './src/FroggerCanvas.js';
 
-  let world;
+  const GameStateKey = 'froggerGameState';
+
+  // TODO: Combine levelsInfo and worldState into one object
+  // froggerState = {
+  //   playlist,
+  //   index,
+  //   worldState: { ... }
+  // }
+
+  let level, world;
 
   const canvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
 
@@ -137,6 +144,9 @@
   }
 
   showSplash();
+
+
+  // TODO: Move level management into FroggerCanvas (to be FroggerGame)
 
   //
   // Levels
@@ -194,22 +204,17 @@
   async function loadLevel( path ) {
     canvas.stop();
 
-    world = await World.fromFile( path );
+    const level = Object.assign( new Level(), await ( await fetch( path ) ).json() );
 
-    const worldStateStr = localStorage.getItem( 'worldState' );
-    if ( worldStateStr ) {
-      world.applyWorldState( JSON.parse( worldStateStr ) );
-      localStorage.removeItem( 'worldState' );
-    }
+    world = new World( level );
+    Object.assign( world, JSON.parse( localStorage.getItem( 'worldState' ) ) );
+    localStorage.removeItem( 'worldState' );
 
     canvas.world = world;
     canvas.start();
 
     hideSpash();
   }
-
-
-
   
   const KeyBindings = {
     KeyG: () => World.DebugGrid = !World.DebugGrid,
@@ -218,10 +223,8 @@
     Space: togglePause
   };
 
-  const pauseUI = document.getElementById( 'paused' );
-  let paused = false;
   function togglePause() {
-    if ( paused ) {
+    if ( canvas.world.paused ) {
       resume();
     }
     else {
@@ -229,18 +232,13 @@
     }
   }
   function pause() {
-    if ( !paused ) {
-      paused = true;
-      pauseUI.style.visibility = 'visible';
-      canvas.stop();
-    }
+    canvas.world.paused = true;
+    // TODO: Save power by stopping canvas if paused?
+    // canvas.stop();
   }
   function resume() {
-    if ( paused ) {
-      paused = false;
-      pauseUI.style.visibility = 'hidden';
-      canvas.start();
-    }
+    canvas.world.paused = false;
+    // canvas.start();
   }
 
   // TODO: Don't split this weirdly between FroggerCanvas and here.
@@ -273,9 +271,9 @@
 
   window.addEventListener( 'beforeunload', ( e ) => {
     if ( world ) {
-      const worldStateString = JSON.stringify( world.getWorldstateJson() );
+      const worldStateString = JSON.stringify( world );
       localStorage.setItem( 'worldState', worldStateString );
-      // console.log( worldStateString );
+      console.log( worldStateString );
     }
   } );
 

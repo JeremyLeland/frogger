@@ -38,6 +38,8 @@ export class AnimatedCanvas {
     this.ctx.restore();
   }
 
+  // TODO: Handle starts if already started, stops if already stopped...
+
   start() {
     let lastTime;
     const animate = ( now ) => {

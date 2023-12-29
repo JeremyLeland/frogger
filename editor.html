@@ -46,11 +46,13 @@
   import { Direction } from './src/Entity.js';
   import { Entities } from './src/Entities.js';
   import { Froggy } from './src/Froggy.js';
+  import { Level } from './src/Level.js';
   import { World } from './src/World.js';
 
   import { FroggerCanvas } from './src/FroggerCanvas.js';
   
   const TILE_SIZE = 48;
+  const EditorLevelKey = 'froggerEditorLevel'
 
   World.DebugGrid = true;
 
@@ -70,7 +72,10 @@
     time: 15000,
   }
 
-  let world = World.fromString( localStorage.getItem( 'currentLevel' ) ) ?? new World( EmptyLevel );
+  const level = new Level();
+  Object.assign( level, JSON.parse( localStorage.getItem( EditorLevelKey ) ) );
+
+  const world = new World( level );
   worldCanvas.world = world; 
 
   //
@@ -88,7 +93,7 @@
 
   function saveLevel() {
     const filename = 'level.json';
-    const content = JSON.stringify( world.toJson() );
+    const content = JSON.stringify( world );
     const blob = new Blob( [ content ], { type: 'text/plain' } );
     const link = document.createElement( 'a' );
     link.download = filename;
@@ -115,7 +120,7 @@
   function stopPlay() {
     mode = Mode.Edit;
     worldCanvas.stop();
-    world = World.fromString( localStorage.getItem( 'currentLevel' ) );
+    world = new World( level );
     worldCanvas.world = world;
     redraw();
   }
@@ -151,9 +156,7 @@
     worldCanvas.redraw();
 
     // Save progress
-    localStorage.setItem( 'currentLevel', JSON.stringify( world.toJson() ) );
-
-    console.log( localStorage.getItem( 'currentLevel' ) );
+    localStorage.setItem( EditorLevelKey, JSON.stringify( world ) );
   }
 
 
@@ -195,7 +198,7 @@
     icon.ctx.scale( 48, 48 );
     icon.ctx.translate( 0.5, 0.5 );
     icon.ctx.lineWidth = 1 / 48;
-    Entities[ id ].drawEntity( icon.ctx );
+    Entities[ id ].draw( icon.ctx );
     button.appendChild( icon.canvas );
     button.appendChild( document.createElement( 'br' ) );
 

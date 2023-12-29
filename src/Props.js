@@ -21,6 +21,9 @@ lilypad.moveTo( LILYPAD_OFFSET, 0 );
 lilypad.arc( 0, 0, LILYPAD_SIZE, LILYPAD_ANGLE, -LILYPAD_ANGLE );
 lilypad.closePath();
 
+const BULLSEYE_COLORS = [ 'blue', 'white', 'red' ];
+const BULLSEYE_RADII = [ 0.4, 0.25, 0.1 ].map( e => e * 0.75 );
+
 export const Props = {
   Bush: {
     draw: ( ctx ) => {
@@ -32,7 +35,7 @@ export const Props = {
       ctx.fill( bush );
 
       ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1 / ctx.getTransform().m11;
+      ctx.lineWidth = 0.02;
       ctx.stroke( bush );
 
       // TODO: Berries?
@@ -47,8 +50,25 @@ export const Props = {
       ctx.fill( lilypad );
 
       ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1 / ctx.getTransform().m11;
+      ctx.lineWidth = 0.02;
       ctx.stroke( lilypad );
+    }
+  },
+  Bullseye: {
+    draw: ( ctx ) => {
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 0.02;
+      ctx.globalAlpha = 0.5;
+
+      for ( let i = 0; i < 3; i ++ ) {
+        ctx.beginPath();
+        ctx.arc( 0, 0, BULLSEYE_RADII[ i ], 0, Math.PI * 2 );
+        ctx.fillStyle = BULLSEYE_COLORS[ i ];
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 1;
     }
   }
 }

@@ -1,336 +1,389 @@
-const BASE_W = 0.05, HEAD_W = 0.2, NECK = 0, LEN = 0.2;
-const arrow = new Path2D();
-arrow.moveTo( -LEN,  -BASE_W );
-arrow.lineTo(  NECK, -BASE_W );
-arrow.lineTo(  NECK, -HEAD_W );
-arrow.lineTo(  LEN,   0 );
-arrow.lineTo(  NECK,  HEAD_W );
-arrow.lineTo(  NECK,  BASE_W );
-arrow.lineTo( -LEN,   BASE_W );
-arrow.closePath();
-
-const ARROW_COLOR = '#ff05';
-const TILE_BORDER = 1 / 64;
-
-import { Direction, Dir } from './Entity.js';
-import { Props } from './Props.js';
-import { TileMap } from './TileMap.js';
-import { Entity } from './Entity.js';
+import { Dir } from './Entity.js';
 import { Entities } from './Entities.js';
-import { Death } from './Frog.js';
+import { Frog } from './Frog.js';
+import { Froggy } from './Froggy.js';
 import { Player } from './Player.js';
 
 import * as Constants from './Constants.js';
 
+let animationTime = 0;
+
 export class World
-{
-  static DebugGrid = false;
-
-  static async fromFile( path ) {
-    const string = await ( await fetch( path ) ).text();  // TODO: error handling
-    return World.fromString( string );
-  }
-
-  static fromString( string ) {
-    const json = JSON.parse( string );    // TODO: error handling
-    return json ? new World( json ) : null;
-  }
- 
+{ 
   entities = [];
-  rescued = [];
   player;
-  tiles;
-  maxTime;
+  rescued = [];
   timeLeft = 0;
-  
+  paused = false;
   needsRespawn = false;
+  // TODO: Spawn timer?
+
   defeat = false;
   victory = false;
 
-  #tileMap;
+  #level;
 
-  constructor( json ) {
-    this.cols = json.cols;
-    this.rows = json.rows;
+  // TODO: Should World just own all the Level loading stuff, so callers don't have to worry about both?
 
-    this.tiles = Array.from( 
-      Array( json.cols ), () => Array.from( 
-        Array( json.rows ), () => ( { tileInfoKey: 'Grass' } ) ) );
+  constructor( level ) {
+    this.#level = level;
 
+    this.timeLeft = level.time;
 
-    // TODO: Move all this to tileMap?
-    json.tiles?.forEach( ( tileIndex, index ) => {
-      const col = index % json.cols;
-      const row = Math.floor( index / json.cols );
+    this.entities = Array.from( level.entities );
+    this.lives = Constants.MaxLives;
 
-      this.tiles[ col ][ row ].tileInfoKey = json.tileInfoKeys[ tileIndex ];
-    } );
-
-    json.directions?.forEach( ( dirIndex, index ) => {
-      const col = index % json.cols;
-      const row = Math.floor( index / json.cols );
-
-      this.tiles[ col ][ row ].dir = dirIndex;
-    } );
-
-    this.#tileMap = new TileMap( this.tiles );
-
-    this.maxTime = json.time ?? 15000;
-    this.spawn = json.spawn;
-
-    this.entities = this.getEntitiesFromJson( json.entities );
-    this.lives = Constants.MaxLives;    
     this.respawnPlayer();
     // TODO: Don't spawn automaticaly?
   }
 
-  toJson() {
-    const tileInfoKeys = new Map();
-    const jsonTiles = [];
-    const jsonDirs = [];
-
-    for ( let index = 0, row = 0; row < this.rows; row ++ ) {
-      for ( let col = 0; col < this.cols; col ++, index ++ ) {
-        const tile = this.tiles[ col ][ row ];
-
-        if ( !tileInfoKeys.has( tile.tileInfoKey ) ) {
-          tileInfoKeys.set( tile.tileInfoKey, tileInfoKeys.size );
-        }
-        jsonTiles.push( tileInfoKeys.get( tile.tileInfoKey ) );
-        jsonDirs.push( tile.dir ?? 0 );
-      }
-    }
-    
-    return {
-      cols: this.cols,
-      rows: this.rows,
-      tileInfoKeys: Array.from( tileInfoKeys.keys() ),
-      tiles: jsonTiles,
-      directions: jsonDirs,
-      entities: this.getEntitiesJson(),
-      spawn: this.spawn,
-      time: this.maxTime,
-    };
-  }
-
-  applyWorldState( json ) {
-    this.entities = this.getEntitiesFromJson( json.entities );
-    this.player = new Player( Entities.Player, json.player );
-    this.rescued = json.rescued;
-    this.timeLeft = json.timeLeft;
-    this.lives = json.lives;
-  }
-
-  getWorldstateJson() {
-    return {
-      entities: this.getEntitiesJson(),
-      spawn: { x: this.player.x, y: this.player.y, dir: this.player.dir },
-      rescued: this.rescued,
-      timeLeft: this.timeLeft,
-      lives: this.lives,
-    }
-  }
-
-  getEntitiesFromJson( json ) {
-    return json.map( e => new Entity( Entities[ e.type ], e ) );
-  }
-
-  getEntitiesJson() {
-    return this.entities.map( e => ( { type: e.type, x: e.x, y: e.y, dir: e.dir } ) );
-  }
-
-  getTile( x, y ) {
-    const col = Math.round( x );
-    const row = Math.round( y );
-
-    if ( 0 <= col && col <= this.cols && 
-         0 <= row && row <= this.rows ) {
-      return this.tiles[ col ]?.[ row ];
-    }
-  }
-
-  setDirection( dir, col, row ) {
-    this.tiles[ col ][ row ].dir = dir;
-
-    let affected = this.entities.find( e => e.x == col && e.y == row );
-    
-    if ( affected ) {
-      affected.dir = dir;
-    }
-    else if ( this.player.x == col && this.player.y == row ) {
-      this.player.dir = dir;
-    }
-  }
-
-  addEntity( type, col, row ) {
-    this.removeEntity( col, row );
-
-    this.entities.push(
-      new Entity( 
-        Entities[ type ], 
-        {
-          x: col,
-          y: row,
-          // dir: this.tiles[ col ]?.[ row ]?.dir ?? Direction.Right,
-        }
-      )
-    );
-  }
-
-  removeEntity( col, row ) {
-    this.entities = this.entities.filter( e => e.x != col || e.y != row );
-  }
-
-  addColumn( col ) {
-    this.tiles.splice( col, 0, 
-      Array.from( this.tiles[ col ], e => ( { tileInfoKey: e.tileInfoKey, dir: e.dir } ) ) 
-    );
-    this.#adjustColumns( col, +1 );
-  }
-
-  removeColumn( col ) {
-    this.tiles.splice( col, 1 );
-    this.#adjustColumns( col, -1 );
-  }
-
-  #adjustColumns( col, delta ) {
-    this.cols += delta;
-
-    this.entities.filter( e => e.x >= col ).forEach( e => e.x += delta );
-    if ( this.player.x >= col ) {
-      this.player.x += delta;
-    }
-  }
-
-  addRow( row ) {
-    for ( let col = 0; col < this.cols; col ++ ) {
-      const toCopy = this.tiles[ col ][ row ];
-      this.tiles[ col ].splice( row, 0, ( { tileInfoKey: toCopy.tileInfoKey, dir: toCopy.dir } ) );
-    }
-
-    this.#adjustRows( row, +1 );
-  }
-
-  removeRow( row ) {
-    for ( let col = 0; col < this.cols; col ++ ) {
-      this.tiles[ col ].splice( row, 1 );
-    }
-    this.#adjustRows( row, -1 );
-  }
-
-  #adjustRows( row, delta ) {
-    this.rows += delta;
-
-    this.entities.filter( e => e.y >= row ).forEach( e => e.y += delta );
-    if ( this.player.y >= row ) {
-      this.player.y += delta;
-    }
-  }
-
-  killPlayer( mannerOfDeath ) {
-    this.player.kill( mannerOfDeath );
-    this.needsRespawn = true;
-    
-    // TODO: Lose when lives < 0
-    this.lives--;
-    this.defeat = this.lives < 0;
-  }
-
   respawnPlayer() {
+    this.timeLeft = this.#level.time;
+
     this.needsRespawn = false;
 
-    this.timeLeft = this.maxTime;
-
-    this.player = new Player( Entities.Player, {
-      x: this.spawn.x, 
-      y: this.spawn.y,
-      dir: this.spawn.dir, 
+    this.player = {
+      type: 'Player',
+      // x: this.#level.spawn.x,
+      // y: this.#level.spawn.y,
+      // dir: this.#level.spawn.dir,
       color: 'green',
-    } );
+      status: Frog.Status.Alive,
+    };
+
+    Object.assign( this.player, this.#level.spawn );
   }
 
+  // TODO: Move this update()
   rescue( froggy ) {
-    this.rescued.push( froggy.info.froggyIndex );
+    this.rescued.push( Entities[ froggy.type ].froggyIndex );
     this.entities = this.entities.filter( e => e != froggy );
 
     this.lives = Math.min( Constants.MaxLives, this.lives + 1 );
 
     this.needsRespawn = true;
-    this.victory = this.entities.filter( e => e.info.canRescue ).length == 0;
+    this.victory = this.rescued.length == Constants.NumFroggies;
+  }
+
+  requestPlayerMove( dir ) {
+    if ( this.needsRespawn || this.player.status != Frog.Status.Alive ) {
+      this.respawnPlayer();
+    }
+    else {
+      if ( dir != this.player.jumpQueue.at( -1 ) ) {
+        this.player.jumpQueue.push( dir );
+      }
+    }
   }
 
   update( dt ) {
-    this.entities.forEach( entity => entity.update( dt, this ) );
-    this.player?.update( dt, this );
-
-    if ( !this.needsRespawn ) {
-      this.timeLeft = Math.max( 0, this.timeLeft - dt );
-      
-      if ( this.timeLeft == 0 ) {
-        this.killPlayer( Death.Expired );
-      }
+    if ( this.paused ) {
+      return false;
     }
-  }
+    else {
+      animationTime += dt;
 
-  draw( ctx ) {
-    ctx.save();
-    ctx.translate( 0.5, 0.5 );
+      //
+      // Entities
+      //
 
-    this.#tileMap.draw( ctx );
+      this.entities.forEach( entity => {
+        const speed = Entities[ entity.type ].Speed;
 
-    ctx.save();
+        if ( speed ) {
+          let totalTime = dt;
+          while ( totalTime > 0 ) {
+            const dist = Dir[ entity.dir ].dist( entity.x, entity.y );
+            const time = Math.min( dist / speed, totalTime );
+            
+            entity.dx = Dir[ entity.dir ].x * speed;
+            entity.dy = Dir[ entity.dir ].y * speed;
 
-    for ( let row = 0; row < this.rows; row ++ ) {
-      ctx.save();
-      
-      for ( let col = 0; col < this.cols; col ++ ) {
-    
-        const prop = Props[ this.tiles[ col ][ row ].tileInfoKey ];
-        prop?.draw( ctx );
+            entity.x += entity.dx * time;
+            entity.y += entity.dy * time;
+            
+            if ( time < totalTime ) {
+              const col = Math.round( entity.x );
+              const row = Math.round( entity.y );
 
-        ctx.translate( 1, 0 );
-      }
+              if ( 0 <= col && 0 <= row && col < this.#level.cols && row < this.#level.rows ) {
+                const newDir = this.#level.directions[ col + row * this.#level.cols ];
+                if ( newDir ) {
+                  entity.dir = newDir;
+                }
+              }
+              else {
+                // Attempt to work backwards to find where to warp to
 
-      ctx.restore();
-      ctx.translate( 0, 1 );
-    }
+                // NOTE: entity gets messy because the old frogger allowed multiple paths to
+                //       share a direction-less tile. We need to do extra work to accomodate
+                //       entity case.
 
-    ctx.restore();
-    
-    this.entities.filter( e => e.info.zIndex < this.player.zIndex ).forEach( e => e.draw( ctx ) );
-    this.player?.draw( ctx );
-    this.entities.filter( e => e.info.zIndex >= this.player.zIndex ).forEach( e => e.draw( ctx ) );
+                let prevX = Math.round( entity.x );
+                let prevY = Math.round( entity.y );
+                let prevDir = entity.dir;
+                let tries = 0;
+                
+                do {
+                  // Only check for incoming directions if current tile could change direction
+                  // Otherwise, just keep going back
+                  // TODO: Move to Level class?
+                  if ( this.#level.directions[ prevX + prevY * this.#level.cols ] ) {
+                    const fromBackDir = prevDir;
+                    const fromLeftDir = prevDir == 1 ? 4 : prevDir - 1;
+                    const fromRightDir = prevDir == 4 ? 1 : prevDir + 1;
+                    
+                    for ( const testDir of [ fromBackDir, fromLeftDir, fromRightDir ] ) {
+                      const testX = prevX - Dir[ testDir ].x;
+                      const testY = prevY - Dir[ testDir ].y;
 
-    if ( World.DebugGrid ) {
-      ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
-      ctx.lineWidth = TILE_BORDER;
-      ctx.textAlign = 'center';
-      ctx.font = '10px Arial';      // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
-      
-      for ( let r = 0; r < this.rows; r ++ ) {
-        for ( let c = 0; c < this.cols; c ++ ) {
-          const tile = this.tiles[ c ][ r ];
+                      if ( 0 <= testX && 0 <= testY && testX < this.#level.cols && testY < this.#level.rows ) {
+                        const dir = this.#level.directions[ testX + testY * this.#level.cols ];
 
-          ctx.save();
-          ctx.translate( c, r );
+                        if ( dir == testDir ) {
+                          prevDir = testDir;
+                          break;
+                        }
+                      }
+                    }
+                  }
+                    
+                  prevX -= Dir[ prevDir ].x;
+                  prevY -= Dir[ prevDir ].y;
+                }
+                while ( 0 <= prevX && 0 <= prevY && prevX < this.#level.cols && prevY < this.#level.rows && ++tries < 100 );
 
-          ctx.strokeRect( -0.5, -0.5, 1, 1 );
+                if ( tries == 100 ) {
+                  debugger;
+                }
 
-          if ( tile.dir ) {
-            ctx.save();
-            ctx.rotate( Dir[ tile.dir ].angle );
-            ctx.fill( arrow );
-            ctx.restore();
+                entity.x = prevX;
+                entity.y = prevY;
+                entity.dir = prevDir;
+              }
+            }
+
+            totalTime -= time;
+          }
+        }
+      } );
+
+      //
+      // Player
+      //
+
+      // TODO: Put constants somewhere else
+      const MOVE_SPEED = 0.003;
+      const JUMP_TIME = 1 / MOVE_SPEED;
+
+      if ( this.player.status == Frog.Status.Alive ) {
+        this.player.dx ??= 0;
+        this.player.dy ??= 0;
+        this.player.jumpTimeLeft ??= 0;
+        this.player.jumpQueue ??= [];
+        this.player.animationTime = 0;
+
+        this.player.x += this.player.dx * dt;
+        this.player.y += this.player.dy * dt;
+
+        if ( this.player.jumpTimeLeft > 0 ) {
+          this.player.jumpTimeLeft -= dt;
+          this.player.animationTime = this.player.jumpTimeLeft * MOVE_SPEED;
+          this.player.zIndex = 2;
+        }
+
+        if ( this.player.jumpTimeLeft <= 0 ) {
+          this.player.jumpTimeLeft = 0;
+          this.player.zIndex = 0;
+
+          this.player.dx = 0;
+          this.player.dy = 0;
+
+          const collidingWith = this.entities.find( 
+            e => Math.abs( e.x - this.player.x ) < Entities[ e.type ].hitDist && Math.abs( e.y - this.player.y ) < Entities[ e.type ].hitDist
+          );
+
+          if ( collidingWith ) {   
+            if ( Entities[ collidingWith.type ]?.canRescue ) {
+              this.rescue( collidingWith );
+            }
+            else if ( Entities[ collidingWith.type ]?.killsPlayer ) {
+              // If difference is even, they are facing parallel
+              this.player.status = Math.abs( this.player.dir - collidingWith.dir ) % 2 == 0 ? 
+                Frog.Status.SquishedHorizontal : Frog.Status.SquishedVertical;
+            }
+            else {
+              this.player.x = collidingWith.x;
+              this.player.y = collidingWith.y;
+              this.player.dx = collidingWith.dx;
+              this.player.dy = collidingWith.dy;
+            }
+          }
+          else {
+            const tileX = Math.round( this.player.x );
+            const tileY = Math.round( this.player.y );
+
+            const tile = this.#level.getTileInfo( tileX, tileY );
+            if ( !tile || tile.KillsPlayer ) {
+              this.player.status = Frog.Status.Drowned;
+            }
+            else {
+              this.player.x = tileX;
+              this.player.y = tileY;
+            }
           }
 
-          ctx.scale( 0.02, 0.02 );    // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
-          ctx.fillText( `(${ c },${ r })`, 0, 20 );
+          if ( !this.needsRespawn && this.player.status == Frog.Status.Alive && this.player.jumpQueue.length > 0 ) {
+            const dir = this.player.jumpQueue.shift();
+            this.player.dir = dir;
 
-          ctx.restore();
+            // Take into account ride speed while determining next tile
+            const nextX = this.player.x + Dir[ dir ].x + this.player.dx * JUMP_TIME;
+            const nextY = this.player.y + Dir[ dir ].y + this.player.dy * JUMP_TIME;
+
+            const nextTile = this.#level.getTileInfo( nextX, nextY );
+
+            if ( nextTile && !nextTile.Solid ) {
+              this.player.jumpTimeLeft += JUMP_TIME;
+              
+              this.player.dx += Dir[ dir ].x * MOVE_SPEED;
+              this.player.dy += Dir[ dir ].y * MOVE_SPEED;
+            }
+          }
+        }
+
+        if ( !this.needsRespawn && this.player.status == Frog.Status.Alive ) {
+          this.timeLeft = Math.max( 0, this.timeLeft - dt );
+
+          if ( this.timeLeft == 0 ) {
+            this.player.status = Frog.Status.Expired;
+          }
+        }
+
+        if ( this.player.status != Frog.Status.Alive ) {
+          this.lives --;
+          this.defeat = this.lives < 0;
         }
       }
+
+      return true;
+    }
+  }
+
+  draw( ctx, showUI = true ) {
+    ctx.save(); {
+      ctx.translate( 0.5, 0.5 );
+      ctx.lineWidth = 0.02;
+
+      this.#level.draw( ctx );
+      
+      // TODO: Draw player after CanRide and before KillsPlayer, unless player is jumping (or already dead)
+      this.player.animationAction = this.player.status;
+
+      if ( this.player.status != Frog.Status.Alive ) {
+        drawEntity( ctx, this.player );
+      }
+
+      this.entities.forEach( entity => drawEntity( ctx, entity ) );
+
+      if ( this.player.status == Frog.Status.Alive ) {
+        drawEntity( ctx, this.player );
+      }
+    }
+    ctx.restore();
+
+    // Victory/defeat banner
+    if ( this.defeat )    drawBanner( ctx, 'Defeat!' );
+    if ( this.victory )   drawBanner( ctx, 'Victory!' );
+
+    // UI
+    if ( showUI ) {
+      ctx.save(); {
+        ctx.translate( 0, 15 );
+        ctx.fillStyle = 'gray';
+        ctx.fillRect( 0, 0, 15, 1 );
+
+        ctx.translate( 0.5, 0.5 );
+        ctx.lineWidth = 0.02;
+
+        // Froggies
+        for ( let i = 0; i < Constants.NumFroggies; i ++ ) {
+          if ( this.rescued.includes( i ) ) {
+            ctx.save();
+            ctx.rotate( Math.PI / 2 );
+            Froggy.drawFroggy( ctx, i );
+            ctx.restore();
+          }
+          ctx.translate( 1, 0 );
+        }
+        
+        // Timer
+        const timerGrad = ctx.createLinearGradient( 0, 0, 3, 0 );
+        timerGrad.addColorStop( 0, 'red' );
+        timerGrad.addColorStop( 0.5, 'yellow' );
+        timerGrad.addColorStop( 1, 'green' );
+
+        ctx.fillStyle = timerGrad;
+        ctx.fillRect( 0, -0.15, 4 * ( this.timeLeft / this.#level.time ), 0.3 );
+        ctx.strokeRect( 0, -0.15, 4, 0.3 );
+
+        ctx.translate( 5, 0 );
+
+        // Lives
+        for ( let i = 4; i > 0; i -- ) {
+          if ( i <= this.lives ) {
+            ctx.save();
+            ctx.rotate( -Math.PI / 2 );
+            Player.drawPlayer( ctx );
+            ctx.restore();
+          }
+          ctx.translate( 1, 0 );
+        }
+      }
+      ctx.restore();
     }
 
-    ctx.restore();
+    if ( this.paused ) {
+      ctx.fillStyle = '#000b';
+      ctx.fillRect( 0, 0, 15, 16 );
+
+      ctx.textAlign = 'center';
+      // NOTE: Safari doesn't seem to respect "textBaseline=middle", so offsetting manually
+      ctx.font = '1px Silly';
+      ctx.fillStyle = 'white';
+      ctx.fillText( 'Paused', 15 / 2, 7.8 );
+    }
   }
+}
+
+function drawEntity( ctx, entity ) {
+  ctx.save();
+  ctx.translate( entity.x, entity.y );
+  ctx.rotate( Dir[ entity.dir ]?.angle ?? 0 );
+  // ctx.scale( entity.size, entity.size );   // nothing changes size for now
+
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 0.02;
+
+  Entities[ entity.type ].draw( ctx, entity.animationAction, entity.animationTime ?? animationTime );
+
+  ctx.restore();
+}
+
+function drawBanner( ctx, text ) {
+  ctx.save(); {
+    ctx.fillStyle = '#000b';
+    ctx.fillRect( 0, 6.5, 15, 2 );
+
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 0.05;
+    ctx.strokeRect( -1, 6.5, 17, 2 );
+
+    // TODO: Can text be part of a Path2D? Does that help anything?
+    ctx.textAlign = 'center';
+    ctx.font = '1px Silly';
+    ctx.fillStyle = 'white';
+    ctx.fillText( text, 15 / 2, 7.8 );
+  }
+  ctx.restore();
 }

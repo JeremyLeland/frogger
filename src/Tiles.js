@@ -46,7 +46,7 @@ export const Tiles = {
       ctx.fill( bush );
 
       ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1 / ctx.getTransform().m11;
+      ctx.lineWidth = 0.02;
       ctx.stroke( bush );
 
       // TODO: Berries?
@@ -100,7 +100,7 @@ export const Tiles = {
       ctx.fill( lilypad );
 
       ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1 / ctx.getTransform().m11;
+      ctx.lineWidth = 0.02;
       ctx.stroke( lilypad );
     }
   }
