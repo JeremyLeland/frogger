@@ -1,5 +1,5 @@
 <title>Load levels</title>
-<link rel="stylesheet" href="../grid.css">
+<link rel="stylesheet" href="../ui.css">
 
 <script type="module">
   import { Level } from '../src/Level.js';
@@ -9,7 +9,7 @@
 
   Level.DebugGrid = true;
 
-  const level = Object.assign( new Level(), await ( await fetch( '../levels/classic/pond.json' ) ).json() );
+  const level = Object.assign( new Level(), await ( await fetch( '../levels/classic/road.json' ) ).json() );
 
   const world = new World( level );
 

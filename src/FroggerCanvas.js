@@ -1,9 +1,5 @@
-import * as Constants from './Constants.js';
 import { Direction } from './Entity.js';
 import { AnimatedCanvas } from './common/AnimatedCanvas.js';
-
-import { Player } from './Player.js';
-import { Froggy } from './Froggy.js';
 
 const KeyDir = {
   KeyW: Direction.Up,
@@ -23,9 +19,6 @@ const KeyDir = {
 export class FroggerCanvas extends AnimatedCanvas {
   showUI = true;
   scale = 1;
-
-  #showVictory = false;
-  #showDefeat = false;
   
   constructor( canvas ) {
     super( 100, 100, canvas );
@@ -64,15 +57,6 @@ export class FroggerCanvas extends AnimatedCanvas {
 
   update( dt ) {
     this.world.update( dt );
-
-    if ( this.world.victory != this.#showVictory ) {
-      this.#showVictory = this.world.victory;
-      document.getElementById( 'victory' ).style.visibility = this.world.victory ? 'visible' : 'hidden';
-    }
-    if ( this.world.defeat != this.#showDefeat ) {
-      this.#showDefeat = this.world.defeat;
-      document.getElementById( 'defeat' ).style.visibility = this.world.defeat ? 'visible' : 'hidden';
-    }
   }
 
   draw( ctx ) {
@@ -80,5 +64,5 @@ export class FroggerCanvas extends AnimatedCanvas {
     ctx.scale( this.scale, this.scale );
     
     this.world.draw( ctx, this.showUI );
-  } 
+  }
 }

@@ -272,29 +272,54 @@ export class World
   }
 
   draw( ctx, showUI = true ) {
-    ctx.save();
-    ctx.translate( 0.5, 0.5 );
-    ctx.lineWidth = 0.02;
+    ctx.save(); {
+      ctx.translate( 0.5, 0.5 );
+      ctx.lineWidth = 0.02;
 
-    this.#level.draw( ctx );
-    
-    // TODO: Draw player after CanRide and before KillsPlayer, unless player is jumping (or already dead)
-    this.player.animationAction = this.player.status;
+      this.#level.draw( ctx );
+      
+      // TODO: Draw player after CanRide and before KillsPlayer, unless player is jumping (or already dead)
+      this.player.animationAction = this.player.status;
 
-    if ( this.player.status != Frog.Status.Alive ) {
-      drawEntity( ctx, this.player );
+      if ( this.player.status != Frog.Status.Alive ) {
+        drawEntity( ctx, this.player );
+      }
+
+      this.entities.forEach( entity => drawEntity( ctx, entity ) );
+
+      if ( this.player.status == Frog.Status.Alive ) {
+        drawEntity( ctx, this.player );
+      }
     }
-
-    this.entities.forEach( entity => drawEntity( ctx, entity ) );
-
-    if ( this.player.status == Frog.Status.Alive ) {
-      drawEntity( ctx, this.player );
-    }
-
-    
-
     ctx.restore();
 
+    // Victory banner
+    if ( this.rescued.length == Constants.NumFroggies ) {
+      ctx.save(); {
+        ctx.fillStyle = '#000a';
+        ctx.fillRect( 0, 6.5, 15, 2 );
+
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 0.1;
+
+        ctx.beginPath();
+        ctx.moveTo( 0, 6.5 );
+        ctx.lineTo( 15, 6.5 );
+        ctx.moveTo( 0, 8.5 );
+        ctx.lineTo( 15, 8.5 );
+        ctx.stroke();
+        
+        ctx.scale( 0.2, 0.2 );
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '8px Silly';
+        ctx.fillStyle = 'white';
+        ctx.fillText( 'Victory!', 15 / 2 / 0.2, 7.3 / 0.2 );
+      }
+      ctx.restore();
+    }
+
+    // UI
     if ( showUI ) {
       ctx.translate( 0, 15 );
       ctx.fillStyle = 'gray';
