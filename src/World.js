@@ -17,6 +17,8 @@ export class World
   paused = false;
   needsRespawn = false;
   // TODO: Spawn timer?
+
+  defeat = false;
   victory = false;
 
   #level;
@@ -260,6 +262,7 @@ export class World
 
         if ( this.player.status != Frog.Status.Alive ) {
           this.lives --;
+          this.defeat = this.lives < 0;
         }
       }
 
@@ -289,24 +292,9 @@ export class World
     }
     ctx.restore();
 
-    // Victory banner
-    if ( this.victory ) {
-      ctx.save(); {
-        ctx.fillStyle = '#000b';
-        ctx.fillRect( 0, 6.5, 15, 2 );
-
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 0.05;
-        ctx.strokeRect( -1, 6.5, 17, 2 );
-
-        // TODO: Can text be part of a Path2D? Does that help anything?
-        ctx.textAlign = 'center';
-        ctx.font = '1px Silly';
-        ctx.fillStyle = 'white';
-        ctx.fillText( 'Victory!', 15 / 2, 7.8 );
-      }
-      ctx.restore();
-    }
+    // Victory/defeat banner
+    if ( this.defeat )    drawBanner( ctx, 'Defeat!' );
+    if ( this.victory )   drawBanner( ctx, 'Victory!' );
 
     // UI
     if ( showUI ) {
@@ -379,5 +367,23 @@ function drawEntity( ctx, entity ) {
 
   Entities[ entity.type ].draw( ctx, entity.animationAction, entity.animationTime ?? animationTime );
 
+  ctx.restore();
+}
+
+function drawBanner( ctx, text ) {
+  ctx.save(); {
+    ctx.fillStyle = '#000b';
+    ctx.fillRect( 0, 6.5, 15, 2 );
+
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 0.05;
+    ctx.strokeRect( -1, 6.5, 17, 2 );
+
+    // TODO: Can text be part of a Path2D? Does that help anything?
+    ctx.textAlign = 'center';
+    ctx.font = '1px Silly';
+    ctx.fillStyle = 'white';
+    ctx.fillText( text, 15 / 2, 7.8 );
+  }
   ctx.restore();
 }
