@@ -11,13 +11,13 @@ let animationTime = 0;
 export class World
 { 
   entities = [];
+  player;
   rescued = [];
   timeLeft = 0;
   paused = false;
   needsRespawn = false;
   // TODO: Spawn timer?
-  player;
-
+  victory = false;
 
   #level;
 
@@ -33,16 +33,6 @@ export class World
 
     this.respawnPlayer();
     // TODO: Don't spawn automaticaly?
-  }
-
-  getWorldstateJson() {
-    return {
-      entities: this.entities,
-      player: this.player,
-      rescued: this.rescued,
-      timeLeft: this.timeLeft,
-      lives: this.lives,
-    }
   }
 
   respawnPlayer() {
@@ -62,6 +52,7 @@ export class World
     Object.assign( this.player, this.#level.spawn );
   }
 
+  // TODO: Move this update()
   rescue( froggy ) {
     this.rescued.push( Entities[ froggy.type ].froggyIndex );
     this.entities = this.entities.filter( e => e != froggy );
@@ -69,6 +60,7 @@ export class World
     this.lives = Math.min( Constants.MaxLives, this.lives + 1 );
 
     this.needsRespawn = true;
+    this.victory = this.rescued.length == Constants.NumFroggies;
   }
 
   requestPlayerMove( dir ) {
@@ -298,7 +290,7 @@ export class World
     ctx.restore();
 
     // Victory banner
-    if ( this.rescued.length == Constants.NumFroggies ) {
+    if ( this.victory ) {
       ctx.save(); {
         ctx.fillStyle = '#000b';
         ctx.fillRect( 0, 6.5, 15, 2 );

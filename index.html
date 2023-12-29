@@ -270,7 +270,7 @@
 
   window.addEventListener( 'beforeunload', ( e ) => {
     if ( world ) {
-      const worldStateString = JSON.stringify( world.getWorldstateJson() );
+      const worldStateString = JSON.stringify( world );
       localStorage.setItem( 'worldState', worldStateString );
       console.log( worldStateString );
     }
