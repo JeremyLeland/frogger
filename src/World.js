@@ -4,7 +4,7 @@ import { Frog } from './Frog.js';
 import { Froggy } from './Froggy.js';
 import { Player } from './Player.js';
 
-import * as Constants from './Constants.js';
+import { Constants } from './Constants.js';
 
 let animationTime = 0;
 
@@ -12,11 +12,12 @@ export class World
 { 
   entities = [];
   player;
+  lives = Constants.MaxLives;
   rescued = [];
   timeLeft = 0;
   paused = false;
-  needsRespawn = false;
-  // TODO: Spawn timer?
+  needsRespawn = true;
+  spawnTimer = 0;
 
   defeat = false;
   victory = false;
@@ -31,27 +32,6 @@ export class World
     this.timeLeft = level.time;
 
     this.entities = Array.from( level.entities );
-    this.lives = Constants.MaxLives;
-
-    this.respawnPlayer();
-    // TODO: Don't spawn automaticaly?
-  }
-
-  respawnPlayer() {
-    this.timeLeft = this.#level.time;
-
-    this.needsRespawn = false;
-
-    this.player = {
-      type: 'Player',
-      // x: this.#level.spawn.x,
-      // y: this.#level.spawn.y,
-      // dir: this.#level.spawn.dir,
-      color: 'green',
-      status: Frog.Status.Alive,
-    };
-
-    Object.assign( this.player, this.#level.spawn );
   }
 
   // TODO: Move this update()
@@ -66,8 +46,32 @@ export class World
   }
 
   requestPlayerMove( dir ) {
-    if ( this.needsRespawn || this.player.status != Frog.Status.Alive ) {
-      this.respawnPlayer();
+    if ( this.needsRespawn && this.spawnTimer < 0 ) {
+      // TODO: Should all this should go up in request move? I'd like to have everything down here, 
+      // but how do I set it up to request a respawn?
+      // Don't "request" anything, just create the player up there -- also means no initial spawn
+
+      this.needsRespawn = false;
+      this.spawnTimer = Constants.SpawnDelay;
+      
+      // TODO: assign() instead of making new?
+      this.player = {
+        type: 'Player',
+        color: 'green',
+        x: this.#level.spawn.x,
+        y: this.#level.spawn.y,
+        dir: this.#level.spawn.dir,
+        dx: 0,
+        dy: 0,
+        jumpTimeLeft: 0,
+        jumpQueue: [],
+        animationTime: 0,
+        status: Frog.Status.Alive,
+      };
+      
+      // Object.assign( this.player, this.#level.spawn );
+
+      this.timeLeft = this.#level.time;
     }
     else {
       if ( dir != this.player.jumpQueue.at( -1 ) ) {
@@ -176,11 +180,14 @@ export class World
       const MOVE_SPEED = 0.003;
       const JUMP_TIME = 1 / MOVE_SPEED;
 
-      if ( this.player.status == Frog.Status.Alive ) {
-        this.player.dx ??= 0;
-        this.player.dy ??= 0;
-        this.player.jumpTimeLeft ??= 0;
-        this.player.jumpQueue ??= [];
+      if ( this.needsRespawn ) {
+        this.spawnTimer -= dt;
+      }
+      else {
+        // this.player.dx ??= 0;
+        // this.player.dy ??= 0;
+        // this.player.jumpTimeLeft ??= 0;
+        // this.player.jumpQueue ??= [];
         this.player.animationTime = 0;
 
         this.player.x += this.player.dx * dt;
@@ -263,6 +270,8 @@ export class World
         if ( this.player.status != Frog.Status.Alive ) {
           this.lives --;
           this.defeat = this.lives < 0;
+
+          this.needsRespawn = true;
         }
       }
 
@@ -276,17 +285,20 @@ export class World
       ctx.lineWidth = 0.02;
 
       this.#level.draw( ctx );
-      
-      // TODO: Draw player after CanRide and before KillsPlayer, unless player is jumping (or already dead)
-      this.player.animationAction = this.player.status;
 
-      if ( this.player.status != Frog.Status.Alive ) {
-        drawEntity( ctx, this.player );
+      // TODO: If drowned, draw below level (with translucent water)
+      
+      if ( this.player ) {
+        this.player.animationAction = this.player.status;
+
+        if ( this.player.status != Frog.Status.Alive ) {
+          drawEntity( ctx, this.player );
+        }
       }
 
       this.entities.forEach( entity => drawEntity( ctx, entity ) );
 
-      if ( this.player.status == Frog.Status.Alive ) {
+      if ( this.player && this.player.status == Frog.Status.Alive ) {
         drawEntity( ctx, this.player );
       }
     }

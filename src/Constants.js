@@ -1,4 +1,6 @@
-export const NumFroggies = 6;
-export const MaxLives = 4;
-
-export const TileSize = 48;
+export const Constants = {
+  NumFroggies: 6,
+  MaxLives: 4,
+  SpawnDelay: 500,
+  TileSize: 48,
+};
