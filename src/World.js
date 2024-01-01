@@ -183,11 +183,8 @@ export class World
       if ( this.needsRespawn ) {
         this.spawnTimer -= dt;
       }
-      else {
-        // this.player.dx ??= 0;
-        // this.player.dy ??= 0;
-        // this.player.jumpTimeLeft ??= 0;
-        // this.player.jumpQueue ??= [];
+
+      if ( this.player.status == Frog.Status.Alive ) {
         this.player.animationTime = 0;
 
         this.player.x += this.player.dx * dt;
@@ -210,6 +207,9 @@ export class World
             e => Math.abs( e.x - this.player.x ) < Entities[ e.type ].hitDist && Math.abs( e.y - this.player.y ) < Entities[ e.type ].hitDist
           );
 
+          let goalX = Math.round( this.player.x );
+          let goalY = Math.round( this.player.y );
+
           if ( collidingWith ) {   
             if ( Entities[ collidingWith.type ]?.canRescue ) {
               this.rescue( collidingWith );
@@ -220,24 +220,25 @@ export class World
                 Frog.Status.SquishedHorizontal : Frog.Status.SquishedVertical;
             }
             else {
-              this.player.x = collidingWith.x;
-              this.player.y = collidingWith.y;
+              goalX = collidingWith.x;
+              goalY = collidingWith.y;
               this.player.dx = collidingWith.dx;
               this.player.dy = collidingWith.dy;
             }
           }
           else {
-            const tileX = Math.round( this.player.x );
-            const tileY = Math.round( this.player.y );
-
-            const tile = this.#level.getTileInfo( tileX, tileY );
+            const tile = this.#level.getTileInfo( this.player.x, this.player.y );
             if ( !tile || tile.KillsPlayer ) {
               this.player.status = Frog.Status.Drowned;
             }
-            else {
-              this.player.x = tileX;
-              this.player.y = tileY;
-            }
+          }
+
+          if ( this.player.status == Frog.Status.Alive ) {
+            const cx = goalX - this.player.x;
+            const cy = goalY - this.player.y;
+            const p = 1 / ( 1 + 100 * Math.pow( Math.hypot( cx, cy ), 2 ) );
+            this.player.x += p * cx;
+            this.player.y += p * cy;
           }
 
           if ( !this.needsRespawn && this.player.status == Frog.Status.Alive && this.player.jumpQueue.length > 0 ) {
@@ -357,7 +358,7 @@ export class World
 
     if ( this.paused ) {
       ctx.fillStyle = '#000b';
-      ctx.fillRect( 0, 0, 15, 16 );
+      ctx.fillRect( 0, 0, 16, 16 ); // make it extra big to cover everything
 
       ctx.textAlign = 'center';
       // NOTE: Safari doesn't seem to respect "textBaseline=middle", so offsetting manually
