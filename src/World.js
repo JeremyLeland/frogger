@@ -184,7 +184,7 @@ export class World
         this.spawnTimer -= dt;
       }
 
-      if ( this.player.status == Frog.Status.Alive ) {
+      if ( this.player?.status == Frog.Status.Alive ) {
         this.player.animationTime = 0;
 
         this.player.x += this.player.dx * dt;

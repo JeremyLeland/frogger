@@ -49,41 +49,50 @@
   import { Level } from './src/Level.js';
   import { World } from './src/World.js';
 
+  import { AnimatedCanvas } from './src/common/AnimatedCanvas.js';
   import { FroggerCanvas } from './src/FroggerCanvas.js';
   
   const TILE_SIZE = 48;
   const EditorLevelKey = 'froggerEditorLevel'
 
-  World.DebugGrid = true;
+  Level.DebugGrid = true;
 
   const Mode = { Edit: 0, Play: 1 };
   let mode = Mode.Edit;
+
+  const EmptyLevel = new Level();
+  EmptyLevel.setSize( 15, 15 );
+  EmptyLevel.spawn = { x: 7, y: 7, dir: 0 };
+
+  const level = Object.assign( EmptyLevel, JSON.parse( localStorage.getItem( EditorLevelKey ) ) );
+
+  const canvas = new AnimatedCanvas( 100, 100, document.getElementById( 'canvas' ) );
+
+  canvas.draw = ( ctx ) => {
+    ctx.scale( 48, 48 );
+    ctx.translate( 0.5, 0.5 );
+
+    level.draw( ctx );
+
+  }
+  
+  // canvas.redraw();
+
+  // const worldCanvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
+  // worldCanvas.showUI = false;
+  // worldCanvas.scale = 48;
+
   
 
-  const worldCanvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
-  worldCanvas.showUI = false;
-  worldCanvas.scale = 48;
-
-  const EmptyLevel = {
-    cols: 15,
-    rows: 15,
-    entities: [],
-    spawn: { x: 7, y: 7, dir: 1 },
-    time: 15000,
-  }
-
-  const level = new Level();
-  Object.assign( level, JSON.parse( localStorage.getItem( EditorLevelKey ) ) );
-
-  const world = new World( level );
-  worldCanvas.world = world; 
+  // const world = new World( level );
+  // worldCanvas.world = world; 
 
   //
   // Load/Save/Clear
   //
   function clearLevel() {
-    world = new World( { cols: 15, rows: 15 } );
-    worldCanvas.world = world;
+    // world = new World( { cols: 15, rows: 15 } );
+    // worldCanvas.world = world;
     levelResized();
   }
 
@@ -108,27 +117,27 @@
   //
   // Playback
   //
-  function startPlay() {
-    mode = Mode.Play;
-    worldCanvas.start();
-  }
+  // function startPlay() {
+  //   mode = Mode.Play;
+  //   worldCanvas.start();
+  // }
 
-  function pausePlay() {
-    worldCanvas.stop();
-  }
+  // function pausePlay() {
+  //   worldCanvas.stop();
+  // }
 
-  function stopPlay() {
-    mode = Mode.Edit;
-    worldCanvas.stop();
-    world = new World( level );
-    worldCanvas.world = world;
-    redraw();
-  }
+  // function stopPlay() {
+  //   mode = Mode.Edit;
+  //   worldCanvas.stop();
+  //   world = new World( level );
+  //   worldCanvas.world = world;
+  //   redraw();
+  // }
 
   
 
   function setDirection( dir ) {
-    world.setDirection( dir, mouseCol, mouseRow );
+    level.setDirection( mouseCol, mouseRow, dir );
     redraw();
   }
 
@@ -148,15 +157,15 @@
   }
   
   function levelResized() {
-    worldCanvas.setSize( world.cols * TILE_SIZE, world.rows * TILE_SIZE );
+    canvas.setSize( level.cols * TILE_SIZE, level.rows * TILE_SIZE );
     redraw();
   }
   
   function redraw() {
-    worldCanvas.redraw();
+    canvas.redraw();
 
     // Save progress
-    localStorage.setItem( EditorLevelKey, JSON.stringify( world ) );
+    localStorage.setItem( EditorLevelKey, JSON.stringify( level ) );
   }
 
 
@@ -236,8 +245,8 @@
   loadInput.onchange = _ => {
     const reader = new FileReader();
     reader.onload = ( e ) => {
-      world = World.fromString( e.target.result );
-      worldCanvas.world = world;
+      // world = World.fromString( e.target.result );
+      // worldCanvas.world = world;
       levelResized();
     };
     reader.readAsText( loadInput.files[ 0 ] );
@@ -248,9 +257,9 @@
   makeButton( 'Clear', clearLevel, fileDiv );
   makeButton( 'Load', loadLevel, fileDiv );
   makeButton( 'Save', saveLevel, fileDiv );
-  makeButton( 'Play', startPlay, fileDiv );
-  makeButton( 'Pause', pausePlay, fileDiv );
-  makeButton( 'Stop', stopPlay, fileDiv );
+  // makeButton( 'Play', startPlay, fileDiv );
+  // makeButton( 'Pause', pausePlay, fileDiv );
+  // makeButton( 'Stop', stopPlay, fileDiv );
 
   uiDiv.appendChild( fileDiv );
 
@@ -264,21 +273,21 @@
   let mouseCol = 0, mouseRow = 0, mouseDown = false, mouseButton = 0;
   let lastCol, lastRow;
 
-  worldCanvas.canvas.addEventListener( 'mousemove', ( e ) => {
+  canvas.canvas.addEventListener( 'pointermove', ( e ) => {
     mouseCol = Math.floor( e.offsetX / Constants.TileSize );
     mouseRow = Math.floor( e.offsetY / Constants.TileSize );
 
     doMouse();
   } );
 
-  worldCanvas.canvas.addEventListener( 'mousedown', ( e ) => {
+  canvas.canvas.addEventListener( 'pointerdown', ( e ) => {
     mouseDown = true;
     mouseButton = e.button;
 
     doMouse();
   } );
 
-  worldCanvas.canvas.addEventListener( 'mouseup', ( e ) => {
+  canvas.canvas.addEventListener( 'pointerup', ( e ) => {
     mouseDown = false;
     mouseButton = null;
     lastCol = lastRow = null;
@@ -294,7 +303,7 @@
 
       if ( mouseButton == 0 ) { 
         if ( activeType == 'Tiles' ) {
-          world.tiles[ mouseCol ][ mouseRow ].tileInfoKey = activeBrush;
+          level.setTileInfo( mouseCol, mouseRow, activeBrush );
         }
         else if ( activeType == 'Entities' ) {
           world.addEntity( activeBrush, mouseCol, mouseRow );
@@ -311,6 +320,8 @@
       redraw();
     }
   }
+
+  // TODO: Save keydown state and set direction in doMouse()
 
   const KeyBindings = {
     KeyW: () => setDirection( Direction.Up ),
@@ -329,6 +340,6 @@
 
 
   levelResized();
-  redraw();
+  // redraw();
 
 </script>

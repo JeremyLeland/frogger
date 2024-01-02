@@ -42,7 +42,6 @@ export class Level
     this.directions = Array.from( this.tiles );
   }
 
-  // TODO: Make this take col,row instead, and have caller do Math.round()?
   getTileInfo( x, y ) {
     const col = Math.round( x );
     const row = Math.round( y );
@@ -53,21 +52,29 @@ export class Level
     }
   }
 
+  setTileInfo( col, row, tileInfoKey ) {
+    let tileKeyIndex = this.tileInfoKeys.indexOf( tileInfoKey );
+    if ( tileKeyIndex < 0 ) {
+      tileKeyIndex = this.tileInfoKeys.length;
+      this.tileInfoKeys.push( tileInfoKey );
+    }
+
+    this.tiles[ col + row * this.cols ] = tileKeyIndex;
+    this.#tileMap = null;
+  }
+
   //
   // TODO -- make all these use 1D arrays instead of 2D
   //
 
-  setDirection( dir, col, row ) {
-    this.tiles[ col ][ row ].dir = dir;
+  setDirection( col, row, dir ) {
+    this.directions[ col + row * this.cols ] = dir;
+    // this.entities.filter( e => e.x == col && e.y == row ).forEach( e => e.dir = dir );
+    // In editor, just draw this based on tile direction
+    // TODO: For player and froggies, need way of setting this directly (without affecting tile direction)
 
-    let affected = this.entities.find( e => e.x == col && e.y == row );
-    
-    if ( affected ) {
-      affected.dir = dir;
-    }
-    else if ( this.player.x == col && this.player.y == row ) {
-      this.player.dir = dir;
-    }
+    // May new tilemap, e.g. this might've affected road lines
+    this.#tileMap = null;
   }
 
   addEntity( type, col, row ) {
