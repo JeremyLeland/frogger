@@ -33,6 +33,9 @@
     <div id="ui">
       Tiles
       <div id="tiles" class="grid"></div>
+      Directions
+      <button id="paths" data-type="Path">Path</button>
+      <div id="dirs"></div>
       Entities
       <div id="entities" class="grid"></div>
     </div>
@@ -43,7 +46,7 @@
   import { Constants } from './src/Constants.js';
   import { Canvas } from './src/common/Canvas.js';
   import { Tiles } from './src/Tiles.js';
-  import { Direction } from './src/Entity.js';
+  import { Direction, Dir } from './src/Entity.js';
   import { Entities } from './src/Entities.js';
   import { Froggy } from './src/Froggy.js';
   import { Level } from './src/Level.js';
@@ -134,7 +137,7 @@
   //   redraw();
   // }
 
-  
+  let currentDirection = Direction.None;
 
   function setDirection( dir ) {
     level.setDirection( mouseCol, mouseRow, dir );
@@ -169,7 +172,7 @@
   }
 
 
-  let activeBrush = 'Grass', activeType = 'Tiles';
+  let activeBrush = 'Grass', activeType = 'Path';//'Tiles';
   
   const worldDiv = document.getElementById( 'world' );
 
@@ -177,49 +180,34 @@
 
   const tilesDiv = document.getElementById( 'tiles' );
   for ( const tile in Tiles ) {
+    tilesDiv.appendChild( getCanvasButton( Tiles[ tile ].draw, tile, 'Tiles' ) );
+  }
+
+  const entitiesDiv = document.getElementById( 'entities' );
+  for ( const id in Entities ) {
+    entitiesDiv.appendChild( getCanvasButton( Entities[ id ].draw, id, 'Entities' ) );
+  }
+
+  function getCanvasButton( drawFunc, brush, type ) {
     const button = document.createElement( 'button' );
 
     // TODO: Use AnimatedCanvas for these, and just don't start it?
     const icon = new Canvas( 48, 48 );
     icon.ctx.scale( 48, 48 );
     icon.ctx.translate( 0.5, 0.5 );
-    Tiles[ tile ].draw( icon.ctx );
+    icon.ctx.lineWidth = 1 / 48;          // TODO: Can we set this once and not deal with it anymore? bug #38
+    drawFunc( icon.ctx );
     button.appendChild( icon.canvas );
     button.appendChild( document.createElement( 'br' ) );
 
     const text = document.createElement( 'div' );
-    text.innerHTML = tile;
+    text.innerHTML = brush;
     button.appendChild( text );
 
-    button.addEventListener( 'click', ( e ) => { 
-      activeBrush = tile;
-      activeType = 'Tiles';
-    } );
-    tilesDiv.appendChild( button );
-  }
+    button.dataset.brush = brush;
+    button.dataset.type = type;
 
-  // TODO: Combine similar code with above?
-  const entitiesDiv = document.getElementById( 'entities' );
-  for ( const id in Entities ) {
-    const button = document.createElement( 'button' );
-
-    const icon = new Canvas( 48, 48 );
-    icon.ctx.scale( 48, 48 );
-    icon.ctx.translate( 0.5, 0.5 );
-    icon.ctx.lineWidth = 1 / 48;
-    Entities[ id ].draw( icon.ctx );
-    button.appendChild( icon.canvas );
-    button.appendChild( document.createElement( 'br' ) );
-
-    const text = document.createElement( 'div' );
-    text.innerHTML = id;
-    button.appendChild( text );
-
-    button.addEventListener( 'click', ( e ) => { 
-      activeBrush = id;
-      activeType = 'Entities';
-    } );
-    entitiesDiv.appendChild( button );
+    return button;
   }
 
   const playerButton = document.createElement( 'button' );
@@ -263,6 +251,12 @@
 
   uiDiv.appendChild( fileDiv );
 
+  uiDiv.addEventListener( 'click', e => {
+    const button = e.target.closest( 'button' );
+    activeBrush = button.dataset.brush;
+    activeType = button.dataset.type;
+  } );
+
   function makeButton( text, func, parent ) {
     const button = document.createElement( 'button' );
     button.textContent = text;
@@ -298,12 +292,21 @@
 
   function doMouse() {
     if ( mode == Mode.Edit && mouseDown && ( mouseCol != lastCol || mouseRow != lastRow ) ) {
-      lastCol = mouseCol;
-      lastRow = mouseRow;
-
-      if ( mouseButton == 0 ) { 
+      if ( mouseButton == 0 ) {
+        // TODO: switch/case instead of ifs?
+        // TODO: enum for activeType?
         if ( activeType == 'Tiles' ) {
           level.setTileInfo( mouseCol, mouseRow, activeBrush );
+        }
+        else if ( activeType == 'Path' ) {
+          if ( lastCol != null && lastRow != null ) {
+            const dx = mouseCol - lastCol;
+            const dy = mouseRow - lastRow;
+            const dir = Dir.findIndex( e => e.x == dx && e.y == dy );
+            
+            level.setDirection( lastCol, lastRow, dir );
+            level.setDirection( mouseCol, mouseRow, dir );
+          }
         }
         else if ( activeType == 'Entities' ) {
           world.addEntity( activeBrush, mouseCol, mouseRow );
@@ -314,14 +317,25 @@
         }
       }
       else if ( mouseButton == 2 ) {
-        world.removeEntity( mouseCol, mouseRow );
+        if ( activeType == 'Path' ) {
+          level.setDirection( mouseCol, mouseRow, Direction.None );
+        }
+        else if ( activeType == 'Entities' ) {
+          world.removeEntity( mouseCol, mouseRow );
+        }
       }
+
+      lastCol = mouseCol;
+      lastRow = mouseRow;
 
       redraw();
     }
   }
 
   // TODO: Save keydown state and set direction in doMouse()
+
+  // TODO: Use path tool to set directions
+  // TODO: Use WASD to set direction for entity under cursor 
 
   const KeyBindings = {
     KeyW: () => setDirection( Direction.Up ),

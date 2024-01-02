@@ -2,6 +2,7 @@ export const Direction = {
   None: 0, Up: 1, Left: 2, Down: 3, Right: 4
 };
 
+// TODO: Rename DirInfo, put in a better named file?
 export const Dir = [
   /* none */  { x:  0, y:  0, angle:  0          , dist: ( x, y ) => 0                       },
   /*Up:*/     { x:  0, y: -1, angle: -Math.PI / 2, dist: ( x, y ) => y - Math.ceil( y - 1 )  },
