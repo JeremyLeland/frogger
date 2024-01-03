@@ -1,5 +1,6 @@
 import { Dir } from './Entity.js';
 import { Entities } from './Entities.js';
+import { Entity } from './Entity.js';
 import { Frog } from './Frog.js';
 import { Froggy } from './Froggy.js';
 import { Player } from './Player.js';
@@ -293,14 +294,14 @@ export class World
         this.player.animationAction = this.player.status;
 
         if ( this.player.status != Frog.Status.Alive ) {
-          drawEntity( ctx, this.player );
+          Entity.draw( this.player, ctx );
         }
       }
 
-      this.entities.forEach( entity => drawEntity( ctx, entity ) );
+      this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
 
       if ( this.player && this.player.status == Frog.Status.Alive ) {
-        drawEntity( ctx, this.player );
+        Entity.draw( this.player, ctx );
       }
     }
     ctx.restore();
@@ -367,20 +368,6 @@ export class World
       ctx.fillText( 'Paused', 15 / 2, 7.8 );
     }
   }
-}
-
-function drawEntity( ctx, entity ) {
-  ctx.save();
-  ctx.translate( entity.x, entity.y );
-  ctx.rotate( Dir[ entity.dir ]?.angle ?? 0 );
-  // ctx.scale( entity.size, entity.size );   // nothing changes size for now
-
-  ctx.strokeStyle = 'black';
-  ctx.lineWidth = 0.02;
-
-  Entities[ entity.type ].draw( ctx, entity.animationAction, entity.animationTime ?? animationTime );
-
-  ctx.restore();
 }
 
 function drawBanner( ctx, text ) {

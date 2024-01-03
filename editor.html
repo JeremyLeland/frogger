@@ -48,6 +48,7 @@
   import { Tiles } from './src/Tiles.js';
   import { Direction, Dir } from './src/Entity.js';
   import { Entities } from './src/Entities.js';
+  import { Entity } from './src/Entity.js';
   import { Froggy } from './src/Froggy.js';
   import { Level } from './src/Level.js';
   import { World } from './src/World.js';
@@ -63,6 +64,9 @@
   const Mode = { Edit: 0, Play: 1 };
   let mode = Mode.Edit;
 
+  const EditType = { Tiles: 'Tiles', Directions: 'Path', Entities: 'Entities' };
+  let activeBrush = 'Grass', activeType = EditType.Tiles;
+
   const EmptyLevel = new Level();
   EmptyLevel.setSize( 15, 15 );
   EmptyLevel.spawn = { x: 7, y: 7, dir: 0 };
@@ -76,7 +80,9 @@
     ctx.translate( 0.5, 0.5 );
 
     level.draw( ctx );
-
+    level.entities.forEach( entity =>
+      Entity.draw( entity, ctx, { dir: level.directions[ entity.x + entity.y * level.cols ] } )
+    );
   }
   
   // canvas.redraw();
@@ -172,7 +178,7 @@
   }
 
 
-  let activeBrush = 'Grass', activeType = 'Path';//'Tiles';
+  
   
   const worldDiv = document.getElementById( 'world' );
 
@@ -295,10 +301,10 @@
       if ( mouseButton == 0 ) {
         // TODO: switch/case instead of ifs?
         // TODO: enum for activeType?
-        if ( activeType == 'Tiles' ) {
+        if ( activeType == EditType.Tiles ) {
           level.setTileInfo( mouseCol, mouseRow, activeBrush );
         }
-        else if ( activeType == 'Path' ) {
+        else if ( activeType == EditType.Directions ) {
           if ( lastCol != null && lastRow != null ) {
             const dx = mouseCol - lastCol;
             const dy = mouseRow - lastRow;
@@ -308,20 +314,27 @@
             level.setDirection( mouseCol, mouseRow, dir );
           }
         }
-        else if ( activeType == 'Entities' ) {
-          world.addEntity( activeBrush, mouseCol, mouseRow );
+        else if ( activeType == EditType.Entities ) {
+          level.removeEntity( mouseCol, mouseRow );
+
+          if ( activeBrush == 'Player' ) {
+            level.spawn = { x: mouseCol, y: mouseRow, dir: 1 };
+          }
+          else {
+            level.addEntity( mouseCol, mouseRow, activeBrush );
+          }
         }
-        else if ( activeBrush == 'player' ) {
-          world.player.x = world.spawnCol = mouseCol;
-          world.player.y = world.spawnRow = mouseRow;
-        }
+        
       }
       else if ( mouseButton == 2 ) {
-        if ( activeType == 'Path' ) {
+        // if ( activeType == EditType.Tiles ) {
+        //   level.setTileInfo( mouseCol, mouseRow, level.tileInfoKeys[ 0 ] );
+        // }
+        if ( activeType == EditType.Directions ) {
           level.setDirection( mouseCol, mouseRow, Direction.None );
         }
-        else if ( activeType == 'Entities' ) {
-          world.removeEntity( mouseCol, mouseRow );
+        else { //if ( activeType == EditType.Entities ) {
+          level.removeEntity( mouseCol, mouseRow );
         }
       }
 

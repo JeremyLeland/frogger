@@ -63,10 +63,6 @@ export class Level
     this.#tileMap = null;
   }
 
-  //
-  // TODO -- make all these use 1D arrays instead of 2D
-  //
-
   setDirection( col, row, dir ) {
     this.directions[ col + row * this.cols ] = dir;
     // this.entities.filter( e => e.x == col && e.y == row ).forEach( e => e.dir = dir );
@@ -77,25 +73,17 @@ export class Level
     this.#tileMap = null;
   }
 
-  addEntity( type, col, row ) {
-    this.removeEntity( col, row );
-
-    this.entities.push(
-      new Entity( 
-        Entities[ type ], 
-        {
-          x: col,
-          y: row,
-          // dir: this.tiles[ col ]?.[ row ]?.dir ?? Direction.Right,
-        }
-      )
-    );
+  addEntity( col, row, type ) {
+    this.entities.push( { type: type, x: col, y: row } );
   }
 
   removeEntity( col, row ) {
     this.entities = this.entities.filter( e => e.x != col || e.y != row );
   }
 
+  //
+  // TODO: Make all these work for 1D arrays
+  //
   addColumn( col ) {
     this.tiles.splice( col, 0, 
       Array.from( this.tiles[ col ], e => ( { tileInfoKey: e.tileInfoKey, dir: e.dir } ) ) 
