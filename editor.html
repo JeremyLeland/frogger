@@ -23,6 +23,9 @@
     display: grid;
     grid-template-columns: 64px 64px;
   }
+  #time {
+    width: 70;
+  }
 </style>
 
 <body>
@@ -31,13 +34,19 @@
       <canvas id="canvas"></canvas>
     </div>
     <div id="ui">
-      Tiles
+      Tiles:
       <div id="tiles" class="grid"></div>
-      Directions
-      <button id="paths" data-type="Path">Path</button>
-      <div id="dirs"></div>
-      Entities
+      Directions: <button id="paths" data-type="Path">Path</button>
+      Entities:
       <div id="entities" class="grid"></div>
+      Time: <input id="time" type="number" min="0"></input>ms
+      <button id="clear">Clear</button>
+      <button id="load">Load</button>
+      <button id="save">Save</button>
+      Playback:<br>
+      <button id="play">Play</button>
+      <button id="pause">Pause</button>
+      <button id="stop">Stop</button>
     </div>
   </div>
 </body>
@@ -173,8 +182,7 @@
   function redraw() {
     canvas.redraw();
 
-    // Save progress
-    localStorage.setItem( EditorLevelKey, JSON.stringify( level ) );
+    timeUI.value = level.time;
   }
 
 
@@ -216,24 +224,9 @@
     return button;
   }
 
-  const playerButton = document.createElement( 'button' );
-  playerButton.textContent = 'Player';
-  playerButton.addEventListener( 'click', ( e ) => {
-    activeBrush = activeType = 'player';
-  } );
-  uiDiv.appendChild( playerButton );
-
-  uiDiv.appendChild( document.createTextNode( 'Time: ' ) );
-
-  const timeUI = document.createElement( 'input' );
-  timeUI.type = 'number';
-  timeUI.style.width = 70;
-  timeUI.value = world.maxTime;
-  timeUI.oninput = _ => world.maxTime = parseInt( timeUI.value );
-  uiDiv.appendChild( timeUI );
-  uiDiv.appendChild( document.createTextNode( 'ms' ) );
+  const timeUI = document.getElementById( 'time' );
+  timeUI.addEventListener( 'input', e => level.time = parseInt( e.target.value ) );
   
-
   const loadInput = document.createElement( 'input' );
   loadInput.type = 'file';
   loadInput.onchange = _ => {
@@ -259,8 +252,11 @@
 
   uiDiv.addEventListener( 'click', e => {
     const button = e.target.closest( 'button' );
-    activeBrush = button.dataset.brush;
-    activeType = button.dataset.type;
+
+    if ( button ) {
+      activeBrush = button.dataset.brush;
+      activeType = button.dataset.type;
+    }
   } );
 
   function makeButton( text, func, parent ) {
@@ -368,5 +364,9 @@
 
   levelResized();
   // redraw();
+
+  window.addEventListener( 'beforeunload', ( e ) =>
+    localStorage.setItem( EditorLevelKey, JSON.stringify( level ) )
+  );
 
 </script>
