@@ -36,10 +36,11 @@
     <div id="ui">
       Tiles:
       <div id="tiles" class="grid"></div>
-      Directions: <button id="paths" data-type="Path">Path</button>
+      Directions: <button id="path" data-type="Path">Path</button>
       Entities:
       <div id="entities" class="grid"></div>
       Time: <input id="time" type="number" min="0"></input>ms
+      File:<br>
       <button id="clear">Clear</button>
       <button id="load">Load</button>
       <button id="save">Save</button>
@@ -76,22 +77,30 @@
   const EditType = { Tiles: 'Tiles', Directions: 'Path', Entities: 'Entities' };
   let activeBrush = 'Grass', activeType = EditType.Tiles;
 
-  const EmptyLevel = new Level();
-  EmptyLevel.setSize( 15, 15 );
-  EmptyLevel.spawn = { x: 7, y: 7, dir: 0 };
-
-  const level = Object.assign( EmptyLevel, JSON.parse( localStorage.getItem( EditorLevelKey ) ) );
+  let level = Object.assign( getEmptyLevel(), JSON.parse( localStorage.getItem( EditorLevelKey ) ) );
+  let world;
 
   const canvas = new AnimatedCanvas( 100, 100, document.getElementById( 'canvas' ) );
 
+  canvas.update = ( dt ) => {
+    if ( world ) {
+      world.update( dt );
+    }
+  }
+
   canvas.draw = ( ctx ) => {
     ctx.scale( 48, 48 );
-    ctx.translate( 0.5, 0.5 );
-
-    level.draw( ctx );
-    level.entities.forEach( entity =>
-      Entity.draw( entity, ctx, { dir: level.directions[ entity.x + entity.y * level.cols ] } )
-    );
+    
+    if ( world ) {
+      world.draw( ctx );
+    }
+    else {
+      ctx.translate( 0.5, 0.5 );
+      level.draw( ctx );
+      level.entities.forEach( entity =>
+        Entity.draw( entity, ctx, { dir: level.directions[ entity.x + entity.y * level.cols ] } )
+      );
+    }
   }
   
   // canvas.redraw();
@@ -108,9 +117,16 @@
   //
   // Load/Save/Clear
   //
+  function getEmptyLevel() {
+    const emptyLevel = new Level();
+    emptyLevel.setSize( 15, 15 );
+    emptyLevel.spawn = { x: 7, y: 7, dir: 0 };
+    return emptyLevel;
+  }
+
   function clearLevel() {
-    // world = new World( { cols: 15, rows: 15 } );
-    // worldCanvas.world = world;
+    level = getEmptyLevel();
+    
     levelResized();
   }
 
@@ -135,28 +151,31 @@
   //
   // Playback
   //
-  // function startPlay() {
-  //   mode = Mode.Play;
-  //   worldCanvas.start();
-  // }
+  function startPlay() {
+    mode = Mode.Play;
+    world = new World( level );
+    canvas.start();
+  }
 
-  // function pausePlay() {
-  //   worldCanvas.stop();
-  // }
+  function pausePlay() {
+    world.paused = !world.paused;
+  }
 
-  // function stopPlay() {
-  //   mode = Mode.Edit;
-  //   worldCanvas.stop();
-  //   world = new World( level );
-  //   worldCanvas.world = world;
-  //   redraw();
-  // }
+  function stopPlay() {
+    mode = Mode.Edit;
+    canvas.stop();
+    world = null;
+    redraw();
+  }
 
   let currentDirection = Direction.None;
 
-  function setDirection( dir ) {
-    level.setDirection( mouseCol, mouseRow, dir );
-    redraw();
+  function setEntityDirection( dir ) {
+    const entity = level.entities.find( e => e.x == mouseCol && e.y == mouseRow );
+    if ( entity ) {
+      entity.dir = dir;
+      redraw();
+    }
   }
 
   function toggleGrid() {
@@ -186,7 +205,9 @@
   }
 
 
-  
+  //
+  // UI
+  //
   
   const worldDiv = document.getElementById( 'world' );
 
@@ -224,6 +245,18 @@
     return button;
   }
 
+  tilesDiv.addEventListener( 'click', brushClick );
+  entitiesDiv.addEventListener( 'click', brushClick );
+  
+  function brushClick( e ) {
+    const button = e.target.closest( 'button' );
+
+    if ( button ) {
+      activeBrush = button.dataset.brush;
+      activeType = button.dataset.type;
+    }
+  }
+
   const timeUI = document.getElementById( 'time' );
   timeUI.addEventListener( 'input', e => level.time = parseInt( e.target.value ) );
   
@@ -239,32 +272,24 @@
     reader.readAsText( loadInput.files[ 0 ] );
   }
 
-  const fileDiv = document.createElement( 'div' );
- 
-  makeButton( 'Clear', clearLevel, fileDiv );
-  makeButton( 'Load', loadLevel, fileDiv );
-  makeButton( 'Save', saveLevel, fileDiv );
-  // makeButton( 'Play', startPlay, fileDiv );
-  // makeButton( 'Pause', pausePlay, fileDiv );
-  // makeButton( 'Stop', stopPlay, fileDiv );
-
-  uiDiv.appendChild( fileDiv );
-
-  uiDiv.addEventListener( 'click', e => {
-    const button = e.target.closest( 'button' );
-
-    if ( button ) {
-      activeBrush = button.dataset.brush;
-      activeType = button.dataset.type;
-    }
-  } );
-
-  function makeButton( text, func, parent ) {
-    const button = document.createElement( 'button' );
-    button.textContent = text;
-    button.addEventListener( 'click', func );
-    parent.appendChild( button );
+  const buttonFuncs = {
+    'path': _ => activeType = EditType.Directions,
+    'clear': clearLevel,
+    'load': loadLevel,
+    'save': saveLevel,
+    'play': startPlay,
+    'pause': pausePlay,
+    'stop': stopPlay,
   }
+
+  for ( const id in buttonFuncs ) {
+    document.getElementById( id ).addEventListener( 'click', buttonFuncs[ id ] );
+  }
+
+
+  //
+  // Mouse input
+  //
 
   let mouseCol = 0, mouseRow = 0, mouseDown = false, mouseButton = 0;
   let lastCol, lastRow;
@@ -341,17 +366,11 @@
     }
   }
 
-  // TODO: Save keydown state and set direction in doMouse()
-
-  // TODO: Use path tool to set directions
-  // TODO: Use WASD to set direction for entity under cursor 
-
   const KeyBindings = {
-    KeyW: () => setDirection( Direction.Up ),
-    KeyA: () => setDirection( Direction.Left ),
-    KeyS: () => setDirection( Direction.Down ),
-    KeyD: () => setDirection( Direction.Right ),
-    Space: () => setDirection( null ),
+    KeyW: () => setEntityDirection( Direction.Up ),
+    KeyA: () => setEntityDirection( Direction.Left ),
+    KeyS: () => setEntityDirection( Direction.Down ),
+    KeyD: () => setEntityDirection( Direction.Right ),
     KeyG: toggleGrid,
     KeyC: () => resize( 1, 0 ),
     KeyX: () => resize( -1, 0 ),

@@ -17,7 +17,7 @@ export class Entity {
   static draw( entity, ctx, { dir, action, time } = {} ) {
     ctx.save();
     ctx.translate( entity.x, entity.y );
-    ctx.rotate( Dir[ dir ?? entity.dir ]?.angle ?? 0 );
+    ctx.rotate( Dir[ ( dir > 0 ? dir : null ) ?? entity.dir ]?.angle ?? 0 );
     // ctx.scale( entity.size, entity.size );   // nothing changes size for now
   
     ctx.strokeStyle = 'black';

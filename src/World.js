@@ -32,7 +32,7 @@ export class World
 
     this.timeLeft = level.time;
 
-    this.entities = Array.from( level.entities );
+    this.entities = level.entities.map( e => ( { ...e } ) );
   }
 
   // TODO: Move this update()
@@ -96,6 +96,8 @@ export class World
         const speed = Entities[ entity.type ].Speed;
 
         if ( speed ) {
+          entity.dir ??= this.#level.directions[ entity.x + entity.y * this.#level.cols ];
+
           let totalTime = dt;
           while ( totalTime > 0 ) {
             const dist = Dir[ entity.dir ].dist( entity.x, entity.y );
