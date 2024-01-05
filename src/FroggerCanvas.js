@@ -19,6 +19,8 @@ const KeyDir = {
 export class FroggerCanvas extends AnimatedCanvas {
   showUI = true;
   scale = 1;
+
+  world;
   
   constructor( canvas ) {
     super( 100, 100, canvas );
@@ -56,13 +58,13 @@ export class FroggerCanvas extends AnimatedCanvas {
   }
 
   update( dt ) {
-    this.world.update( dt );
+    this.world?.update( dt );
   }
 
   draw( ctx ) {
     ctx.save();
     ctx.scale( this.scale, this.scale );
     
-    this.world.draw( ctx, this.showUI );
+    this.world?.draw( ctx, this.showUI );
   }
 }

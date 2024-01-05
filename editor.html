@@ -78,41 +78,10 @@
   let activeBrush = 'Grass', activeType = EditType.Tiles;
 
   let level = Object.assign( getEmptyLevel(), JSON.parse( localStorage.getItem( EditorLevelKey ) ) );
-  let world;
-
-  const canvas = new AnimatedCanvas( 100, 100, document.getElementById( 'canvas' ) );
-
-  canvas.update = ( dt ) => {
-    if ( world ) {
-      world.update( dt );
-    }
-  }
-
-  canvas.draw = ( ctx ) => {
-    ctx.scale( 48, 48 );
-    
-    if ( world ) {
-      world.draw( ctx );
-    }
-    else {
-      ctx.translate( 0.5, 0.5 );
-      level.draw( ctx );
-      level.entities.forEach( entity =>
-        Entity.draw( entity, ctx, { dir: level.directions[ entity.x + entity.y * level.cols ] } )
-      );
-    }
-  }
   
-  // canvas.redraw();
+  const canvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
+  canvas.scale = TILE_SIZE;
 
-  // const worldCanvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
-  // worldCanvas.showUI = false;
-  // worldCanvas.scale = 48;
-
-  
-
-  // const world = new World( level );
-  // worldCanvas.world = world; 
 
   //
   // Load/Save/Clear
@@ -130,13 +99,24 @@
     levelResized();
   }
 
+  const loadInput = document.createElement( 'input' );
+  loadInput.type = 'file';
+  loadInput.onchange = _ => {
+    const reader = new FileReader();
+    reader.onload = ( e ) => {
+      level = Object.assign( new Level(), JSON.parse( e.target.result ) );
+      levelResized();
+    };
+    reader.readAsText( loadInput.files[ 0 ] );
+  }
+
   function loadLevel() {
     loadInput.click();
   }
 
   function saveLevel() {
     const filename = 'level.json';
-    const content = JSON.stringify( world );
+    const content = JSON.stringify( level );
     const blob = new Blob( [ content ], { type: 'text/plain' } );
     const link = document.createElement( 'a' );
     link.download = filename;
@@ -153,12 +133,12 @@
   //
   function startPlay() {
     mode = Mode.Play;
-    world = new World( level );
+    canvas.world = new World( level );
     canvas.start();
   }
 
   function pausePlay() {
-    world.paused = !world.paused;
+    canvas.world.paused = !canvas.world.paused;
   }
 
   function stopPlay() {
@@ -185,10 +165,10 @@
 
   function resize( cols, rows ) {
     // TODO: multiple?
-    if ( cols > 0 )   world.addColumn( mouseCol );
-    if ( cols < 0 )   world.removeColumn( mouseCol );
-    if ( rows > 0 )   world.addRow( mouseRow ); 
-    if ( rows < 0 )   world.removeRow( mouseRow );
+    if ( cols > 0 )   level.addColumn( mouseCol );
+    if ( cols < 0 )   level.removeColumn( mouseCol );
+    if ( rows > 0 )   level.addRow( mouseRow ); 
+    if ( rows < 0 )   level.removeRow( mouseRow );
 
     levelResized();
   }
@@ -199,7 +179,15 @@
   }
   
   function redraw() {
-    canvas.redraw();
+    canvas.ctx.save(); {
+      canvas.ctx.scale( TILE_SIZE, TILE_SIZE );
+      canvas.ctx.translate( 0.5, 0.5 );
+      level.draw( canvas.ctx );
+      level.entities.forEach( entity =>
+      Entity.draw( entity, canvas.ctx, { dir: level.directions[ entity.x + entity.y * level.cols ] } )
+      );
+    }
+    canvas.ctx.restore();
 
     timeUI.value = level.time;
   }
@@ -260,17 +248,6 @@
   const timeUI = document.getElementById( 'time' );
   timeUI.addEventListener( 'input', e => level.time = parseInt( e.target.value ) );
   
-  const loadInput = document.createElement( 'input' );
-  loadInput.type = 'file';
-  loadInput.onchange = _ => {
-    const reader = new FileReader();
-    reader.onload = ( e ) => {
-      // world = World.fromString( e.target.result );
-      // worldCanvas.world = world;
-      levelResized();
-    };
-    reader.readAsText( loadInput.files[ 0 ] );
-  }
 
   const buttonFuncs = {
     'path': _ => activeType = EditType.Directions,

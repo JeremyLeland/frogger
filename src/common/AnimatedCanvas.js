@@ -39,6 +39,7 @@ export class AnimatedCanvas {
   }
 
   // TODO: Handle starts if already started, stops if already stopped...
+  //       check if reqId not null? (set null in stop)
 
   start() {
     let lastTime;
