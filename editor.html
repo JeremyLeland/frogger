@@ -53,6 +53,20 @@
 </body>
 
 <script type="module">
+  const BASE_W = 0.05, HEAD_W = 0.2, NECK = 0, LEN = 0.2;
+  const arrow = new Path2D();
+  arrow.moveTo( -LEN,  -BASE_W );
+  arrow.lineTo(  NECK, -BASE_W );
+  arrow.lineTo(  NECK, -HEAD_W );
+  arrow.lineTo(  LEN,   0 );
+  arrow.lineTo(  NECK,  HEAD_W );
+  arrow.lineTo(  NECK,  BASE_W );
+  arrow.lineTo( -LEN,   BASE_W );
+  arrow.closePath();
+
+  const ARROW_COLOR = '#ff05';
+  const TILE_BORDER = 1 / 64;
+
   import { Constants } from './src/Constants.js';
   import { Canvas } from './src/common/Canvas.js';
   import { Tiles } from './src/Tiles.js';
@@ -69,7 +83,7 @@
   const TILE_SIZE = 48;
   const EditorLevelKey = 'froggerEditorLevel'
 
-  Level.DebugGrid = true;
+  let DebugGrid = true;
 
   const Mode = { Edit: 0, Play: 1 };
   let mode = Mode.Edit;
@@ -159,7 +173,7 @@
   }
 
   function toggleGrid() {
-    World.DebugGrid = !World.DebugGrid;
+    DebugGrid = !DebugGrid;
     redraw();
   }
 
@@ -179,15 +193,52 @@
   }
   
   function redraw() {
-    canvas.ctx.save(); {
-      canvas.ctx.scale( TILE_SIZE, TILE_SIZE );
-      canvas.ctx.translate( 0.5, 0.5 );
-      level.draw( canvas.ctx );
+    const ctx = canvas.ctx;
+
+    ctx.save(); {
+      ctx.scale( TILE_SIZE, TILE_SIZE );
+      ctx.translate( 0.5, 0.5 );
+      level.draw( ctx );
       level.entities.forEach( entity =>
-      Entity.draw( entity, canvas.ctx, { dir: level.directions[ entity.x + entity.y * level.cols ] } )
+        Entity.draw( entity, ctx, { dir: level.directions[ entity.x + entity.y * level.cols ] } )
       );
+
+      if ( DebugGrid ) {
+        ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
+        ctx.lineWidth = TILE_BORDER;
+        ctx.textAlign = 'center';
+        ctx.font = '10px Arial';      // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
+
+
+        for ( let row = 0; row < level.rows; row ++ ) {
+          ctx.save(); { 
+            for ( let col = 0; col < level.cols; col ++ ) {
+              ctx.strokeRect( -0.5, -0.5, 1, 1 );
+
+              const dir = level.directions[ col + row * level.cols ];
+              if ( dir > 0 ) {
+                ctx.save(); {
+                  ctx.rotate( Dir[ dir ].angle );
+                  ctx.fill( arrow );
+                }
+                ctx.restore();
+              }
+
+              ctx.save();
+              ctx.scale( 0.02, 0.02 );    // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
+              ctx.fillText( `(${ col },${ row })`, 0, 20 );
+              ctx.restore();
+
+              ctx.translate( 1, 0 );
+            }
+
+          }
+          ctx.restore();
+          ctx.translate( 0, 1 );
+        }
+      }
     }
-    canvas.ctx.restore();
+    ctx.restore();
 
     timeUI.value = level.time;
   }

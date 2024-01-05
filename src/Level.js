@@ -1,18 +1,3 @@
-const BASE_W = 0.05, HEAD_W = 0.2, NECK = 0, LEN = 0.2;
-const arrow = new Path2D();
-arrow.moveTo( -LEN,  -BASE_W );
-arrow.lineTo(  NECK, -BASE_W );
-arrow.lineTo(  NECK, -HEAD_W );
-arrow.lineTo(  LEN,   0 );
-arrow.lineTo(  NECK,  HEAD_W );
-arrow.lineTo(  NECK,  BASE_W );
-arrow.lineTo( -LEN,   BASE_W );
-arrow.closePath();
-
-const ARROW_COLOR = '#ff05';
-const TILE_BORDER = 1 / 64;
-
-import { Dir } from './Entity.js';
 import { Tiles } from './Tiles.js';
 import { Props } from './Props.js';
 import { TileMap } from './TileMap.js';
@@ -65,11 +50,8 @@ export class Level
 
   setDirection( col, row, dir ) {
     this.directions[ col + row * this.cols ] = dir;
-    // this.entities.filter( e => e.x == col && e.y == row ).forEach( e => e.dir = dir );
-    // In editor, just draw this based on tile direction
-    // TODO: For player and froggies, need way of setting this directly (without affecting tile direction)
-
-    // May new tilemap, e.g. this might've affected road lines
+    
+    // May need new tilemap, e.g. this might've affected road lines
     this.#tileMap = null;
   }
 
@@ -149,28 +131,6 @@ export class Level
 
         if ( this.spawn.x == col && this.spawn.y == row ) {
           Props[ 'Bullseye' ].draw( ctx );
-        }
-
-        if ( Level.DebugGrid ) {
-          ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
-          ctx.lineWidth = TILE_BORDER;
-          ctx.textAlign = 'center';
-          ctx.font = '10px Arial';      // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
-
-          ctx.strokeRect( -0.5, -0.5, 1, 1 );
-
-          const dir = this.directions[ col + row * this.cols ];
-          if ( dir > 0 ) {
-            ctx.save();
-            ctx.rotate( Dir[ dir ].angle );
-            ctx.fill( arrow );
-            ctx.restore();
-          }
-
-          ctx.save();
-          ctx.scale( 0.02, 0.02 );    // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
-          ctx.fillText( `(${ col },${ row })`, 0, 20 );
-          ctx.restore();
         }
 
         ctx.translate( 1, 0 );
