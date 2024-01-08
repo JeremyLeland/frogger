@@ -2,15 +2,6 @@ const LEG_L = 0.45, LEG_W = 0.08;
 const HEAD_SIZE = 0.14;
 const SHELL_SIZE = 0.3;
 
-const leg = new Path2D();
-leg.moveTo( 0, 0 );
-leg.lineTo( LEG_L, -LEG_W );
-leg.lineTo( LEG_L,  LEG_W );
-leg.closePath();
-
-const head = new Path2D();
-head.arc( SHELL_SIZE + HEAD_SIZE / 2, 0, HEAD_SIZE, 0, Math.PI * 2 );
-
 const shell = new Path2D();
 shell.arc( 0, 0, SHELL_SIZE, 0, Math.PI * 2 );
 
@@ -62,18 +53,26 @@ export class Turtle {
     
     const legAngleOffset = 0.3 * Math.sin( 0.005 * animationTime );
 
+    ctx.beginPath();
+
     [ -1, 1 ].forEach( side => {
       [ 0.4, 0.75 ].forEach( angle => {
         ctx.save();
         ctx.rotate( side * ( Math.PI * angle + legAngleOffset ) );    
-        ctx.fill( leg );
-        ctx.stroke( leg );
+
+        ctx.moveTo( 0, 0 );
+        ctx.lineTo( LEG_L, -LEG_W );
+        ctx.lineTo( LEG_L,  LEG_W );
+
         ctx.restore();
       } );
     } );
 
-    ctx.fill( head );
-    ctx.stroke( head );
+    ctx.moveTo( SHELL_SIZE + HEAD_SIZE * 1.5, 0 );
+    ctx.arc( SHELL_SIZE + HEAD_SIZE / 2, 0, HEAD_SIZE, 0, Math.PI * 2 );
+
+    ctx.fill();
+    ctx.stroke();
 
     if ( !shellGrad ) {
       shellGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );

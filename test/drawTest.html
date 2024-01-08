@@ -17,6 +17,9 @@
       e.angle += dt / 1000;
     } );
   }
+
+  const path = new Path2D();
+  path.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
   
   canvas.draw = ( ctx ) => {
 
@@ -29,14 +32,27 @@
 
     entities.forEach( e => {
       ctx.save();
+      
       ctx.translate( e.x, e.y );
       ctx.rotate( e.angle );
 
       // ctx.beginPath();
-      ctx.moveTo( 0, 0 );
-      ctx.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
+      // ctx.moveTo( 0, 0 );
 
-      // for ( let angle = 0; angle <= Math.PI * 2; angle += Math.PI / 4 ) {
+      ctx.rect( -2, -1, 4, 2 );
+
+      // ctx.lineTo( -2, -1 );
+      // ctx.lineTo(  2, -1 );
+      // ctx.lineTo(  3,  0 );
+      // ctx.lineTo(  2,  1 );
+      // ctx.lineTo( -2,  1 );
+      // ctx.lineTo( -3,  0 );
+      // ctx.lineTo( -2, -1 );
+
+      // ctx.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
+      //ctx.fill( path );
+
+      // for ( let angle = 0; angle <= Math.PI * 2; angle += Math.PI / 3 ) {
       //   ctx.lineTo( Math.cos( angle ) * 2, Math.sin( angle ) * 1 );
       // }
       
@@ -46,7 +62,8 @@
       ctx.restore();
     } );
 
-    ctx.fill();
+    // ctx.fill();
+    ctx.stroke();
 
     ctx.restore();
   };
