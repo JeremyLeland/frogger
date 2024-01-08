@@ -60,28 +60,28 @@ export class Frog {
     
     const footOffset = -0.1 * Math.sin( animationTime * Math.PI );
 
-    const feet = new Path2D();
+    ctx.beginPath();
 
     [ -1, 1 ].forEach( dir => {
       [ -1, 1 ].forEach( side => {
         const x = dir * ( FOOT_OFFSET_X + ( animationAction == Frog.Status.SquishedHorizontal ? 0.1 : 0 ) ) + FOOT_SHIFT + footOffset;
         const y = side * ( FOOT_OFFSET_Y + ( animationAction == Frog.Status.SquishedVertical ? 0.1 : 0 ) );
 
-        feet.moveTo( x,             y - FOOT_SIZE / 2 );
-        feet.lineTo( x + FOOT_SIZE, y - FOOT_SIZE     );
-        feet.quadraticCurveTo( 
+        ctx.moveTo( x,             y - FOOT_SIZE / 2 );
+        ctx.lineTo( x + FOOT_SIZE, y - FOOT_SIZE     );
+        ctx.quadraticCurveTo( 
           x + FOOT_SIZE + TOE_LENGTH, y, 
           x + FOOT_SIZE,              y + FOOT_SIZE
         );
-        feet.lineTo( x, y + FOOT_SIZE / 2 );
-        feet.lineTo( x, y - FOOT_SIZE / 2 );
+        ctx.lineTo( x, y + FOOT_SIZE / 2 );
+        ctx.lineTo( x, y - FOOT_SIZE / 2 );
       } );
     } );
 
-    ctx.fill( feet );
-    ctx.stroke( feet );
+    ctx.fill();
+    ctx.stroke();
 
-    const legs = new Path2D();
+    ctx.beginPath();
 
     [ -1, 1 ].forEach( dir => {
       [ -1, 1 ].forEach( side => {
@@ -89,23 +89,23 @@ export class Frog {
         const footY = FOOT_OFFSET_Y + ( animationAction == Frog.Status.SquishedVertical ? 0.1 : 0 );
 
         // TODO: Change magic numbers to named constants
-        legs.moveTo( 0, side * ( footY - 0.2 ) );
-        legs.quadraticCurveTo(
+        ctx.moveTo( 0, side * ( footY - 0.2 ) );
+        ctx.quadraticCurveTo(
           0, side * footY,
           footX, side * ( footY + FOOT_SIZE / 2 ), 
         );
-        legs.lineTo( footX, side * ( footY - FOOT_SIZE / 2 ) );
-        legs.quadraticCurveTo( 
+        ctx.lineTo( footX, side * ( footY - FOOT_SIZE / 2 ) );
+        ctx.quadraticCurveTo( 
           dir * 0.1, side * ( footY - 0.1 ), 
           dir * 0.2, side * ( footY - 0.2 ), 
         );
       } );
     } );
 
-    legs.closePath();
+    ctx.closePath();
 
-    ctx.fill( legs );
-    ctx.stroke( legs );
+    ctx.fill();
+    ctx.stroke();
 
     if ( animationAction == Frog.Status.SquishedHorizontal ) {
       ctx.fill( bodySquishHoriz );
