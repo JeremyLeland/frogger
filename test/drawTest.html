@@ -9,12 +9,14 @@
   const entities = Array.from( Array( 1000 ), _ => ( {
     x: Math.floor( Math.random() * 100 ),
     y: Math.floor( Math.random() * 100 ), 
-    angle: Math.random() * 6
+    angle: Math.random() * 360
+    // angle: Math.random() * 6
   } ) );
 
   canvas.update = ( dt ) => {
     entities.forEach( e => {
-      e.angle += dt / 1000;
+      // e.angle += dt / 1000;
+      e.angle += dt / 10;
     } );
   }
 
@@ -28,18 +30,25 @@
     ctx.save();
     ctx.scale( 10, 10 );
 
-    ctx.beginPath();
+    // ctx.beginPath();
+    const combined = new Path2D();
 
     entities.forEach( e => {
-      ctx.save();
+      // ctx.save();
       
-      ctx.translate( e.x, e.y );
-      ctx.rotate( e.angle );
+      // ctx.translate( e.x, e.y );
+      // ctx.rotate( e.angle );
+
+      let transform = new DOMMatrix();
+      transform.translateSelf( e.x, e.y );
+      transform.rotateSelf( e.angle );
+
+      combined.addPath( path, transform );
 
       // ctx.beginPath();
       // ctx.moveTo( 0, 0 );
 
-      ctx.rect( -2, -1, 4, 2 );
+      // ctx.rect( -2, -1, 4, 2 );
 
       // ctx.lineTo( -2, -1 );
       // ctx.lineTo(  2, -1 );
@@ -59,11 +68,12 @@
 
       // ctx.fill();
 
-      ctx.restore();
+      // ctx.restore();
     } );
 
-    // ctx.fill();
-    ctx.stroke();
+    ctx.fill( combined );
+    // ctx.fill( );
+    // ctx.stroke();
 
     ctx.restore();
   };
