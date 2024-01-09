@@ -1,5 +1,9 @@
 export class AnimatedCanvas {
+  ShowFPS = true;
+
   #reqId;
+
+  #frameRates = [];
 
   constructor( width, height, canvas ) {
     this.canvas = canvas ?? document.createElement( 'canvas' );
@@ -45,10 +49,29 @@ export class AnimatedCanvas {
     let lastTime;
     const animate = ( now ) => {
       lastTime ??= now;  // for first call only
-      this.update( now - lastTime );
+      const dt = now - lastTime;
       lastTime = now;
-  
+
+      this.update( dt );  
       this.redraw();
+
+      if ( this.ShowFPS ) {
+        this.#frameRates.push( 1000 / dt );
+        if ( this.#frameRates.length > 60 ) {
+          this.#frameRates.shift();
+        }
+
+        this.ctx.beginPath();
+        this.#frameRates.forEach( ( rate, index ) => this.ctx.lineTo( index, 70 - rate ) );
+        for ( let y = 10; y < 70; y += 10 ) {
+          this.ctx.moveTo(  0, y );
+          this.ctx.lineTo( 60, y );
+        }
+        this.ctx.strokeStyle = 'orange';
+        this.ctx.stroke();
+
+        this.ctx.strokeRect( 0, 0, 60, 70 );
+      }
   
       this.#reqId = requestAnimationFrame( animate );
     };

@@ -1,6 +1,7 @@
 import { Dir } from './Entity.js';
 import { Entities } from './Entities.js';
 import { Entity } from './Entity.js';
+import { Car } from './entities/Car.js';
 import { Frog } from './Frog.js';
 import { Froggy } from './Froggy.js';
 import { Player } from './Player.js';
@@ -196,12 +197,10 @@ export class World
         if ( this.player.jumpTimeLeft > 0 ) {
           this.player.jumpTimeLeft -= dt;
           this.player.animationTime = this.player.jumpTimeLeft * MOVE_SPEED;
-          this.player.zIndex = 2;
         }
 
         if ( this.player.jumpTimeLeft <= 0 ) {
           this.player.jumpTimeLeft = 0;
-          this.player.zIndex = 0;
 
           this.player.dx = 0;
           this.player.dy = 0;
@@ -300,7 +299,30 @@ export class World
         }
       }
 
-      this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
+      [ 'RedCar', 'YellowCar', 'GreenCar', 'BlueCar' ].forEach( entityKey => {
+        Entities[ entityKey ].drawPaths.forEach( pathInfo => {
+          const combined = new Path2D();
+          this.entities.filter( e => e.type == entityKey ).forEach( e => {
+            const transform = new DOMMatrix();
+            transform.translateSelf( e.x, e.y );
+            transform.rotateSelf( Dir[ e.dir ]?.angle ?? 0 );
+            
+            combined.addPath( pathInfo.path, transform );
+          } );
+  
+          if ( pathInfo.fillStyle ) {
+            ctx.fillStyle = pathInfo.fillStyle;
+            ctx.fill( combined );
+          }
+          if ( pathInfo.strokeStyle ) {
+            ctx.strokeStyle = pathInfo.strokeStyle;
+            ctx.stroke( combined );
+          }
+        } );  
+      } );
+
+      
+      // this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
 
       if ( this.player && this.player.status == Frog.Status.Alive ) {
         Entity.draw( this.player, ctx );

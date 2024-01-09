@@ -119,27 +119,62 @@ export class Level
 
     this.#tileMap.draw( ctx );
 
-    ctx.save();
+    const colors = [ '#040', '#050', '#060' ];
 
-    for ( let row = 0; row < this.rows; row ++ ) {
-      ctx.save();
-      
-      for ( let col = 0; col < this.cols; col ++ ) {
+    Props.Bush.paths.forEach( ( path, index ) => {
+      const bushPath = new Path2D();
     
-        const prop = Props[ this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ] ];
-        prop?.draw( ctx );
-
-        if ( this.spawn.x == col && this.spawn.y == row ) {
-          Props[ 'Bullseye' ].draw( ctx );
+      for ( let row = 0; row < this.rows; row ++ ) { 
+        for ( let col = 0; col < this.cols; col ++ ) {
+  
+          const propKey = this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ];
+          
+          if ( propKey == 'Bush' ) {
+            const transform = new DOMMatrix();
+            transform.translateSelf( col, row );
+  
+            bushPath.addPath( path, transform );
+          }
         }
-
-        ctx.translate( 1, 0 );
       }
 
-      ctx.restore();
-      ctx.translate( 0, 1 );
-    }
+      ctx.fillStyle = colors[ index ];
+      ctx.fill( bushPath );
 
+      if ( index == 0 ) {
+        ctx.strokeStyle = 'black';
+        ctx.stroke( bushPath );
+      }
+    } );
+
+    ctx.save(); {
+      ctx.translate( this.spawn.x, this.spawn.y );
+      Props.Bullseye.draw( ctx );
+    }
     ctx.restore();
+
+
+    // ctx.save();
+
+    // for ( let row = 0; row < this.rows; row ++ ) {
+    //   ctx.save();
+      
+    //   for ( let col = 0; col < this.cols; col ++ ) {
+    
+    //     const prop = Props[ this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ] ];
+    //     prop?.draw( ctx );
+
+    //     if ( this.spawn.x == col && this.spawn.y == row ) {
+    //       Props[ 'Bullseye' ].draw( ctx );
+    //     }
+
+    //     ctx.translate( 1, 0 );
+    //   }
+
+    //   ctx.restore();
+    //   ctx.translate( 0, 1 );
+    // }
+
+    // ctx.restore();
   }
 }

@@ -38,6 +38,10 @@ function drawCar( ctx, colorIndex ) {
 export class Car {
   static HitDist = 0.75;
 
+  static body = body;
+  static windshield = windshield;
+  static roof = roof;
+
   static drawRedCar( ctx ) { drawCar( ctx, 0 ) }
   static drawYellowCar( ctx ) { drawCar( ctx, 1 ) }
   static drawGreenCar( ctx ) { drawCar( ctx, 2 ) }

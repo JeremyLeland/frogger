@@ -1,17 +1,20 @@
 const BUSH_SIDES = 7;
 const BUSH_SIZE = 0.4, SIDE_SIZE = 0.6;
 
-const bush = new Path2D();
-bush.moveTo( BUSH_SIZE, 0 );
-const angVal = Math.PI * 2 / BUSH_SIDES;
-for ( let i = 1; i <= BUSH_SIDES; i ++ ) {
-  const sideAngle = ( i - 0.5 ) * angVal;
-  const bushAngle = i * angVal;
-
-  bush.quadraticCurveTo(
-    Math.cos( sideAngle ) * SIDE_SIZE, Math.sin( sideAngle ) * SIDE_SIZE,
-    Math.cos( bushAngle ) * BUSH_SIZE, Math.sin( bushAngle ) * BUSH_SIZE,
-  );
+function getBushPath( scale ) {
+  const path = new Path2D();
+  path.moveTo( BUSH_SIZE * scale, 0 );
+  const angVal = Math.PI * 2 / BUSH_SIDES;
+  for ( let i = 1; i <= BUSH_SIDES; i ++ ) {
+    const sideAngle = ( i - 0.5 ) * angVal;
+    const bushAngle = i * angVal;
+  
+    path.quadraticCurveTo(
+      Math.cos( sideAngle ) * SIDE_SIZE * scale, Math.sin( sideAngle ) * SIDE_SIZE * scale,
+      Math.cos( bushAngle ) * BUSH_SIZE * scale, Math.sin( bushAngle ) * BUSH_SIZE * scale,
+    );
+  }
+  return path;
 }
 
 const LILYPAD_SIZE = 0.4, LILYPAD_ANGLE = 0.3, LILYPAD_OFFSET = 0.15;
@@ -26,6 +29,7 @@ const BULLSEYE_RADII = [ 0.4, 0.25, 0.1 ].map( e => e * 0.75 );
 
 export const Props = {
   Bush: {
+    paths: [ getBushPath( 1 ), getBushPath( 0.75 ), getBushPath( 0.5 ) ],
     draw: ( ctx ) => {
       // TODO: Set this once for all bushes?
       const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 2 );
