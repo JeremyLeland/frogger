@@ -1,6 +1,59 @@
+// TODO: Move to entities folder
+
 const FOOT_OFFSET_X = 0.4, FOOT_OFFSET_Y = 0.4;
 const FOOT_SIZE = 0.1, TOE_LENGTH = 0.1;
 const FOOT_SHIFT = -0.1;
+
+export function FootFunc( animationAction, animationTime = 0 ) {
+  const footOffset = -0.1 * Math.sin( animationTime * Math.PI );
+
+  const feet = new Path2D();
+  
+  [ -1, 1 ].forEach( dir => {
+    [ -1, 1 ].forEach( side => {
+      const x = dir * ( FOOT_OFFSET_X + ( animationAction == Frog.Status.SquishedHorizontal ? 0.1 : 0 ) ) + FOOT_SHIFT + footOffset;
+      const y = side * ( FOOT_OFFSET_Y + ( animationAction == Frog.Status.SquishedVertical ? 0.1 : 0 ) );
+
+      feet.moveTo( x,             y - FOOT_SIZE / 2 );
+      feet.lineTo( x + FOOT_SIZE, y - FOOT_SIZE     );
+      feet.quadraticCurveTo( 
+        x + FOOT_SIZE + TOE_LENGTH, y, 
+        x + FOOT_SIZE,              y + FOOT_SIZE
+      );
+      feet.lineTo( x, y + FOOT_SIZE / 2 );
+      feet.lineTo( x, y - FOOT_SIZE / 2 );
+    } );
+  } );
+
+  return feet;
+}
+
+export function LegFunc( animationAction, animationTime = 0 ) {
+  const footOffset = -0.1 * Math.sin( animationTime * Math.PI );
+
+  const legs = new Path2D();
+  
+  [ -1, 1 ].forEach( dir => {
+    [ -1, 1 ].forEach( side => {
+      const footX = dir * ( FOOT_OFFSET_X + ( animationAction == Frog.Status.SquishedHorizontal ? 0.1 : 0 ) ) + FOOT_SHIFT + footOffset;
+      const footY = FOOT_OFFSET_Y + ( animationAction == Frog.Status.SquishedVertical ? 0.1 : 0 );
+
+      // TODO: Change magic numbers to named constants
+      legs.moveTo( 0, side * ( footY - 0.2 ) );
+      legs.quadraticCurveTo(
+        0, side * footY,
+        footX, side * ( footY + FOOT_SIZE / 2 ), 
+      );
+      legs.lineTo( footX, side * ( footY - FOOT_SIZE / 2 ) );
+      legs.quadraticCurveTo( 
+        dir * 0.1, side * ( footY - 0.1 ), 
+        dir * 0.2, side * ( footY - 0.2 ), 
+      );
+    } );
+  } );
+
+  return legs;
+}
 
 const BODY_SIZE = 0.4;
 
@@ -12,6 +65,20 @@ bodySquishHoriz.ellipse( 0, 0, BODY_SIZE + 0.1, BODY_SIZE, 0, 0, Math.PI * 2 );
 
 const bodySquishVert = new Path2D();
 bodySquishVert.ellipse( 0, 0, BODY_SIZE, BODY_SIZE + 0.1, 0, 0, Math.PI * 2 );
+
+// TODO: Need these all separate for proper z-ordering, otherwise leg lines show through body
+
+export function BodyFunc( animationAction, animationTime = 0 ) {
+  if ( animationAction == Frog.Status.SquishedHorizontal ) {
+    return bodySquishHoriz;
+  }
+  else if ( animationAction == Frog.Status.SquishedVertical ) {
+    return bodySquishVert;
+  }
+  else {
+    return body;
+  }
+}
 
 const EYE_OFFSET_X = 0.18, EYE_OFFSET_Y = 0.17;
 const EYE_SIZE = 0.1;
@@ -29,6 +96,7 @@ pupils.ellipse( PUPIL_OFFSET_X, -PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI
 pupils.moveTo(  PUPIL_OFFSET_X, PUPIL_OFFSET_Y + PUPIL_H );
 pupils.ellipse( PUPIL_OFFSET_X,  PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
 
+// TODO: Make this with rotated rects? (so we're not stroking it)
 const exes = new Path2D();
 exes.moveTo( EYE_OFFSET_X - EYE_SIZE, -EYE_OFFSET_Y - EYE_SIZE );
 exes.lineTo( EYE_OFFSET_X + EYE_SIZE, -EYE_OFFSET_Y + EYE_SIZE );
@@ -38,6 +106,21 @@ exes.moveTo( EYE_OFFSET_X - EYE_SIZE, EYE_OFFSET_Y - EYE_SIZE );
 exes.lineTo( EYE_OFFSET_X + EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
 exes.moveTo( EYE_OFFSET_X + EYE_SIZE, EYE_OFFSET_Y - EYE_SIZE );
 exes.lineTo( EYE_OFFSET_X - EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
+
+export function ScleraFunc( animationAction, animationTime ) {
+  if ( !animationAction || animationAction == Frog.Status.Alive ) {
+    return sclera;
+  }
+}
+
+export function PupilFunc( animationAction, animationTime ) {
+  if ( animationAction && animationAction != Frog.Status.Alive ) {
+    return exes;
+  }
+  else {
+    return pupils;
+  }
+}
 
 export class Frog {
   static Status = {

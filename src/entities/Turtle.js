@@ -11,7 +11,7 @@ leg.closePath();
 const head = new Path2D();
 head.arc( SHELL_SIZE + HEAD_SIZE / 2, 0, HEAD_SIZE, 0, Math.PI * 2 );
 
-export function legsHeadFunc( animationTime = 0 ) {
+export function legsHeadFunc( animationAction, animationTime = 0 ) {
   const legsHead = new Path2D();
 
   const legAngleOffset = 17 * Math.sin( 0.005 * animationTime );

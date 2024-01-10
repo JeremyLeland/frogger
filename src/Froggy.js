@@ -1,4 +1,4 @@
-import { Frog } from './Frog.js';
+import { Frog } from './entities/Frog.js';
 
 const colors = [ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ];
 const bodyGrad = Array( colors.length );

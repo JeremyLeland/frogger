@@ -1,4 +1,4 @@
-import { Frog } from './Frog.js';
+import { Frog } from './entities/Frog.js';
 
 let bodyGrad;
 

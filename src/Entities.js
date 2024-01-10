@@ -1,5 +1,6 @@
 import { Froggy } from './Froggy.js';
 import { Player } from './Player.js';
+import * as Frog from './entities/Frog.js';
 import * as Log from './entities/Log.js';
 import * as Turtle from './entities/Turtle.js';
 import * as Car from './entities/Car.js';
@@ -166,15 +167,37 @@ export const Entities = {
   }
 };
 
-for ( let i = 0; i < Froggy.Count; i ++ ) {
-  Entities[ 'Froggy' + ( i + 1 ) ] = {
+[ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].forEach( ( color, index ) =>
+  Entities[ 'Froggy' + ( index + 1 ) ] = {
     canRescue: true,
     hitDist: 0.5,
-    froggyIndex: i,
-    draw: function( ctx ) { Froggy.drawFroggy( ctx, i ) }
+    froggyIndex: index,
+    drawPaths: [
+      {
+        fillStyle: color,
+        strokeStyle: 'black',
+        path: Frog.FootFunc(),
+      },
+      {
+        fillStyle: color,
+        strokeStyle: 'black',
+        path: Frog.LegFunc(),
+      },
+      {
+        fillStyle: color,
+        strokeStyle: 'black',
+        path: Frog.BodyFunc(),
+      },
+      {
+        fillStyle: 'white',
+        strokeStyle: 'black',
+        path: Frog.ScleraFunc(),
+      },
+      {
+        fillStyle: 'black',
+        strokeStyle: 'black',
+        path: Frog.PupilFunc(),
+      }
+    ],
   }
-}
-
-for ( const entityKey in Entities ) {
-  Entities[ entityKey ].entityKey = entityKey;
-}
+);
