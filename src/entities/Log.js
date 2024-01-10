@@ -9,11 +9,14 @@ start.quadraticCurveTo( -0.5, -LOG_WIDTH, -0.5, 0 );
 start.quadraticCurveTo( -0.5,  LOG_WIDTH, -0.5 + END_SIZE, LOG_WIDTH );
 start.lineTo( 0.6, LOG_WIDTH );
 
-const middle = new Path2D();
-middle.moveTo( -0.55, -LOG_WIDTH );
-middle.lineTo(  0.55, -LOG_WIDTH );
-middle.moveTo( -0.55,  LOG_WIDTH );
-middle.lineTo(  0.55,  LOG_WIDTH );
+const middleStroke = new Path2D();
+middleStroke.moveTo( -0.55, -LOG_WIDTH );
+middleStroke.lineTo(  0.55, -LOG_WIDTH );
+middleStroke.moveTo( -0.55,  LOG_WIDTH );
+middleStroke.lineTo(  0.55,  LOG_WIDTH );
+
+const middleFill = new Path2D();
+middleFill.rect( -0.55, -LOG_WIDTH, 1.1, LOG_WIDTH * 2 );
 
 const end = new Path2D();
 end.moveTo( -0.5, -LOG_WIDTH );
@@ -46,6 +49,12 @@ function setGradient( ctx ) {
 }
 
 export class Log {
+
+  static start = start;
+  static middleStroke = middleStroke;
+  static middleFill = middleFill;
+  static end = end;
+
   static drawStart( ctx ) {
     setGradient( ctx );
   
@@ -57,7 +66,7 @@ export class Log {
     setGradient( ctx );
 
     ctx.fillRect( -0.55, -LOG_WIDTH, 1.1, LOG_WIDTH * 2 );
-    ctx.stroke( middle );
+    ctx.stroke( middleStroke );
   }
 
   static drawEnd( ctx ) {

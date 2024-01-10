@@ -18,16 +18,40 @@ export const Entities = {
   LogStart: {
     Speed: 0.001,
     hitDist: 0.5,
+    drawPaths: [
+      {
+        fillStyle: 'saddleBrown',
+        strokeStyle: 'black',
+        path: Log.start,
+      }
+    ],
     draw: Log.drawStart
   },
   LogMiddle: {
     Speed: 0.001,
     hitDist: 0.5,
+    drawPaths: [
+      {
+        fillStyle: 'saddleBrown',
+        path: Log.middleFill,
+      },
+      {
+        strokeStyle: 'black',
+        path: Log.middleStroke,
+      },
+    ],
     draw: Log.drawMiddle
   },
   LogEnd: {
     Speed: 0.001,
     hitDist: 0.5,
+    drawPaths: [
+      {
+        fillStyle: 'saddleBrown',
+        strokeStyle: 'black',
+        path: Log.end,
+      }
+    ],
     draw: Log.drawEnd
   },
 

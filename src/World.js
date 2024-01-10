@@ -299,7 +299,7 @@ export class World
         }
       }
 
-      [ 'RedCar', 'YellowCar', 'GreenCar', 'BlueCar' ].forEach( entityKey => {
+      [ 'LogStart', 'LogMiddle', 'LogEnd', 'RedCar', 'YellowCar', 'GreenCar', 'BlueCar' ].forEach( entityKey => {
         Entities[ entityKey ].drawPaths.forEach( pathInfo => {
           const combined = new Path2D();
           this.entities.filter( e => e.type == entityKey ).forEach( e => {
