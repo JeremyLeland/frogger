@@ -1,7 +1,6 @@
 import { Dir } from './Entity.js';
 import { Entities } from './Entities.js';
 import { Entity } from './Entity.js';
-import { Car } from './entities/Car.js';
 import { Frog } from './Frog.js';
 import { Froggy } from './Froggy.js';
 import { Player } from './Player.js';
@@ -299,7 +298,7 @@ export class World
         }
       }
 
-      [ 'LogStart', 'LogMiddle', 'LogEnd', 'RedCar', 'YellowCar', 'GreenCar', 'BlueCar' ].forEach( entityKey => {
+      [ 'Turtle', 'LogStart', 'LogMiddle', 'LogEnd', 'RedCar', 'YellowCar', 'GreenCar', 'BlueCar' ].forEach( entityKey => {
         Entities[ entityKey ].drawPaths.forEach( pathInfo => {
           const combined = new Path2D();
           this.entities.filter( e => e.type == entityKey ).forEach( e => {
@@ -307,7 +306,7 @@ export class World
             transform.translateSelf( e.x, e.y );
             transform.rotateSelf( Dir[ e.dir ]?.angle ?? 0 );
             
-            combined.addPath( pathInfo.path, transform );
+            combined.addPath( pathInfo.path ?? pathInfo.pathFunc( animationTime ), transform );
           } );
   
           if ( pathInfo.fillStyle ) {

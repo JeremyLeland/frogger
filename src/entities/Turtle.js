@@ -2,13 +2,38 @@ const LEG_L = 0.45, LEG_W = 0.08;
 const HEAD_SIZE = 0.14;
 const SHELL_SIZE = 0.3;
 
-const shell = new Path2D();
-shell.arc( 0, 0, SHELL_SIZE, 0, Math.PI * 2 );
+const leg = new Path2D();
+leg.moveTo( 0, 0 );
+leg.lineTo( LEG_L, -LEG_W );
+leg.lineTo( LEG_L,  LEG_W );
+leg.closePath();
 
+const head = new Path2D();
+head.arc( SHELL_SIZE + HEAD_SIZE / 2, 0, HEAD_SIZE, 0, Math.PI * 2 );
+
+export function legsHeadFunc( animationTime = 0 ) {
+  const legsHead = new Path2D();
+
+  const legAngleOffset = 17 * Math.sin( 0.005 * animationTime );
+
+  [ -1, 1 ].forEach( side => {
+    [ 0.4, 0.75 ].forEach( angle => {
+      const transform = new DOMMatrix().rotate( side * ( 180 * angle + legAngleOffset ) );
+      legsHead.addPath( leg, transform );
+    } );
+  } );
+
+  legsHead.addPath( head );
+
+  return legsHead;
+}
+
+export const shell = new Path2D();
+shell.arc( 0, 0, SHELL_SIZE, 0, Math.PI * 2 );
 
 const DETAIL_W_1 = 0.13, DETAIL_W_2 = 0.1, DETAIL_W_3 = 0.1;
 
-const detail = new Path2D();
+export const detail = new Path2D();
 
 for ( let i = 0; i < 6; i ++ ) {
   const angle = i * Math.PI * 2 / 6;
@@ -36,56 +61,3 @@ for ( let i = 0; i < 6; i ++ ) {
 }
 
 detail.lineTo( DETAIL_W_1, 0 );
-
-let bodyGrad, shellGrad;
-
-export class Turtle {
-  static drawTurtle( ctx, animationAction, animationTime = 0 ) {
-    if ( !bodyGrad ) {
-      bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
-      bodyGrad.addColorStop( 0, 'green' );
-      bodyGrad.addColorStop( 1, 'black' );
-    }
-
-    ctx.translate( -0.05, 0 );
-
-    ctx.fillStyle = bodyGrad;
-    
-    const legAngleOffset = 0.3 * Math.sin( 0.005 * animationTime );
-
-    ctx.beginPath();
-
-    [ -1, 1 ].forEach( side => {
-      [ 0.4, 0.75 ].forEach( angle => {
-        ctx.save();
-        ctx.rotate( side * ( Math.PI * angle + legAngleOffset ) );    
-
-        ctx.moveTo( 0, 0 );
-        ctx.lineTo( LEG_L, -LEG_W );
-        ctx.lineTo( LEG_L,  LEG_W );
-
-        ctx.restore();
-      } );
-    } );
-
-    ctx.moveTo( SHELL_SIZE + HEAD_SIZE * 1.5, 0 );
-    ctx.arc( SHELL_SIZE + HEAD_SIZE / 2, 0, HEAD_SIZE, 0, Math.PI * 2 );
-
-    ctx.fill();
-    ctx.stroke();
-
-    if ( !shellGrad ) {
-      shellGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
-      shellGrad.addColorStop( 0, 'darkolivegreen' );
-      shellGrad.addColorStop( 0.5, 'black' );
-    }
-
-    ctx.fillStyle = shellGrad;
-
-    ctx.fill( shell );
-    ctx.stroke( shell );
-
-    ctx.strokeStyle = '#000a';
-    ctx.stroke( detail );
-  }
-}

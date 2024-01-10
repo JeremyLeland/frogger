@@ -2,23 +2,23 @@ const LOG_WIDTH = 0.4;  // as opposed to length (not necessarily in x axis)
 const END_SIZE = 0.3;
 const DETAIL_ROWS = 8;
 
-const start = new Path2D();
+export const start = new Path2D();
 start.moveTo( 0.6, -LOG_WIDTH );
 start.lineTo( -0.5 + END_SIZE, -LOG_WIDTH );
 start.quadraticCurveTo( -0.5, -LOG_WIDTH, -0.5, 0 );
 start.quadraticCurveTo( -0.5,  LOG_WIDTH, -0.5 + END_SIZE, LOG_WIDTH );
 start.lineTo( 0.6, LOG_WIDTH );
 
-const middleStroke = new Path2D();
+export const middleStroke = new Path2D();
 middleStroke.moveTo( -0.55, -LOG_WIDTH );
 middleStroke.lineTo(  0.55, -LOG_WIDTH );
 middleStroke.moveTo( -0.55,  LOG_WIDTH );
 middleStroke.lineTo(  0.55,  LOG_WIDTH );
 
-const middleFill = new Path2D();
+export const middleFill = new Path2D();
 middleFill.rect( -0.55, -LOG_WIDTH, 1.1, LOG_WIDTH * 2 );
 
-const end = new Path2D();
+export const end = new Path2D();
 end.moveTo( -0.5, -LOG_WIDTH );
 end.lineTo( 0.5 - END_SIZE, -LOG_WIDTH );
 end.quadraticCurveTo( 0.5, -LOG_WIDTH, 0.5, 0 );
@@ -34,46 +34,3 @@ end.lineTo( -0.5, LOG_WIDTH );
 //     this.#detail.lineTo( x + len, y );
 //   }
 // }
-
-let bodyGrad;
-
-function setGradient( ctx ) {
-  if ( !bodyGrad ) {
-    bodyGrad = ctx.createLinearGradient( 0, -1, 0, 1 );
-    bodyGrad.addColorStop( 0, 'black' );
-    bodyGrad.addColorStop( 0.5, 'saddlebrown' );
-    bodyGrad.addColorStop( 1, 'black' );
-  }
-
-  ctx.fillStyle = bodyGrad;
-}
-
-export class Log {
-
-  static start = start;
-  static middleStroke = middleStroke;
-  static middleFill = middleFill;
-  static end = end;
-
-  static drawStart( ctx ) {
-    setGradient( ctx );
-  
-    ctx.fill( start );
-    ctx.stroke( start );
-  }
-
-  static drawMiddle( ctx ) {
-    setGradient( ctx );
-
-    ctx.fillRect( -0.55, -LOG_WIDTH, 1.1, LOG_WIDTH * 2 );
-    ctx.stroke( middleStroke );
-  }
-
-  static drawEnd( ctx ) {
-    setGradient( ctx );
-  
-    ctx.fill( end );
-    ctx.stroke( end );
-  }
-}
-

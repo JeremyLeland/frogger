@@ -1,8 +1,8 @@
 import { Froggy } from './Froggy.js';
 import { Player } from './Player.js';
-import { Log } from './entities/Log.js';
-import { Turtle } from './entities/Turtle.js';
-import { Car } from './entities/Car.js';
+import * as Log from './entities/Log.js';
+import * as Turtle from './entities/Turtle.js';
+import * as Car from './entities/Car.js';
 
 export const Entities = {
   Player: {
@@ -13,6 +13,22 @@ export const Entities = {
   Turtle: {
     Speed: 0.001,
     hitDist: 0.5,   // if this is < 0.5, you can fall between turtles
+    drawPaths: [
+      {
+        fillStyle: 'green',
+        strokeStyle: 'black',
+        pathFunc: Turtle.legsHeadFunc,
+      },
+      {
+        fillStyle: 'darkolivegreen',
+        strokeStyle: 'black',
+        path: Turtle.shell,
+      },
+      {
+        strokeStyle: '#000a',
+        path: Turtle.detail,
+      }
+    ],
     draw: Turtle.drawTurtle
   },
   LogStart: {
