@@ -91,6 +91,8 @@ sclera.arc( EYE_OFFSET_X, -EYE_OFFSET_Y, EYE_SIZE, 0, Math.PI * 2 );
 sclera.moveTo( EYE_OFFSET_X, EYE_OFFSET_Y + EYE_SIZE );
 sclera.arc( EYE_OFFSET_X,  EYE_OFFSET_Y, EYE_SIZE, 0, Math.PI * 2 );
 
+const empty = new Path2D();
+
 const pupils = new Path2D();
 pupils.ellipse( PUPIL_OFFSET_X, -PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
 pupils.moveTo(  PUPIL_OFFSET_X, PUPIL_OFFSET_Y + PUPIL_H );
@@ -110,6 +112,9 @@ exes.lineTo( EYE_OFFSET_X - EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
 export function ScleraFunc( animationAction, animationTime ) {
   if ( !animationAction || animationAction == Frog.Status.Alive ) {
     return sclera;
+  }
+  else {
+    return empty;
   }
 }
 

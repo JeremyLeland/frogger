@@ -1,4 +1,4 @@
-import { Froggy } from './Froggy.js';
+import { Dir } from './Entity.js';
 import { Player } from './Player.js';
 import * as Frog from './entities/Frog.js';
 import * as Log from './entities/Log.js';
@@ -7,6 +7,33 @@ import * as Car from './entities/Car.js';
 
 export const Entities = {
   Player: {
+    drawPaths: [
+      {
+        fillStyle: 'green',
+        strokeStyle: 'black',
+        pathFunc: Frog.FootFunc,
+      },
+      {
+        fillStyle: 'green',
+        strokeStyle: 'black',
+        pathFunc: Frog.LegFunc,
+      },
+      {
+        fillStyle: 'green',
+        strokeStyle: 'black',
+        pathFunc: Frog.BodyFunc,
+      },
+      {
+        fillStyle: 'white',
+        strokeStyle: 'black',
+        pathFunc: Frog.ScleraFunc,
+      },
+      {
+        fillStyle: 'black',
+        strokeStyle: 'black',
+        pathFunc: Frog.PupilFunc,
+      }
+    ],
     draw: Player.drawPlayer
   },
 
@@ -171,7 +198,7 @@ export const Entities = {
   Entities[ 'Froggy' + ( index + 1 ) ] = {
     canRescue: true,
     hitDist: 0.5,
-    froggyIndex: index,
+    froggyIndex: index,   // TODO: redundant? Can we just use entityKey in place of this?
     drawPaths: [
       {
         fillStyle: color,
@@ -201,3 +228,39 @@ export const Entities = {
     ],
   }
 );
+
+// TODO: Version that takes single element?
+
+export function drawEntities( ctx, entityKey, entities, animationTime = 0 ) {
+  Entities[ entityKey ].drawPaths.forEach( pathInfo => {
+    const combined = new Path2D();
+
+    function processEntity( entity ) {
+      const transform = new DOMMatrix();
+      transform.translateSelf( entity?.x ?? 0, entity?.y ?? 0 );
+      transform.rotateSelf( Dir[ entity.dir ]?.angle ?? 0 );
+
+      if ( entityKey.startsWith( 'Froggy' ) ) {
+        transform.scaleSelf( 0.7 );
+      }
+      
+      combined.addPath( pathInfo.path ?? pathInfo.pathFunc( entity.animationAction, entity.animationTime ?? animationTime ), transform );
+    }
+
+    if ( Array.isArray( entities ) ) {
+      entities.forEach( e => processEntity( e ) );
+    }
+    else {
+      processEntity( entities );
+    }
+
+    if ( pathInfo.fillStyle ) {
+      ctx.fillStyle = pathInfo.fillStyle;
+      ctx.fill( combined );
+    }
+    if ( pathInfo.strokeStyle ) {
+      ctx.strokeStyle = pathInfo.strokeStyle;
+      ctx.stroke( combined );
+    }
+  } );
+}

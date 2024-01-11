@@ -71,7 +71,7 @@
   import { Canvas } from './src/common/Canvas.js';
   import { Tiles } from './src/Tiles.js';
   import { Direction, Dir } from './src/Entity.js';
-  import { Entities } from './src/Entities.js';
+  import { Entities, drawEntities } from './src/Entities.js';
   import { Entity } from './src/Entity.js';
   import { Froggy } from './src/Froggy.js';
   import { Level } from './src/Level.js';
@@ -252,17 +252,17 @@
 
   const uiDiv = document.getElementById( 'ui' );
 
-  const tilesDiv = document.getElementById( 'tiles' );
-  for ( const tile in Tiles ) {
-    tilesDiv.appendChild( getCanvasButton( Tiles[ tile ].draw, tile, 'Tiles' ) );
-  }
+  // const tilesDiv = document.getElementById( 'tiles' );
+  // for ( const tile in Tiles ) {
+  //   tilesDiv.appendChild( getCanvasButton( Tiles[ tile ].drawPaths, tile, 'Tiles' ) );
+  // }
 
   const entitiesDiv = document.getElementById( 'entities' );
   for ( const id in Entities ) {
-    entitiesDiv.appendChild( getCanvasButton( Entities[ id ].draw, id, 'Entities' ) );
+    entitiesDiv.appendChild( getCanvasButton( Entities[ id ].drawPaths, id, 'Entities' ) );
   }
 
-  function getCanvasButton( drawFunc, brush, type ) {
+  function getCanvasButton( drawPaths, brush, type ) {
     const button = document.createElement( 'button' );
 
     // TODO: Use AnimatedCanvas for these, and just don't start it?
@@ -270,7 +270,9 @@
     icon.ctx.scale( 48, 48 );
     icon.ctx.translate( 0.5, 0.5 );
     icon.ctx.lineWidth = 1 / 48;          // TODO: Can we set this once and not deal with it anymore? bug #38
-    drawFunc( icon.ctx );
+
+    drawEntities( icon.ctx, brush, [ { x: 0, y: 0 } ] );
+
     button.appendChild( icon.canvas );
     button.appendChild( document.createElement( 'br' ) );
 
