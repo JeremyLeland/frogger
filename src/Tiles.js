@@ -3,31 +3,38 @@ import { Direction } from "./Entity.js";
 const BUSH_SIDES = 7;
 const BUSH_SIZE = 0.4, SIDE_SIZE = 0.6;
 
-const bush = new Path2D();
-bush.moveTo( BUSH_SIZE, 0 );
-const angVal = Math.PI * 2 / BUSH_SIDES;
-for ( let i = 1; i <= BUSH_SIDES; i ++ ) {
-  const sideAngle = ( i - 0.5 ) * angVal;
-  const bushAngle = i * angVal;
-
-  bush.quadraticCurveTo(
-    Math.cos( sideAngle ) * SIDE_SIZE, Math.sin( sideAngle ) * SIDE_SIZE,
-    Math.cos( bushAngle ) * BUSH_SIZE, Math.sin( bushAngle ) * BUSH_SIZE,
-  );
+function getBushPath( scale ) {
+  const bush = new Path2D();
+  bush.moveTo( BUSH_SIZE * scale, 0 );
+  const angVal = Math.PI * 2 / BUSH_SIDES;
+  for ( let i = 1; i <= BUSH_SIDES; i ++ ) {
+    const sideAngle = ( i - 0.5 ) * angVal;
+    const bushAngle = i * angVal;
+  
+    bush.quadraticCurveTo(
+      Math.cos( sideAngle ) * SIDE_SIZE * scale, Math.sin( sideAngle ) * SIDE_SIZE * scale,
+      Math.cos( bushAngle ) * BUSH_SIZE * scale, Math.sin( bushAngle ) * BUSH_SIZE * scale,
+    );
+  }
+  return bush;
 }
 
 const LILYPAD_SIZE = 0.4, LILYPAD_ANGLE = 0.3, LILYPAD_OFFSET = 0.15;
 
-const lilypad = new Path2D();
-lilypad.moveTo( LILYPAD_OFFSET, 0 );
-lilypad.arc( 0, 0, LILYPAD_SIZE, LILYPAD_ANGLE, -LILYPAD_ANGLE );
-lilypad.closePath();
+function getLilypadPath( scale ) {
+  const lilypad = new Path2D();
+  lilypad.moveTo( LILYPAD_OFFSET * scale, 0 );
+  lilypad.arc( 0, 0, LILYPAD_SIZE * scale, LILYPAD_ANGLE, -LILYPAD_ANGLE );
+  lilypad.closePath();
+  return lilypad;
+}
 
 const ROAD_LINE_WIDTH = 0.15, ROAD_LINE_LEN = 0.5;
 
 export const Tiles = {
   Grass: {
     Base: 'Grass',
+    Color: 'forestgreen',
     draw: ( ctx ) => {
       ctx.fillStyle = 'forestgreen';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
@@ -35,6 +42,22 @@ export const Tiles = {
   },
   Bush: {
     Base: 'Grass',
+    Color: 'forestgreen',
+    drawPaths: [
+      {
+        fillStyle: '#040',
+        strokeStyle: 'black',
+        path: getBushPath( 1 ), 
+      },
+      {
+        fillStyle: '#050',
+        path: getBushPath( 0.75 ), 
+      },
+      {
+        fillStyle: '#060',
+        path: getBushPath( 0.5 ),
+      }, 
+    ],
     Solid: true,
     draw: ( ctx ) => {
       Tiles.Grass.draw( ctx );    
@@ -54,6 +77,7 @@ export const Tiles = {
   },
   Sidewalk: {
     Base: 'Sidewalk',
+    Color: 'darkgray',
     draw: ( ctx ) => {
       ctx.fillStyle = 'darkgray';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
@@ -63,6 +87,7 @@ export const Tiles = {
   },
   Road: {
     Base: 'Road',
+    Color: '#333',
     draw: ( ctx, tile, nTile, wTile ) => {
       ctx.fillStyle = '#333';
       ctx.fillRect( -0.5, -0.5, 1, 1 );
@@ -82,6 +107,7 @@ export const Tiles = {
   },
   Water: {
     Base: 'Water',
+    Color: 'darkblue',
     KillsPlayer: true,
     draw: ( ctx ) => {
       ctx.fillStyle = 'darkblue';
@@ -90,6 +116,22 @@ export const Tiles = {
   },
   Lilypad: {
     Base: 'Water',
+    Color: 'darkblue',
+    drawPaths: [ 
+      {
+        fillStyle: '#040',
+        strokeStyle: 'black',
+        path: getLilypadPath( 1 ), 
+      },
+      {
+        fillStyle: '#050',
+        path: getLilypadPath( 0.75 ), 
+      },
+      {
+        fillStyle: '#060',
+        path: getLilypadPath( 0.5 ),
+      }, 
+    ],
     draw: ( ctx ) => {
       Tiles.Water.draw( ctx );
 

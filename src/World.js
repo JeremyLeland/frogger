@@ -294,19 +294,19 @@ export class World
         this.player.animationAction = this.player.status;
 
         if ( this.player.status != Frog.Status.Alive ) {
-          drawEntities( ctx, 'Player', this.player );
+          drawEntities( ctx, Entities.Player, this.player );
         }
       }
 
       for ( const entityKey in Entities ) {
-        drawEntities( ctx, entityKey, this.entities.filter( e => e.type == entityKey ), animationTime );
+        drawEntities( ctx, Entities[ entityKey ], this.entities.filter( e => e.type == entityKey ), animationTime );
       }
 
       
       // this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
 
       if ( this.player && this.player.status == Frog.Status.Alive ) {
-        drawEntities( ctx, 'Player', this.player );
+        drawEntities( ctx, Entities.Player, this.player );
       }
     }
     ctx.restore();

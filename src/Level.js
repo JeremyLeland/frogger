@@ -119,6 +119,8 @@ export class Level
 
     this.#tileMap.draw( ctx );
 
+    // TODO: Lilypads?
+
     const colors = [ '#040', '#050', '#060' ];
 
     Props.Bush.paths.forEach( ( path, index ) => {

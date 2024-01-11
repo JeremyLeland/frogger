@@ -199,6 +199,7 @@ export const Entities = {
     canRescue: true,
     hitDist: 0.5,
     froggyIndex: index,   // TODO: redundant? Can we just use entityKey in place of this?
+    scale: 0.7,
     drawPaths: [
       {
         fillStyle: color,
@@ -231,20 +232,25 @@ export const Entities = {
 
 // TODO: Version that takes single element?
 
-export function drawEntities( ctx, entityKey, entities, animationTime = 0 ) {
-  Entities[ entityKey ].drawPaths.forEach( pathInfo => {
+const transform = new DOMMatrix();
+
+export function drawEntities( ctx, drawInfo, entities, animationTime = 0 ) {
+  drawInfo.drawPaths?.forEach( pathInfo => {
     const combined = new Path2D();
 
     function processEntity( entity ) {
-      const transform = new DOMMatrix();
-      transform.translateSelf( entity?.x ?? 0, entity?.y ?? 0 );
-      transform.rotateSelf( Dir[ entity.dir ]?.angle ?? 0 );
+      // reset existing DOMMatrix() to avoid new
+      transform.a = transform.d = 1;
+      transform.b = transform.c = transform.e = transform.f = 0;
 
-      if ( entityKey.startsWith( 'Froggy' ) ) {
-        transform.scaleSelf( 0.7 );
+      transform.translateSelf( entity?.x ?? 0, entity?.y ?? 0 );
+      transform.rotateSelf( Dir[ entity?.dir ]?.angle ?? 0 );
+
+      if ( drawInfo.scale ) {
+        transform.scaleSelf( drawInfo.scale ); 
       }
       
-      combined.addPath( pathInfo.path ?? pathInfo.pathFunc( entity.animationAction, entity.animationTime ?? animationTime ), transform );
+      combined.addPath( pathInfo.path ?? pathInfo.pathFunc( entity?.animationAction, entity?.animationTime ?? animationTime ), transform );
     }
 
     if ( Array.isArray( entities ) ) {

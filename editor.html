@@ -198,10 +198,13 @@
     ctx.save(); {
       ctx.scale( TILE_SIZE, TILE_SIZE );
       ctx.translate( 0.5, 0.5 );
+
+      ctx.lineWidth = 1 / TILE_SIZE;
+
       level.draw( ctx );
-      level.entities.forEach( entity =>
-        Entity.draw( entity, ctx, { dir: level.directions[ entity.x + entity.y * level.cols ] } )
-      );
+      for ( const entityKey in Entities ) {
+        drawEntities( ctx, Entities[ entityKey ], level.entities.filter( e => e.type == entityKey ), 0 );
+      }
 
       if ( DebugGrid ) {
         ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
@@ -252,17 +255,17 @@
 
   const uiDiv = document.getElementById( 'ui' );
 
-  // const tilesDiv = document.getElementById( 'tiles' );
-  // for ( const tile in Tiles ) {
-  //   tilesDiv.appendChild( getCanvasButton( Tiles[ tile ].drawPaths, tile, 'Tiles' ) );
-  // }
+  const tilesDiv = document.getElementById( 'tiles' );
+  for ( const tile in Tiles ) {
+    tilesDiv.appendChild( getCanvasButton( Tiles[ tile ], tile, 'Tiles' ) );
+  }
 
   const entitiesDiv = document.getElementById( 'entities' );
   for ( const id in Entities ) {
-    entitiesDiv.appendChild( getCanvasButton( Entities[ id ].drawPaths, id, 'Entities' ) );
+    entitiesDiv.appendChild( getCanvasButton( Entities[ id ], id, 'Entities' ) );
   }
 
-  function getCanvasButton( drawPaths, brush, type ) {
+  function getCanvasButton( drawInfo, brush, type ) {
     const button = document.createElement( 'button' );
 
     // TODO: Use AnimatedCanvas for these, and just don't start it?
@@ -271,7 +274,10 @@
     icon.ctx.translate( 0.5, 0.5 );
     icon.ctx.lineWidth = 1 / 48;          // TODO: Can we set this once and not deal with it anymore? bug #38
 
-    drawEntities( icon.ctx, brush, [ { x: 0, y: 0 } ] );
+    if ( drawInfo.Color ) {
+      icon.canvas.style.backgroundColor = drawInfo.Color;
+    }
+    drawEntities( icon.ctx, drawInfo );
 
     button.appendChild( icon.canvas );
     button.appendChild( document.createElement( 'br' ) );
