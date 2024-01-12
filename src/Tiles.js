@@ -23,6 +23,9 @@ const LILYPAD_SIZE = 0.4, LILYPAD_ANGLE = 0.3, LILYPAD_OFFSET = 0.15;
 
 function getLilypadPath( scale ) {
   const lilypad = new Path2D();
+
+  // TODO: Adjust with scale so you have darker shades around notch
+
   lilypad.moveTo( LILYPAD_OFFSET * scale, 0 );
   lilypad.arc( 0, 0, LILYPAD_SIZE * scale, LILYPAD_ANGLE, -LILYPAD_ANGLE );
   lilypad.closePath();
@@ -125,11 +128,11 @@ export const Tiles = {
       },
       {
         fillStyle: '#050',
-        path: getLilypadPath( 0.75 ), 
+        path: getLilypadPath( 0.9 ), 
       },
       {
         fillStyle: '#060',
-        path: getLilypadPath( 0.5 ),
+        path: getLilypadPath( 0.8 ),
       }, 
     ],
     draw: ( ctx ) => {

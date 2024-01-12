@@ -165,11 +165,13 @@
   let currentDirection = Direction.None;
 
   function setEntityDirection( dir ) {
-    const entity = level.entities.find( e => e.x == mouseCol && e.y == mouseRow );
-    if ( entity ) {
-      entity.dir = dir;
-      redraw();
+    level.entities.filter( e => e.x == mouseCol && e.y == mouseRow ).forEach( e => e.dir = dir );
+
+    if ( level.spawn.x == mouseCol && level.spawn.y == mouseRow ) {
+      level.spawn.dir = dir;
     }
+
+    redraw();
   }
 
   function toggleGrid() {
@@ -195,6 +197,8 @@
   function redraw() {
     const ctx = canvas.ctx;
 
+    ctx.clearRect( 0, 0, ctx.canvas.width, ctx.canvas.height );
+
     ctx.save(); {
       ctx.scale( TILE_SIZE, TILE_SIZE );
       ctx.translate( 0.5, 0.5 );
@@ -210,35 +214,34 @@
         ctx.fillStyle = ctx.strokeStyle = ARROW_COLOR;
         ctx.lineWidth = TILE_BORDER;
         ctx.textAlign = 'center';
-        ctx.font = '10px Arial';      // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
+        ctx.font = '0.2px Arial';      // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
 
+
+        const gridPath = new Path2D();
+        const arrowsPath = new Path2D();
+        const transform = new DOMMatrix();
 
         for ( let row = 0; row < level.rows; row ++ ) {
-          ctx.save(); { 
-            for ( let col = 0; col < level.cols; col ++ ) {
-              ctx.strokeRect( -0.5, -0.5, 1, 1 );
+          for ( let col = 0; col < level.cols; col ++ ) {
+            gridPath.rect( row - 0.5, col - 0.5, 1, 1 );
 
-              const dir = level.directions[ col + row * level.cols ];
-              if ( dir > 0 ) {
-                ctx.save(); {
-                  ctx.rotate( Dir[ dir ].angle );
-                  ctx.fill( arrow );
-                }
-                ctx.restore();
-              }
+            const dir = level.directions[ col + row * level.cols ];
+            if ( dir > 0 ) {
+              // reset existing DOMMatrix() to avoid new
+              transform.a = transform.d = 1;
+              transform.b = transform.c = transform.e = transform.f = 0;
+              transform.translateSelf( col, row );
+              transform.rotateSelf( Dir[ dir ].angle );
 
-              ctx.save();
-              ctx.scale( 0.02, 0.02 );    // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
-              ctx.fillText( `(${ col },${ row })`, 0, 20 );
-              ctx.restore();
-
-              ctx.translate( 1, 0 );
+              arrowsPath.addPath( arrow, transform );
             }
 
+            ctx.fillText( `(${ col },${ row })`, col, row + 0.4 );
           }
-          ctx.restore();
-          ctx.translate( 0, 1 );
         }
+
+        ctx.stroke( gridPath );
+        ctx.fill( arrowsPath );
       }
     }
     ctx.restore();

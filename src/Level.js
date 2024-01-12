@@ -50,6 +50,8 @@ export class Level
 
   setDirection( col, row, dir ) {
     this.directions[ col + row * this.cols ] = dir;
+
+    this.entities.filter( e => e.x == col && e.y == row ).forEach( e => e.dir = dir );
     
     // May need new tilemap, e.g. this might've affected road lines
     this.#tileMap = null;
@@ -119,64 +121,10 @@ export class Level
 
     this.#tileMap.draw( ctx );
 
-    // TODO: Lilypads?
-
-    const colors = [ '#040', '#050', '#060' ];
-
-    Props.Bush.paths.forEach( ( path, index ) => {
-      const bushPath = new Path2D();
-    
-      for ( let row = 0; row < this.rows; row ++ ) { 
-        for ( let col = 0; col < this.cols; col ++ ) {
-  
-          const propKey = this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ];
-          
-          if ( propKey == 'Bush' ) {
-            const transform = new DOMMatrix();
-            transform.translateSelf( col, row );
-  
-            bushPath.addPath( path, transform );
-          }
-        }
-      }
-
-      ctx.fillStyle = colors[ index ];
-      ctx.fill( bushPath );
-
-      if ( index == 0 ) {
-        ctx.strokeStyle = 'black';
-        ctx.stroke( bushPath );
-      }
-    } );
-
     ctx.save(); {
       ctx.translate( this.spawn.x, this.spawn.y );
       Props.Bullseye.draw( ctx );
     }
     ctx.restore();
-
-
-    // ctx.save();
-
-    // for ( let row = 0; row < this.rows; row ++ ) {
-    //   ctx.save();
-      
-    //   for ( let col = 0; col < this.cols; col ++ ) {
-    
-    //     const prop = Props[ this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ] ];
-    //     prop?.draw( ctx );
-
-    //     if ( this.spawn.x == col && this.spawn.y == row ) {
-    //       Props[ 'Bullseye' ].draw( ctx );
-    //     }
-
-    //     ctx.translate( 1, 0 );
-    //   }
-
-    //   ctx.restore();
-    //   ctx.translate( 0, 1 );
-    // }
-
-    // ctx.restore();
   }
 }

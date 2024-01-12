@@ -1,4 +1,5 @@
 import { Direction } from '../src/Entity.js';
+import { Tiles } from '../src/Tiles.js';
 import * as Utility from '../src/common/Utility.js';
 
 const DirIndex = {
@@ -15,7 +16,7 @@ const LAYERS = [
 ];
 
 const COLORS = [
-  'darkblue',
+  '#00aa',
   '#333',
   'dimgray',
   'green',
@@ -25,8 +26,11 @@ export class TileMap {
   #layerPaths;
   #layerEdges = [];
 
+  // TODO: Combine all these into one large dictionary of types => path arrays?
   #sidewalkSquares = new Path2D();
   #lanesPath = new Path2D();
+  #bushPaths = Array.from( Tiles.Bush.drawPaths, _ => new Path2D() );
+  #lilypadPaths = Array.from( Tiles.Lilypad.drawPaths, _ => new Path2D() );
 
   constructor( level ) {
     this.#layerPaths = LAYERS.map( layerName => {
@@ -176,6 +180,22 @@ export class TileMap {
         else if ( tileInfoKey == 'Sidewalk' ) {
           this.#sidewalkSquares.rect( col - 0.4, row - 0.4, 0.8, 0.8 );
         }
+        else if ( tileInfoKey == 'Bush' ) {
+          Tiles.Bush.drawPaths.forEach( ( pathInfo, index ) => {
+            const transform = new DOMMatrix();    // TODO: re-use same one for perf?
+            transform.translateSelf( col, row );
+        
+            this.#bushPaths[ index ].addPath( pathInfo.path, transform );
+          } );
+        }
+        else if ( tileInfoKey == 'Lilypad' ) {
+          Tiles.Lilypad.drawPaths.forEach( ( pathInfo, index ) => {
+            const transform = new DOMMatrix();    // TODO: re-use same one for perf?
+            transform.translateSelf( col, row );
+        
+            this.#lilypadPaths[ index ].addPath( pathInfo.path, transform );
+          } );
+        }
       }
     }
   }
@@ -191,5 +211,27 @@ export class TileMap {
 
     ctx.fillStyle = 'gray';
     ctx.fill( this.#sidewalkSquares );
+
+    Tiles.Bush.drawPaths.forEach( ( pathInfo, index ) => {
+      if ( pathInfo.fillStyle ) {
+        ctx.fillStyle = pathInfo.fillStyle;
+        ctx.fill( this.#bushPaths[ index ] );
+      }
+      if ( pathInfo.strokeStyle ) {
+        ctx.strokeStyle = pathInfo.strokeStyle;
+        ctx.stroke( this.#bushPaths[ index ] );
+      }
+    } );
+
+    Tiles.Lilypad.drawPaths.forEach( ( pathInfo, index ) => {
+      if ( pathInfo.fillStyle ) {
+        ctx.fillStyle = pathInfo.fillStyle;
+        ctx.fill( this.#lilypadPaths[ index ] );
+      }
+      if ( pathInfo.strokeStyle ) {
+        ctx.strokeStyle = pathInfo.strokeStyle;
+        ctx.stroke( this.#lilypadPaths[ index ] );
+      }
+    } );
   }
 }
