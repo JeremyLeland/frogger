@@ -56,16 +56,19 @@ export class AnimatedCanvas {
           this.#frameRates.shift();
         }
 
-        this.ctx.beginPath();
-        this.#frameRates.forEach( ( rate, index ) => this.ctx.lineTo( index, 70 - rate ) );
-        for ( let y = 10; y < 70; y += 10 ) {
-          this.ctx.moveTo(  0, y );
-          this.ctx.lineTo( 60, y );
+        this.ctx.save(); {
+          this.ctx.beginPath();
+          this.#frameRates.forEach( ( rate, index ) => this.ctx.lineTo( index, 70 - rate ) );
+          for ( let y = 10; y < 70; y += 10 ) {
+            this.ctx.moveTo(  0, y );
+            this.ctx.lineTo( 60, y );
+          }
+          this.ctx.strokeStyle = 'orange';
+          this.ctx.stroke();
+          
+          this.ctx.strokeRect( 0, 0, 60, 70 );
         }
-        this.ctx.strokeStyle = 'orange';
-        this.ctx.stroke();
-
-        this.ctx.strokeRect( 0, 0, 60, 70 );
+        this.ctx.restore();
       }
   
       this.#reqId = requestAnimationFrame( animate );

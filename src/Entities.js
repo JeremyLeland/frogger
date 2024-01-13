@@ -24,6 +24,16 @@ export const Entities = {
         pathFunc: Frog.BodyFunc,
       },
       {
+        fillStyle: '#fff2',
+        pathFunc: Frog.BodyFunc,
+        scale: 0.75,
+      },
+      {
+        fillStyle: '#fff2',
+        pathFunc: Frog.BodyFunc,
+        scale: 0.5,
+      },
+      {
         fillStyle: 'white',
         strokeStyle: 'black',
         pathFunc: Frog.ScleraFunc,
@@ -48,9 +58,19 @@ export const Entities = {
         pathFunc: Turtle.legsHeadFunc,
       },
       {
-        fillStyle: 'darkolivegreen',
+        fillStyle: '#36451e',
         strokeStyle: 'black',
         path: Turtle.shell,
+      },
+      {
+        fillStyle: '#455726',
+        path: Turtle.shell,
+        scale: 0.75,
+      },
+      {
+        fillStyle: 'darkolivegreen',
+        path: Turtle.shell,
+        scale: 0.5,
       },
       {
         strokeStyle: '#000a',
@@ -194,7 +214,7 @@ export const Entities = {
   }
 };
 
-[ 'red', 'orange', 'yellow', 'lime', 'dodgerblue', 'blueviolet' ].forEach( ( color, index ) =>
+[ '#c00', '#c70', '#cc0', '#0a0', 'dodgerblue', 'blueviolet' ].forEach( ( color, index ) =>
   Entities[ 'Froggy' + ( index + 1 ) ] = {
     canRescue: true,
     hitDist: 0.5,
@@ -215,6 +235,16 @@ export const Entities = {
         fillStyle: color,
         strokeStyle: 'black',
         path: Frog.BodyFunc(),
+      },
+      {
+        fillStyle: '#fff2',
+        path: Frog.BodyFunc(),
+        scale: 0.75,
+      },
+      {
+        fillStyle: '#fff2',
+        path: Frog.BodyFunc(),
+        scale: 0.5,
       },
       {
         fillStyle: 'white',
