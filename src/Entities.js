@@ -249,6 +249,10 @@ export function drawEntities( ctx, drawInfo, entities, animationTime = 0 ) {
       if ( drawInfo.scale ) {
         transform.scaleSelf( drawInfo.scale ); 
       }
+
+      if ( pathInfo.scale ) {
+        transform.scaleSelf( pathInfo.scale );
+      }
       
       combined.addPath( pathInfo.path ?? pathInfo.pathFunc( entity?.animationAction, entity?.animationTime ?? animationTime ), transform );
     }

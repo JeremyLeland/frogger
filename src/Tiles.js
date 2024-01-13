@@ -54,11 +54,15 @@ export const Tiles = {
       },
       {
         fillStyle: '#050',
-        path: getBushPath( 0.75 ), 
+        path: getBushPath( 1 ),
+        // path: getBushPath( 0.75 ),
+        scale: 0.75, 
       },
       {
         fillStyle: '#060',
-        path: getBushPath( 0.5 ),
+        path: getBushPath( 1 ),
+        // path: getBushPath( 0.5 ),
+        scale: 0.5,
       }, 
     ],
     Solid: true,
@@ -128,11 +132,13 @@ export const Tiles = {
       },
       {
         fillStyle: '#050',
-        path: getLilypadPath( 0.9 ), 
+        path: getLilypadPath( 1 ), 
+        scale: 0.9,
       },
       {
         fillStyle: '#060',
-        path: getLilypadPath( 0.8 ),
+        path: getLilypadPath( 1 ),
+        scale: 0.8,
       }, 
     ],
     draw: ( ctx ) => {

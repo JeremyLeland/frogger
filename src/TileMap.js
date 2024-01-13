@@ -184,6 +184,10 @@ export class TileMap {
           Tiles.Bush.drawPaths.forEach( ( pathInfo, index ) => {
             const transform = new DOMMatrix();    // TODO: re-use same one for perf?
             transform.translateSelf( col, row );
+
+            if ( pathInfo.scale ) {
+              transform.scaleSelf( pathInfo.scale );
+            }
         
             this.#bushPaths[ index ].addPath( pathInfo.path, transform );
           } );
@@ -192,6 +196,10 @@ export class TileMap {
           Tiles.Lilypad.drawPaths.forEach( ( pathInfo, index ) => {
             const transform = new DOMMatrix();    // TODO: re-use same one for perf?
             transform.translateSelf( col, row );
+
+            if ( pathInfo.scale ) {
+              transform.scaleSelf( pathInfo.scale );
+            }
         
             this.#lilypadPaths[ index ].addPath( pathInfo.path, transform );
           } );
