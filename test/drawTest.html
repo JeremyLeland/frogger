@@ -31,21 +31,33 @@
     ctx.scale( 10, 10 );
 
     // ctx.beginPath();
-    const combined = new Path2D();
+    // const combined = new Path2D();
+
+    const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1 );
+
+    // Add three color stops
+    gradient.addColorStop(0, "darkolivegreen");
+    gradient.addColorStop(0.98, "#020");
+    gradient.addColorStop(0.98, "black");
+    gradient.addColorStop(1, "black");
+    gradient.addColorStop(1, "transparent");
+
+    ctx.fillStyle = gradient;
 
     entities.forEach( e => {
-      // ctx.save();
+      ctx.save();
       
-      // ctx.translate( e.x, e.y );
-      // ctx.rotate( e.angle );
+      ctx.translate( e.x, e.y );
+      ctx.rotate( e.angle );
 
-      let transform = new DOMMatrix();
-      transform.translateSelf( e.x, e.y );
-      transform.rotateSelf( e.angle );
+      
+      // let transform = new DOMMatrix();
+      // transform.translateSelf( e.x, e.y );
+      // transform.rotateSelf( e.angle );
 
-      combined.addPath( path, transform );
+      // combined.addPath( path, transform );
 
-      // ctx.beginPath();
+      ctx.beginPath();
       // ctx.moveTo( 0, 0 );
 
       // ctx.rect( -2, -1, 4, 2 );
@@ -66,16 +78,21 @@
       // }
       
 
-      // ctx.fill();
+      // ctx.fillRect( -1, -1, 2, 2 );
+      // ctx.rect( -1, -1, 2, 2 );
+      ctx.moveTo( 0, 0 );
+      ctx.arc( 0, 0, 1, 0, Math.PI * 2 );
 
-      // ctx.restore();
+      ctx.fill();
+
+      ctx.restore();
     } );
 
-    ctx.fillStyle = 'green';
-    ctx.filter = 'blur(5px)';
+    // ctx.fillStyle = 'green';
+    // ctx.filter = 'blur(5px)';
 
-    ctx.fill( combined );
-    // ctx.fill( );
+    // ctx.fill( combined );
+    ctx.fill( );
     // ctx.stroke();
 
     ctx.restore();
