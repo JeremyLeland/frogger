@@ -1,22 +1,40 @@
 <title>Test drawing methods</title>
 <link rel="stylesheet" href="../ui.css">
 
+<label for="count">Count:</label>
+<input type="range" id="count" name="count" min="0" max="1000" value="500"/>
+
 <script type="module">
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
 
   const canvas = new AnimatedCanvas();
+  const countUI = document.getElementById( 'count' );
 
-  const entities = Array.from( Array( 1000 ), _ => ( {
-    x: Math.floor( Math.random() * 100 ),
-    y: Math.floor( Math.random() * 100 ), 
-    angle: Math.random() * 360
-    // angle: Math.random() * 6
-  } ) );
+  const entities = [];
+
+  function setCount( count ) {
+    entities.splice( count );
+
+    for ( let i = entities.length; i < count; i ++ ) {
+      entities.push(
+        {
+          x: Math.floor( Math.random() * 100 ),
+          y: Math.floor( Math.random() * 100 ), 
+          angle: Math.random() * 360
+          // angle: Math.random() * 6
+        }
+      );
+    }    
+  }
+
+  countUI.addEventListener( 'change', _ => setCount( countUI.valueAsNumber ) );
+  
+  countUI.dispatchEvent( new Event( 'change' ) );
 
   canvas.update = ( dt ) => {
     entities.forEach( e => {
-      // e.angle += dt / 1000;
-      e.angle += dt / 10;
+      e.angle += dt / 1000;
+      //e.angle += dt / 10;
     } );
   }
 
@@ -37,10 +55,7 @@
 
     // Add three color stops
     gradient.addColorStop(0, "darkolivegreen");
-    gradient.addColorStop(0.98, "#020");
-    gradient.addColorStop(0.98, "black");
     gradient.addColorStop(1, "black");
-    gradient.addColorStop(1, "transparent");
 
     ctx.fillStyle = gradient;
 
@@ -78,12 +93,12 @@
       // }
       
 
-      // ctx.fillRect( -1, -1, 2, 2 );
+      ctx.fillRect( -1, -1, 2, 2 );
       // ctx.rect( -1, -1, 2, 2 );
-      ctx.moveTo( 0, 0 );
-      ctx.arc( 0, 0, 1, 0, Math.PI * 2 );
+      // ctx.moveTo( 0, 0 );
+      // ctx.arc( 0, 0, 1, 0, Math.PI * 2 );
 
-      ctx.fill();
+      // ctx.fill();
 
       ctx.restore();
     } );
