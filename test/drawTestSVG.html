@@ -1,0 +1,65 @@
+<title>Test drawing methods</title>
+<link rel="stylesheet" href="../ui.css">
+
+<label for="count">Count:</label>
+<input type="range" id="count" name="count" min="0" max="1000" value="2"/>
+
+<script type="module">
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+
+  const image = new Image();
+  image.src = './SNice.svg';
+  await image.decode();
+
+  const canvas = new AnimatedCanvas();
+  const countUI = document.getElementById( 'count' );
+
+  const entities = [];
+
+  function setCount( count ) {
+    entities.splice( count );
+
+    for ( let i = entities.length; i < count; i ++ ) {
+      entities.push(
+        {
+          x: Math.floor( Math.random() * 1000 ),
+          y: Math.floor( Math.random() * 1000 ), 
+          angle: Math.random() * 360
+          // angle: Math.random() * 6
+        }
+      );
+    }
+  }
+
+  countUI.addEventListener( 'change', _ => setCount( countUI.valueAsNumber ) );  
+  countUI.dispatchEvent( new Event( 'change' ) );
+
+  canvas.update = ( dt ) => {
+    entities.forEach( e => {
+      e.angle += dt / 1000;
+    } );
+  }
+
+  canvas.draw = ( ctx ) => {
+    ctx.clearRect( 0, 0, ctx.canvas.width, ctx.canvas.height );
+
+    ctx.save();
+    // ctx.scale( 10, 10 );
+
+    entities.forEach( e => {
+      ctx.save(); {
+
+        ctx.translate( e.x, e.y );
+        ctx.rotate( e.angle );
+        
+        ctx.drawImage( image, 0, 0 ); 
+      }
+      ctx.restore();
+    } );
+
+    ctx.restore();
+  };
+
+  canvas.start();
+
+</script>
