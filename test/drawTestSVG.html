@@ -1,18 +1,13 @@
-<title>Test drawing methods</title>
+<title>SVG drawing tests</title>
 <link rel="stylesheet" href="../ui.css">
 
 <label for="count">Count:</label>
 <input type="range" id="count" name="count" min="0" max="1000" value="2"/>
+<label for="rasterize">Rasterize:</label>
+<input type="checkbox" id="rasterize" name="rasterize" />
 
 <script type="module">
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
-
-  const image = new Image();
-  image.src = './SNice.svg';
-  await image.decode();
-
-  const canvas = new AnimatedCanvas();
-  const countUI = document.getElementById( 'count' );
 
   const entities = [];
 
@@ -31,8 +26,24 @@
     }
   }
 
-  countUI.addEventListener( 'change', _ => setCount( countUI.valueAsNumber ) );  
-  countUI.dispatchEvent( new Event( 'change' ) );
+  const svgImage = new Image();
+  svgImage.src = './SNice.svg';
+  await svgImage.decode();
+
+  const rasterImage = new OffscreenCanvas( 50, 50 );
+  rasterImage.getContext( '2d' ).drawImage( svgImage, 0, 0 );
+  
+  let toDraw;
+
+  const rasterizeUI = document.getElementById( 'rasterize' );
+  rasterizeUI.addEventListener( 'change', _ => toDraw = rasterizeUI.checked ? rasterImage : svgImage );
+  rasterizeUI.dispatchEvent( new Event( 'change' ) );
+
+  const countUI = document.getElementById( 'count' );
+  countUI.addEventListener( 'input', _ => setCount( countUI.valueAsNumber ) );  
+  countUI.dispatchEvent( new Event( 'input' ) );
+
+  const canvas = new AnimatedCanvas();
 
   canvas.update = ( dt ) => {
     entities.forEach( e => {
@@ -52,7 +63,7 @@
         ctx.translate( e.x, e.y );
         ctx.rotate( e.angle );
         
-        ctx.drawImage( image, 0, 0 ); 
+        ctx.drawImage( toDraw, 0, 0 ); 
       }
       ctx.restore();
     } );
