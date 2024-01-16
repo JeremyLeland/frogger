@@ -15,7 +15,7 @@ const LAYERS = [
 ];
 
 const COLORS = [
-  'darkblue',
+  '#00aa',
   '#333',
   'dimgray',
   'green',

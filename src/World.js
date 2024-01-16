@@ -288,21 +288,26 @@ export class World
       ctx.translate( 0.5, 0.5 );
       ctx.lineWidth = 0.02;
 
-      this.#level.draw( ctx );
-
-      // TODO: If drowned, draw below level (with translucent water)
-      
+      // TODO: Do we need this? Double-tracking animationAction and status, it seems...
       if ( this.player ) {
         this.player.animationAction = this.player.status;
+      }
 
-        if ( this.player.status != Frog.Status.Alive ) {
-          Entity.draw( this.player, ctx );
-        }
+      if ( this.player?.status == Frog.Status.Drowned ) {
+        Entity.draw( this.player, ctx );
+      }
+
+      this.#level.draw( ctx );
+      
+      if ( this.player?.status == Frog.Status.Expired ||
+           this.player?.status == Frog.Status.SquishedHorizontal ||
+           this.player?.status == Frog.Status.SquishedVertical ) {
+        Entity.draw( this.player, ctx );
       }
 
       this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
 
-      if ( this.player && this.player.status == Frog.Status.Alive ) {
+      if ( this.player?.status == Frog.Status.Alive ) {
         Entity.draw( this.player, ctx );
       }
     }

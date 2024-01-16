@@ -62,9 +62,13 @@ export class FroggerCanvas extends AnimatedCanvas {
   }
 
   draw( ctx ) {
-    ctx.save();
-    ctx.scale( this.scale, this.scale );
+    this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
     
-    this.world?.draw( ctx, this.showUI );
+    ctx.save(); {
+      ctx.scale( this.scale, this.scale );
+
+      this.world?.draw( ctx, this.showUI );
+    }
+    ctx.restore();
   }
 }

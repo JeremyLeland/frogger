@@ -133,12 +133,5 @@ export class Frog {
       ctx.fillStyle = 'black';
       ctx.fill( pupils );
     }
-
-    // TODO: This rectangle is obvious near edges of water
-    //       Maybe change the colors instead of drawing a rectangle?
-    if ( animationAction == Frog.Status.Drowned ) {
-      ctx.fillStyle = '#000080aa';
-      ctx.fillRect( -0.5, -0.5, 1, 1 );
-    }
   }
 }
