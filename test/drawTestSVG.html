@@ -2,12 +2,14 @@
 <link rel="stylesheet" href="../ui.css">
 
 <label for="count">Count:</label>
-<input type="range" id="count" name="count" min="0" max="1000" value="2"/>
+<input type="range" id="count" name="count" min="1" max="1000" value="200"/>
+<span id="count_text"></span>
 <label for="rasterize">Rasterize:</label>
 <input type="checkbox" id="rasterize" name="rasterize" />
 
 <script type="module">
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+  import * as Turtle from '../src/entities/Turtle.js';
 
   const entities = [];
 
@@ -17,29 +19,34 @@
     for ( let i = entities.length; i < count; i ++ ) {
       entities.push(
         {
-          x: Math.floor( Math.random() * 1000 ),
-          y: Math.floor( Math.random() * 1000 ), 
+          x: Math.random() * 10,
+          y: Math.random() * 10, 
           angle: Math.random() * 360
           // angle: Math.random() * 6
         }
       );
     }
+
+    countText.innerHTML = count;
   }
 
   const svgImage = new Image();
-  svgImage.src = './SNice.svg';
+  svgImage.src = './turtle.svg';
   await svgImage.decode();
 
-  const rasterImage = new OffscreenCanvas( 50, 50 );
-  rasterImage.getContext( '2d' ).drawImage( svgImage, 0, 0 );
+  const rasterImage = new OffscreenCanvas( 500, 500 );
+  const rasterCtx = rasterImage.getContext( '2d' );
+  rasterCtx.scale( 100, 100 );
+  rasterCtx.drawImage( svgImage, 0, 0 );
   
-  let toDraw;
+  let rasterize = false;
 
   const rasterizeUI = document.getElementById( 'rasterize' );
-  rasterizeUI.addEventListener( 'change', _ => toDraw = rasterizeUI.checked ? rasterImage : svgImage );
+  rasterizeUI.addEventListener( 'change', _ => rasterize = rasterizeUI.checked );
   rasterizeUI.dispatchEvent( new Event( 'change' ) );
 
   const countUI = document.getElementById( 'count' );
+  const countText = document.getElementById( 'count_text' );
   countUI.addEventListener( 'input', _ => setCount( countUI.valueAsNumber ) );  
   countUI.dispatchEvent( new Event( 'input' ) );
 
@@ -55,15 +62,22 @@
     ctx.clearRect( 0, 0, ctx.canvas.width, ctx.canvas.height );
 
     ctx.save();
-    // ctx.scale( 10, 10 );
+    ctx.scale( 100, 100 );
 
     entities.forEach( e => {
       ctx.save(); {
 
         ctx.translate( e.x, e.y );
         ctx.rotate( e.angle );
+
+        if ( rasterize ) {
+          // ctx.scale( 0.01, 0.01 );
+          ctx.drawImage( rasterImage, -0.5, -0.5, 5, 5 );
+        }
+        else {
+          ctx.drawImage( svgImage, -0.5, -0.5 );
+        }
         
-        ctx.drawImage( toDraw, 0, 0 ); 
       }
       ctx.restore();
     } );
