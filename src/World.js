@@ -9,6 +9,8 @@ import { Constants } from './Constants.js';
 
 let animationTime = 0;
 
+let timerGrad;
+
 export class World
 { 
   entities = [];
@@ -305,7 +307,7 @@ export class World
         Entity.draw( this.player, ctx );
       }
 
-      this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
+      this.entities.forEach( entity => Entity.draw( entity, ctx /*, { time: animationTime } */ ) );
 
       if ( this.player?.status == Frog.Status.Alive ) {
         Entity.draw( this.player, ctx );
@@ -339,10 +341,12 @@ export class World
         }
         
         // Timer
-        const timerGrad = ctx.createLinearGradient( 0, 0, 3, 0 );
-        timerGrad.addColorStop( 0, 'red' );
-        timerGrad.addColorStop( 0.5, 'yellow' );
-        timerGrad.addColorStop( 1, 'green' );
+        if ( !timerGrad ) {
+          timerGrad = ctx.createLinearGradient( 0, 0, 3, 0 );
+          timerGrad.addColorStop( 0, 'red' );
+          timerGrad.addColorStop( 0.5, 'yellow' );
+          timerGrad.addColorStop( 1, 'green' );
+        }
 
         ctx.fillStyle = timerGrad;
         ctx.fillRect( 0, -0.15, 4 * ( this.timeLeft / this.#level.time ), 0.3 );
