@@ -1,4 +1,5 @@
 import { Direction } from '../src/Entity.js';
+import { Props } from './Props.js';
 import * as Utility from '../src/common/Utility.js';
 
 const DirIndex = {
@@ -21,6 +22,8 @@ const COLORS = [
   'green',
 ];
 
+export let offscreen;
+
 export class TileMap {
   #layerPaths;
   #layerEdges = [];
@@ -28,7 +31,11 @@ export class TileMap {
   #sidewalkSquares = new Path2D();
   #lanesPath = new Path2D();
 
+  #offscreen;
+
   constructor( level ) {
+    this.level = level;
+
     this.#layerPaths = LAYERS.map( layerName => {
       // Store the edges coming from each corner, indexed by direction
       const edges = Array.from( 
@@ -181,15 +188,49 @@ export class TileMap {
   }
 
   draw( ctx ) {
-    LAYERS.forEach( ( _, index ) => {
-      ctx.fillStyle = COLORS[ index ];
-      ctx.fill( this.#layerPaths[ index ], 'evenodd' );
-    } );
+    if ( !offscreen ) {
+      offscreen = new OffscreenCanvas( this.level.cols * 48 * devicePixelRatio, this.level.rows * 48 * devicePixelRatio );
+      const offscreenCtx = offscreen.getContext( '2d' );
 
-    ctx.fillStyle = 'yellow';
-    ctx.fill( this.#lanesPath );
+      offscreenCtx.scale( 48 * devicePixelRatio, 48 * devicePixelRatio );
+      offscreenCtx.translate( 0.5, 0.5 );
 
-    ctx.fillStyle = 'gray';
-    ctx.fill( this.#sidewalkSquares );
+      LAYERS.forEach( ( _, index ) => {
+        offscreenCtx.fillStyle = COLORS[ index ];
+        offscreenCtx.fill( this.#layerPaths[ index ], 'evenodd' );
+      } );
+      
+      offscreenCtx.fillStyle = 'yellow';
+      offscreenCtx.fill( this.#lanesPath );
+      
+      offscreenCtx.fillStyle = 'gray';
+      offscreenCtx.fill( this.#sidewalkSquares );
+
+      offscreenCtx.save(); {
+        for ( let row = 0; row < this.level.rows; row ++ ) {
+          offscreenCtx.save(); { 
+            for ( let col = 0; col < this.level.cols; col ++ ) {
+              const prop = Props[ this.level.tileInfoKeys[ this.level.tiles[ col + row * this.level.cols ] ] ];
+              prop?.draw( offscreenCtx );
+
+              if ( this.level.spawn.x == col && this.level.spawn.y == row ) {
+                Props[ 'Bullseye' ].draw( offscreenCtx );
+              }
+
+              offscreenCtx.translate( 1, 0 );
+            }
+          }
+          offscreenCtx.restore();
+          offscreenCtx.translate( 0, 1 );
+        }
+      }
+      offscreenCtx.restore();
+    }
+
+    ctx.save();
+    ctx.translate( -0.5, -0.5 );
+    ctx.scale( 1/48/devicePixelRatio, 1/48/devicePixelRatio );
+    ctx.drawImage( offscreen, 0, 0 );
+    ctx.restore();
   }
 }
