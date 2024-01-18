@@ -31,7 +31,8 @@ export const Props = {
       const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 2 );
       gradient.addColorStop( 0, 'darkgreen' );
       gradient.addColorStop( 1, 'black' );
-      ctx.fillStyle = gradient;
+      // ctx.fillStyle = gradient;
+      ctx.fillStyle = 'darkgreen';
       ctx.fill( bush );
 
       ctx.strokeStyle = 'black';
@@ -46,7 +47,8 @@ export const Props = {
       const gradient = ctx.createRadialGradient( 0, 0, 0, 0, 0, 2 );
       gradient.addColorStop( 0, 'darkgreen' );
       gradient.addColorStop( 1, 'black' );
-      ctx.fillStyle = gradient;
+      // ctx.fillStyle = gradient;
+      ctx.fillStyle = 'darkgreen';
       ctx.fill( lilypad );
 
       ctx.strokeStyle = 'black';

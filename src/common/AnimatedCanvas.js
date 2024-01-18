@@ -1,5 +1,9 @@
 export class AnimatedCanvas {
+  ShowFPS = true;
+
   #reqId;
+
+  #frameRates = [];
 
   constructor( width, height, canvas ) {
     this.canvas = canvas ?? document.createElement( 'canvas' );
@@ -31,7 +35,7 @@ export class AnimatedCanvas {
 
   redraw() {
     // Don't need this because we're drawing the level over everything
-    // this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
+    this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
 
     this.ctx.save();
     this.draw( this.ctx );
@@ -45,10 +49,35 @@ export class AnimatedCanvas {
     let lastTime;
     const animate = ( now ) => {
       lastTime ??= now;  // for first call only
-      this.update( now - lastTime );
+      const dt = now - lastTime;
       lastTime = now;
-  
+      
+      this.update( dt );
       this.redraw();
+
+      if ( this.ShowFPS ) {
+        this.#frameRates.push( 1000 / dt );
+        if ( this.#frameRates.length > 60 ) {
+          this.#frameRates.shift();
+        }
+
+        this.ctx.beginPath();
+        
+        this.ctx.rect( 0, 0, 60, 70 );
+        for ( let y = 10; y < 70; y += 10 ) {
+          this.ctx.moveTo(  0, y );
+          this.ctx.lineTo( 60, y );
+        }
+        
+        this.ctx.strokeStyle = 'yellow';
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.#frameRates.forEach( ( rate, index ) => this.ctx.lineTo( index, 70 - rate ) );
+        
+        this.ctx.strokeStyle = 'orange';
+        this.ctx.stroke();
+      }
   
       this.#reqId = requestAnimationFrame( animate );
     };

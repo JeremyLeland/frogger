@@ -20,7 +20,8 @@ export class Froggy extends Frog {
 
     bodyGrad[ colorIndex ] ??= Frog.getFrogGradient( ctx, colors[ colorIndex ] );
 
-    Frog.drawFrog( ctx, bodyGrad[ colorIndex ] );
+    // Frog.drawFrog( ctx, bodyGrad[ colorIndex ] );
+    Frog.drawFrog( ctx, colors[ colorIndex ] );
     ctx.restore();
   }
 }

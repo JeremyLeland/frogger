@@ -6,6 +6,7 @@ export class Player {
   static drawPlayer( ctx, animationAction, animationTime ) {
     bodyGrad ??= Frog.getFrogGradient( ctx, 'green' );
 
-    Frog.drawFrog( ctx, bodyGrad, animationAction, animationTime );
+    // Frog.drawFrog( ctx, 'bodyGrad', animationAction, animationTime );
+    Frog.drawFrog( ctx, 'green', animationAction, animationTime );
   }
 }

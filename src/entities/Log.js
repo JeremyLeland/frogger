@@ -42,7 +42,8 @@ function setGradient( ctx ) {
     bodyGrad.addColorStop( 1, 'black' );
   }
 
-  ctx.fillStyle = bodyGrad;
+  // ctx.fillStyle = bodyGrad;
+  ctx.fillStyle = 'saddlebrown';
 }
 
 export class Log {

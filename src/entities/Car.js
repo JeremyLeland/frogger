@@ -14,6 +14,7 @@ const colors = [ 'red', 'yellow', 'lime', 'dodgerblue' ];
 const bodyGrad = Array( colors.length );
 
 function drawCar( ctx, colorIndex ) {
+  
   if ( !bodyGrad[ colorIndex ] ) {
     const grad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
     grad.addColorStop( 0, colors[ colorIndex ] );
@@ -22,7 +23,8 @@ function drawCar( ctx, colorIndex ) {
     bodyGrad[ colorIndex ] = grad;
   }
   
-  ctx.fillStyle = bodyGrad[ colorIndex ];
+  // ctx.fillStyle = bodyGrad[ colorIndex ];
+  ctx.fillStyle = colors[ colorIndex ];
   ctx.fill( body );
   ctx.stroke( body );
   
@@ -30,7 +32,8 @@ function drawCar( ctx, colorIndex ) {
   ctx.fill( windshield );
   ctx.stroke( windshield );
   
-  ctx.fillStyle = bodyGrad[ colorIndex ];
+  // ctx.fillStyle = bodyGrad[ colorIndex ];
+  ctx.fillStyle = colors[ colorIndex ];
   ctx.fill( roof );
   ctx.stroke( roof );
 }

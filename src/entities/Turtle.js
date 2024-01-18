@@ -41,6 +41,7 @@ let bodyGrad, shellGrad;
 
 export class Turtle {
   static drawTurtle( ctx, animationAction, animationTime = 0 ) {
+    
     if ( !bodyGrad ) {
       bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
       bodyGrad.addColorStop( 0, 'green' );
@@ -49,7 +50,8 @@ export class Turtle {
 
     ctx.translate( -0.05, 0 );
 
-    ctx.fillStyle = bodyGrad;
+    // ctx.fillStyle = bodyGrad;
+    ctx.fillStyle = 'green';
     
     const legAngleOffset = 0.3 * Math.sin( 0.005 * animationTime );
 
@@ -80,7 +82,8 @@ export class Turtle {
       shellGrad.addColorStop( 0.5, 'black' );
     }
 
-    ctx.fillStyle = shellGrad;
+    // ctx.fillStyle = shellGrad;
+    ctx.fillStyle = 'darkolivegreen';
 
     ctx.fill( shell );
     ctx.stroke( shell );

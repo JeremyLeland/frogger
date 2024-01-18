@@ -1,79 +1,146 @@
-<title>Test drawing methods</title>
-<link rel="stylesheet" href="../ui.css">
+<title>Path drawing tests</title>
+<link rel="stylesheet" href="../grid.css">
+
+<label for="count">Count:</label>
+<input type="range" id="count" name="count" min="1" max="2000" value="200"/>
+<span id="count_text"></span>
+<label for="styles">Styles:</label>
+<input type="range" id="styles" name="styles" min="1" max="500" value="3"/>
+<span id="styles_text"></span>
+<label for="stroke">Stroke:</label>
+<input type="checkbox" id="stroke" name="stroke" />
+<label for="gradient">Gradient:</label>
+<input type="checkbox" id="gradient" name="gradient" />
+<label for="combine">Combine:</label>
+<input type="checkbox" id="combine" name="combine" />
 
 <script type="module">
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+  
+  const entities = [];
+  const styles = [];
 
+  const countUI = document.getElementById( 'count' );
+  const countText = document.getElementById( 'count_text' );
+  countUI.addEventListener( 'input', _ => setCount( countUI.valueAsNumber ) );
+  countUI.dispatchEvent( new Event( 'input' ) );
+
+  const stylesUI = document.getElementById( 'styles' );
+  const stylesText = document.getElementById( 'styles_text' );
+  stylesUI.addEventListener( 'input', _ => setStyleCount( stylesUI.valueAsNumber ) );
+  stylesUI.dispatchEvent( new Event( 'input' ) );
+
+  function setCount( count ) {
+    entities.splice( count );
+
+    for ( let i = entities.length; i < count; i ++ ) {
+      entities.push(
+        {
+          x: Math.random() * 100,
+          y: Math.random() * 100, 
+          angle: Math.random() * 360
+          // angle: Math.random() * 6
+        }
+      );
+    }
+
+    countText.innerHTML = count;
+  }
+
+  function setStyleCount( count ) {
+    styles.splice( count );
+
+    for ( let i = styles.length; i < count; i ++ ) {
+      styles.push( `hsl( ${ Math.random() * 360 }deg, ${ Math.random() * 100 }%, ${ Math.random() * 100 }% )` );
+    }
+
+    stylesText.innerHTML = count;
+  }
+
+  let stroke = false;
+  let gradient = false;
+  let combine = false;
+
+  const strokeUI = document.getElementById( 'stroke' );
+  strokeUI.addEventListener( 'change', _ => stroke = strokeUI.checked );
+  strokeUI.dispatchEvent( new Event( 'change' ) );
+
+  const gradientUI = document.getElementById( 'gradient' );
+  gradientUI.addEventListener( 'change', _ => gradient = gradientUI.checked );
+  gradientUI.dispatchEvent( new Event( 'change' ) );
+
+  const combineUI = document.getElementById( 'combine' );
+  combineUI.addEventListener( 'change', _ => combine = combineUI.checked );
+  combineUI.dispatchEvent( new Event( 'change' ) );
+  
   const canvas = new AnimatedCanvas();
-
-  const entities = Array.from( Array( 1000 ), _ => ( {
-    x: Math.floor( Math.random() * 100 ),
-    y: Math.floor( Math.random() * 100 ), 
-    angle: Math.random() * 360
-    // angle: Math.random() * 6
-  } ) );
 
   canvas.update = ( dt ) => {
     entities.forEach( e => {
-      // e.angle += dt / 1000;
-      e.angle += dt / 10;
+      e.angle += dt / 1000;
     } );
   }
 
-  const path = new Path2D();
-  path.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
-  
   canvas.draw = ( ctx ) => {
-
     ctx.clearRect( 0, 0, ctx.canvas.width, ctx.canvas.height );
 
     ctx.save();
     ctx.scale( 10, 10 );
 
-    // ctx.beginPath();
-    const combined = new Path2D();
+    if ( combine ) {
+      ctx.beginPath();
+    }
 
-    entities.forEach( e => {
-      // ctx.save();
-      
-      // ctx.translate( e.x, e.y );
-      // ctx.rotate( e.angle );
+    if ( stroke ) {
+      ctx.lineWidth = 0.2;
+      ctx.strokeStyle = 'black';
+    }
 
-      let transform = new DOMMatrix();
-      transform.translateSelf( e.x, e.y );
-      transform.rotateSelf( e.angle );
+    const numPerStyle = entities.length / styles.length;
 
-      combined.addPath( path, transform );
+    entities.forEach( ( e, index ) => {
+      ctx.save(); {
 
-      // ctx.beginPath();
-      // ctx.moveTo( 0, 0 );
+        ctx.translate( e.x, e.y );
+        ctx.rotate( e.angle );
 
-      // ctx.rect( -2, -1, 4, 2 );
+        if ( combine ) {
+          ctx.moveTo( 2, 0 );
+          ctx.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
+        }
+        else {
+          ctx.beginPath();
+          ctx.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
 
-      // ctx.lineTo( -2, -1 );
-      // ctx.lineTo(  2, -1 );
-      // ctx.lineTo(  3,  0 );
-      // ctx.lineTo(  2,  1 );
-      // ctx.lineTo( -2,  1 );
-      // ctx.lineTo( -3,  0 );
-      // ctx.lineTo( -2, -1 );
+          const style = styles[ Math.floor( index / numPerStyle ) ];
 
-      // ctx.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
-      //ctx.fill( path );
+          if ( gradient ) {
+            const grad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 2 );
+            grad.addColorStop( 0, style );
+            grad.addColorStop( 1, 'black' );
+            ctx.fillStyle = grad;
+          }
+          else {
+            ctx.fillStyle = style;
+          }
 
-      // for ( let angle = 0; angle <= Math.PI * 2; angle += Math.PI / 3 ) {
-      //   ctx.lineTo( Math.cos( angle ) * 2, Math.sin( angle ) * 1 );
-      // }
-      
+          ctx.fill();
 
-      // ctx.fill();
-
-      // ctx.restore();
+          if ( stroke ) {
+            ctx.stroke();
+          }
+        }
+      }
+      ctx.restore();
     } );
 
-    ctx.fill( combined );
-    // ctx.fill( );
-    // ctx.stroke();
+    if ( combine ) {
+      ctx.fillStyle = 'white';
+      ctx.fill();
+      if ( stroke ) {
+        ctx.stroke();
+      }
+    }
 
     ctx.restore();
   };
