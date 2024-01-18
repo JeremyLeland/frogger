@@ -14,18 +14,14 @@
   const world = new World( level );
 
   const canvas = new AnimatedCanvas();
+  canvas.scale = 48;
 
   canvas.update = ( dt ) => {
     world.update( dt );
   }
   
   canvas.draw = ( ctx ) => {
-    ctx.save();
-    ctx.scale( 48, 48 );
-
     world.draw( ctx );
-
-    ctx.restore();
   };
 
   canvas.start();

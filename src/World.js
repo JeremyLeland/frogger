@@ -286,7 +286,7 @@ export class World
   }
 
   draw( ctx, showUI = true ) {
-    ctx.save(); {
+    // ctx.save(); {
       ctx.translate( 0.5, 0.5 );
       ctx.lineWidth = 0.02;
 
@@ -312,8 +312,8 @@ export class World
       if ( this.player?.status == Frog.Status.Alive ) {
         Entity.draw( this.player, ctx );
       }
-    }
-    ctx.restore();
+    // }
+    // ctx.restore();
 
     // Victory/defeat banner
     if ( this.defeat )    drawBanner( ctx, 'Defeat!' );
@@ -321,21 +321,23 @@ export class World
 
     // UI
     if ( showUI ) {
-      ctx.save(); {
+      // ctx.save(); {
         ctx.translate( 0, 15 );
         ctx.fillStyle = 'gray';
-        ctx.fillRect( 0, 0, 15, 1 );
+        ctx.strokeStyle = 'black';
+        ctx.fillRect( -0.5, -0.5, 15, 1 );
 
-        ctx.translate( 0.5, 0.5 );
-        ctx.lineWidth = 0.02;
+        // ctx.translate( 0.5, 0.5 );
+        // ctx.lineWidth = 0.02;
 
         // Froggies
         for ( let i = 0; i < Constants.NumFroggies; i ++ ) {
           if ( this.rescued.includes( i ) ) {
-            ctx.save();
+            // ctx.save();
             ctx.rotate( Math.PI / 2 );
             Froggy.drawFroggy( ctx, i );
-            ctx.restore();
+            ctx.rotate( -Math.PI / 2 );
+            // ctx.restore();
           }
           ctx.translate( 1, 0 );
         }
@@ -357,15 +359,16 @@ export class World
         // Lives
         for ( let i = 4; i > 0; i -- ) {
           if ( i <= this.lives ) {
-            ctx.save();
+            // ctx.save();
             ctx.rotate( -Math.PI / 2 );
             Player.drawPlayer( ctx );
-            ctx.restore();
+            ctx.rotate( Math.PI / 2 );
+            // ctx.restore();
           }
           ctx.translate( 1, 0 );
         }
-      }
-      ctx.restore();
+      // }
+      // ctx.restore();
     }
 
     if ( this.paused ) {
@@ -382,7 +385,7 @@ export class World
 }
 
 function drawBanner( ctx, text ) {
-  ctx.save(); {
+  // ctx.save(); {
     ctx.fillStyle = '#000b';
     ctx.fillRect( 0, 6.5, 15, 2 );
 
@@ -395,6 +398,6 @@ function drawBanner( ctx, text ) {
     ctx.font = '1px Silly';
     ctx.fillStyle = 'white';
     ctx.fillText( text, 15 / 2, 7.8 );
-  }
-  ctx.restore();
+  // }
+  // ctx.restore();
 }

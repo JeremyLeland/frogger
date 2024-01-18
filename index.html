@@ -281,8 +281,8 @@
   window.onresize = ( e ) => {
     const width = Math.floor( wrapper.clientWidth );
     const height = Math.floor( wrapper.clientHeight );
-    canvas.setSize( width, height );
     canvas.scale = height / 16;
+    canvas.setSize( width, height );
   };
   window.onresize();
 

@@ -1,6 +1,8 @@
 export class AnimatedCanvas {
   ShowFPS = true;
 
+  scale = 1;
+
   #reqId;
 
   #frameRates = [];
@@ -29,17 +31,16 @@ export class AnimatedCanvas {
     this.canvas.height = height * devicePixelRatio;
     this.canvas.style.width = width + 'px';
     this.canvas.style.height = height + 'px';
-
-    this.ctx.scale( devicePixelRatio, devicePixelRatio );
   }
 
   redraw() {
     // Don't need this because we're drawing the level over everything
-    // this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
+    this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
 
-    this.ctx.save();
+    // this.ctx.save();
+    this.ctx.setTransform( this.scale * devicePixelRatio, 0, 0, this.scale * devicePixelRatio, 0, 0 );
     this.draw( this.ctx );
-    this.ctx.restore();
+    // this.ctx.restore();
   }
 
   // TODO: Handle starts if already started, stops if already stopped...
@@ -61,7 +62,10 @@ export class AnimatedCanvas {
           this.#frameRates.shift();
         }
 
-        this.ctx.save(); {
+        this.ctx.setTransform( devicePixelRatio, 0, 0, devicePixelRatio, 0, 0 );
+        this.ctx.lineWidth = 1;
+
+        // this.ctx.save(); {
           this.ctx.beginPath();
           
           this.ctx.rect( 0, 0, 60, 70 );
@@ -78,8 +82,8 @@ export class AnimatedCanvas {
           
           this.ctx.strokeStyle = 'orange';
           this.ctx.stroke();
-        }
-        this.ctx.restore();
+        // }
+        // this.ctx.restore();
       }
   
       this.#reqId = requestAnimationFrame( animate );

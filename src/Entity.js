@@ -17,9 +17,12 @@ export const Rasterized = {};
 
 export class Entity {
   static draw( entity, ctx, { dir, action, time } = {} ) {
-    ctx.save();
+    // ctx.save();
+
+    const rotate = Dir[ ( dir > 0 ? dir : null ) ?? entity.dir ]?.angle ?? 0;
+    
     ctx.translate( entity.x, entity.y );
-    ctx.rotate( Dir[ ( dir > 0 ? dir : null ) ?? entity.dir ]?.angle ?? 0 );
+    ctx.rotate( rotate );
     // ctx.scale( entity.size, entity.size );   // nothing changes size for now
   
     if ( !Rasterized[ entity.type ] ) {
@@ -38,9 +41,14 @@ export class Entity {
     }
     
     ctx.translate( -0.5, -0.5 );
-    ctx.scale( 1/48/devicePixelRatio, 1/48/devicePixelRatio );
+    ctx.scale( 1 / ( 48 * devicePixelRatio ), 1 / ( 48 * devicePixelRatio ) );
     ctx.drawImage( Rasterized[ entity.type ], 0, 0 );
 
-    ctx.restore();
+    ctx.scale( 48 * devicePixelRatio, 48 * devicePixelRatio );
+    ctx.translate( 0.5, 0.5 );
+    ctx.rotate( -rotate );
+    ctx.translate( -entity.x, -entity.y );
+
+    // ctx.restore();
   }
 }
