@@ -4,6 +4,9 @@
 <label for="count">Count:</label>
 <input type="range" id="count" name="count" min="1" max="1000" value="200"/>
 <span id="count_text"></span>
+<label for="styles">Styles:</label>
+<input type="range" id="styles" name="styles" min="1" max="1000" value="1"/>
+<span id="styles_text"></span>
 <label for="combine">Combine:</label>
 <input type="checkbox" id="combine" name="combine" />
 
@@ -11,6 +14,7 @@
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
   
   const entities = [];
+  const styles = [];
 
   function setCount( count ) {
     entities.splice( count );
@@ -29,6 +33,16 @@
     countText.innerHTML = count;
   }
 
+  function setStyleCount( count ) {
+    styles.splice( count );
+
+    for ( let i = styles.length; i < count; i ++ ) {
+      styles.push( `hsl( ${ Math.random() * 360 }deg, ${ Math.random() * 100 }%, ${ Math.random() * 100 }% )` );
+    }
+
+    stylesText.innerHTML = count;
+  }
+
   let combine = false;
 
   const combineUI = document.getElementById( 'combine' );
@@ -37,8 +51,13 @@
 
   const countUI = document.getElementById( 'count' );
   const countText = document.getElementById( 'count_text' );
-  countUI.addEventListener( 'input', _ => setCount( countUI.valueAsNumber ) );  
+  countUI.addEventListener( 'input', _ => setCount( countUI.valueAsNumber ) );
   countUI.dispatchEvent( new Event( 'input' ) );
+
+  const stylesUI = document.getElementById( 'styles' );
+  const stylesText = document.getElementById( 'styles_text' );
+  stylesUI.addEventListener( 'input', _ => setStyleCount( stylesUI.valueAsNumber ) );
+  stylesUI.dispatchEvent( new Event( 'input' ) );
 
   const canvas = new AnimatedCanvas();
 
@@ -58,7 +77,9 @@
       ctx.beginPath();
     }
 
-    entities.forEach( e => {
+    const numPerStyle = entities.length / styles.length;
+
+    entities.forEach( ( e, index ) => {
       ctx.save(); {
 
         ctx.translate( e.x, e.y );
@@ -71,6 +92,7 @@
         else {
           ctx.beginPath();
           ctx.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
+          ctx.fillStyle = styles[ Math.floor( index / numPerStyle ) ];
           ctx.fill();
         }
       }
@@ -78,6 +100,7 @@
     } );
 
     if ( combine ) {
+      ctx.fillStyle = 'black';
       ctx.fill();
     }
 
