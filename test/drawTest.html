@@ -1,5 +1,5 @@
 <title>Path drawing tests</title>
-<link rel="stylesheet" href="../ui.css">
+<link rel="stylesheet" href="../grid.css">
 
 <label for="count">Count:</label>
 <input type="range" id="count" name="count" min="1" max="1000" value="200"/>
@@ -7,6 +7,8 @@
 <label for="styles">Styles:</label>
 <input type="range" id="styles" name="styles" min="1" max="1000" value="1"/>
 <span id="styles_text"></span>
+<label for="stroke">Stroke:</label>
+<input type="checkbox" id="stroke" name="stroke" />
 <label for="combine">Combine:</label>
 <input type="checkbox" id="combine" name="combine" />
 
@@ -15,6 +17,16 @@
   
   const entities = [];
   const styles = [];
+
+  const countUI = document.getElementById( 'count' );
+  const countText = document.getElementById( 'count_text' );
+  countUI.addEventListener( 'input', _ => setCount( countUI.valueAsNumber ) );
+  countUI.dispatchEvent( new Event( 'input' ) );
+
+  const stylesUI = document.getElementById( 'styles' );
+  const stylesText = document.getElementById( 'styles_text' );
+  stylesUI.addEventListener( 'input', _ => setStyleCount( stylesUI.valueAsNumber ) );
+  stylesUI.dispatchEvent( new Event( 'input' ) );
 
   function setCount( count ) {
     entities.splice( count );
@@ -43,22 +55,18 @@
     stylesText.innerHTML = count;
   }
 
+  let stroke = false;
   let combine = false;
 
   const combineUI = document.getElementById( 'combine' );
   combineUI.addEventListener( 'change', _ => combine = combineUI.checked );
   combineUI.dispatchEvent( new Event( 'change' ) );
 
-  const countUI = document.getElementById( 'count' );
-  const countText = document.getElementById( 'count_text' );
-  countUI.addEventListener( 'input', _ => setCount( countUI.valueAsNumber ) );
-  countUI.dispatchEvent( new Event( 'input' ) );
+  const strokeUI = document.getElementById( 'stroke' );
+  strokeUI.addEventListener( 'change', _ => stroke = strokeUI.checked );
+  strokeUI.dispatchEvent( new Event( 'change' ) );
 
-  const stylesUI = document.getElementById( 'styles' );
-  const stylesText = document.getElementById( 'styles_text' );
-  stylesUI.addEventListener( 'input', _ => setStyleCount( stylesUI.valueAsNumber ) );
-  stylesUI.dispatchEvent( new Event( 'input' ) );
-
+  
   const canvas = new AnimatedCanvas();
 
   canvas.update = ( dt ) => {
@@ -77,6 +85,11 @@
       ctx.beginPath();
     }
 
+    if ( stroke ) {
+      ctx.lineWidth = 0.2;
+      ctx.strokeStyle = 'black';
+    }
+
     const numPerStyle = entities.length / styles.length;
 
     entities.forEach( ( e, index ) => {
@@ -86,7 +99,7 @@
         ctx.rotate( e.angle );
 
         if ( combine ) {
-          ctx.moveTo( 0, 0 );
+          ctx.moveTo( 2, 0 );
           ctx.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
         }
         else {
@@ -94,14 +107,21 @@
           ctx.ellipse( 0, 0, 2, 1, 0, 0, Math.PI * 2 );
           ctx.fillStyle = styles[ Math.floor( index / numPerStyle ) ];
           ctx.fill();
+
+          if ( stroke ) {
+            ctx.stroke();
+          }
         }
       }
       ctx.restore();
     } );
 
     if ( combine ) {
-      ctx.fillStyle = 'black';
+      ctx.fillStyle = 'white';
       ctx.fill();
+      if ( stroke ) {
+        ctx.stroke();
+      }
     }
 
     ctx.restore();
