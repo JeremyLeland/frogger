@@ -15,40 +15,48 @@ export const Dir = [
 
 export const Rasterized = {};
 
-export class Entity {
-  static draw( entity, ctx, { dir, action, time } = {} ) {
-    // ctx.save();
+export function draw( entity, ctx, { dir, action, time } = {} ) {
+  let rasterized = Rasterized[ entity.type ];
 
-    const rotate = Dir[ ( dir > 0 ? dir : null ) ?? entity.dir ]?.angle ?? 0;
-    
-    ctx.translate( entity.x, entity.y );
-    ctx.rotate( rotate );
-    // ctx.scale( entity.size, entity.size );   // nothing changes size for now
-  
-    if ( !Rasterized[ entity.type ] ) {
-      const offscreen = new OffscreenCanvas( 48 * devicePixelRatio, 48 * devicePixelRatio );
-      const offscreenCtx = offscreen.getContext( '2d' );
+  if ( !rasterized ) {
+    const image = new OffscreenCanvas( 48 * devicePixelRatio, 48 * devicePixelRatio );
+    const offscreenCtx = image.getContext( '2d' );
 
-      offscreenCtx.scale( 48 * devicePixelRatio, 48 * devicePixelRatio );
-      offscreenCtx.translate( 0.5, 0.5 );
+    offscreenCtx.scale( image.width, image.height );
+    offscreenCtx.translate( 0.5, 0.5 );
 
-      offscreenCtx.strokeStyle = 'black';
-      offscreenCtx.lineWidth = 0.02;
+    offscreenCtx.strokeStyle = 'black';
+    offscreenCtx.lineWidth = 0.02;
 
-      Entities[ entity.type ].draw( offscreenCtx, action ?? entity.animationAction, time ?? entity.animationTime ?? 0 );
-
-      Rasterized[ entity.type ] = offscreen;
+    rasterized = Rasterized[ entity.type ] = {
+      image: image,
+      ctx: offscreenCtx,
+      needsRedraw: true,
     }
-    
-    ctx.translate( -0.5, -0.5 );
-    ctx.scale( 1 / ( 48 * devicePixelRatio ), 1 / ( 48 * devicePixelRatio ) );
-    ctx.drawImage( Rasterized[ entity.type ], 0, 0 );
-
-    ctx.scale( 48 * devicePixelRatio, 48 * devicePixelRatio );
-    ctx.translate( 0.5, 0.5 );
-    ctx.rotate( -rotate );
-    ctx.translate( -entity.x, -entity.y );
-
-    // ctx.restore();
   }
+
+  if ( rasterized.needsRedraw ) {
+    rasterized.ctx.clearRect( -0.5, -0.5, 1, 1 );
+
+    Entities[ entity.type ].draw( rasterized.ctx, action ?? entity.animationAction, time ?? entity.animationTime ?? 0 );
+
+    rasterized.needsRedraw = false;
+  }
+
+  // ctx.save();
+
+  const rotate = Dir[ ( dir > 0 ? dir : null ) ?? entity.dir ]?.angle ?? 0;
+  
+  ctx.translate( entity.x, entity.y );
+  ctx.rotate( rotate );
+  ctx.translate( -0.5, -0.5 );
+  ctx.scale( 1 / rasterized.image.width, 1 / rasterized.image.height ); {
+    ctx.drawImage( Rasterized[ entity.type ].image, 0, 0 );
+  }
+  ctx.scale( rasterized.image.width, rasterized.image.height );
+  ctx.translate( 0.5, 0.5 );
+  ctx.rotate( -rotate );
+  ctx.translate( -entity.x, -entity.y );
+
+  // ctx.restore();
 }

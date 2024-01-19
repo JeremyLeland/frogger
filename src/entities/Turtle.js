@@ -47,45 +47,46 @@ export class Turtle {
       bodyGrad.addColorStop( 1, 'black' );
     }
 
-    ctx.translate( -0.05, 0 );
+    ctx.translate( -0.05, 0 ); {
+      ctx.fillStyle = bodyGrad;
+      
+      const legAngleOffset = 0.3 * Math.sin( 0.005 * animationTime );
 
-    ctx.fillStyle = bodyGrad;
-    
-    const legAngleOffset = 0.3 * Math.sin( 0.005 * animationTime );
+      ctx.beginPath();
 
-    ctx.beginPath();
-
-    [ -1, 1 ].forEach( side => {
-      [ 0.4, 0.75 ].forEach( angle => {
-        ctx.save();
-        ctx.rotate( side * ( Math.PI * angle + legAngleOffset ) );    
-
-        ctx.moveTo( 0, 0 );
-        ctx.lineTo( LEG_L, -LEG_W );
-        ctx.lineTo( LEG_L,  LEG_W );
-
-        ctx.restore();
+      [ -1, 1 ].forEach( side => {
+        [ 0.4, 0.75 ].forEach( angle => {
+          const rotate = side * ( Math.PI * angle + legAngleOffset );
+          ctx.rotate( rotate ); {
+            ctx.moveTo( 0, 0 );
+            ctx.lineTo( LEG_L, -LEG_W );
+            ctx.lineTo( LEG_L,  LEG_W );
+          }
+          ctx.rotate( -rotate );
+        } );
       } );
-    } );
 
-    ctx.moveTo( SHELL_SIZE + HEAD_SIZE * 1.5, 0 );
-    ctx.arc( SHELL_SIZE + HEAD_SIZE / 2, 0, HEAD_SIZE, 0, Math.PI * 2 );
+      ctx.moveTo( SHELL_SIZE + HEAD_SIZE * 1.5, 0 );
+      ctx.arc( SHELL_SIZE + HEAD_SIZE / 2, 0, HEAD_SIZE, 0, Math.PI * 2 );
 
-    ctx.fill();
-    ctx.stroke();
+      ctx.fill();
+      ctx.stroke();
 
-    if ( !shellGrad ) {
-      shellGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
-      shellGrad.addColorStop( 0, 'darkolivegreen' );
-      shellGrad.addColorStop( 0.5, 'black' );
+      if ( !shellGrad ) {
+        shellGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
+        shellGrad.addColorStop( 0, 'darkolivegreen' );
+        shellGrad.addColorStop( 0.5, 'black' );
+      }
+
+      ctx.fillStyle = shellGrad;
+
+      ctx.fill( shell );
+      ctx.stroke( shell );
+
+      ctx.strokeStyle = '#000a';
+      ctx.stroke( detail );
+
     }
-
-    ctx.fillStyle = shellGrad;
-
-    ctx.fill( shell );
-    ctx.stroke( shell );
-
-    ctx.strokeStyle = '#000a';
-    ctx.stroke( detail );
+    ctx.translate( 0.05, 0 );
   }
 }

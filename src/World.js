@@ -1,6 +1,6 @@
 import { Dir } from './Entity.js';
 import { Entities } from './Entities.js';
-import { Entity } from './Entity.js';
+import * as Entity from './Entity.js';
 import { Frog } from './Frog.js';
 import { Froggy } from './Froggy.js';
 import { Player } from './Player.js';
@@ -307,7 +307,9 @@ export class World
         Entity.draw( this.player, ctx );
       }
 
-      this.entities.forEach( entity => Entity.draw( entity, ctx /*, { time: animationTime } */ ) );
+      this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
+
+      Entity.Rasterized[ 'Turtle' ].needsRedraw = true;
 
       if ( this.player?.status == Frog.Status.Alive ) {
         Entity.draw( this.player, ctx );
