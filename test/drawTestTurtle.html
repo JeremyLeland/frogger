@@ -1,0 +1,81 @@
+<title>Path drawing tests</title>
+<link rel="stylesheet" href="../grid.css">
+
+<label for="count">Count:</label>
+<input type="range" id="count" name="count" min="1" max="2000" value="200"/>
+<span id="count_text"></span>
+<label for="stroke">Stroke:</label>
+<input type="checkbox" id="stroke" name="stroke" />
+
+<script type="module">
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+  import { Turtle } from '../src/entities/Turtle.js';
+  
+  const entities = [];
+  const styles = [];
+
+  const countUI = document.getElementById( 'count' );
+  const countText = document.getElementById( 'count_text' );
+  countUI.addEventListener( 'input', _ => setCount( countUI.valueAsNumber ) );
+  countUI.dispatchEvent( new Event( 'input' ) );
+
+  function setCount( count ) {
+    entities.splice( count );
+
+    for ( let i = entities.length; i < count; i ++ ) {
+      entities.push(
+        {
+          x: Math.random() * 15,
+          y: Math.random() * 15, 
+          angle: Math.random() * 360
+          // angle: Math.random() * 6
+        }
+      );
+    }
+
+    countText.innerHTML = count;
+  }
+
+  let stroke = false;
+
+  const strokeUI = document.getElementById( 'stroke' );
+  strokeUI.addEventListener( 'change', _ => stroke = strokeUI.checked );
+  strokeUI.dispatchEvent( new Event( 'change' ) );
+  
+  const canvas = new AnimatedCanvas();
+
+  let animationTime = 0;
+
+  canvas.update = ( dt ) => {
+    entities.forEach( e => {
+      // e.angle += dt / 1000;
+    } );
+
+    animationTime += dt;
+  }
+
+  canvas.draw = ( ctx ) => {
+    ctx.clearRect( 0, 0, ctx.canvas.width, ctx.canvas.height );
+
+    ctx.save();
+    ctx.scale( 48, 48 );
+
+    ctx.lineWidth = 0.02;
+    ctx.strokeStyle = 'black';
+
+    entities.forEach( ( e, index ) => {
+      ctx.save(); {
+        ctx.translate( e.x, e.y );
+        ctx.rotate( e.angle );
+
+        Turtle.drawTurtle( ctx, null, animationTime, stroke );
+      }
+      ctx.restore();
+    } );
+
+    ctx.restore();
+  };
+
+  canvas.start();
+
+</script>

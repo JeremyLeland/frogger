@@ -40,7 +40,7 @@ detail.lineTo( DETAIL_W_1, 0 );
 let bodyGrad, shellGrad;
 
 export class Turtle {
-  static drawTurtle( ctx, animationAction, animationTime = 0 ) {
+  static drawTurtle( ctx, animationAction, animationTime = 0, stroke = true ) {
     
     if ( !bodyGrad ) {
       bodyGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
@@ -65,6 +65,7 @@ export class Turtle {
         ctx.moveTo( 0, 0 );
         ctx.lineTo( LEG_L, -LEG_W );
         ctx.lineTo( LEG_L,  LEG_W );
+        ctx.closePath();
 
         ctx.restore();
       } );
@@ -74,7 +75,10 @@ export class Turtle {
     ctx.arc( SHELL_SIZE + HEAD_SIZE / 2, 0, HEAD_SIZE, 0, Math.PI * 2 );
 
     ctx.fill();
-    ctx.stroke();
+
+    if ( stroke ) {
+      ctx.stroke();
+    }
 
     if ( !shellGrad ) {
       shellGrad = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1.5 );
@@ -86,7 +90,10 @@ export class Turtle {
     ctx.fillStyle = 'darkolivegreen';
 
     ctx.fill( shell );
-    ctx.stroke( shell );
+
+    if ( stroke ) {
+      ctx.stroke( shell );
+    }
 
     ctx.strokeStyle = '#000a';
     ctx.stroke( detail );
