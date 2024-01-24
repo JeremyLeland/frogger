@@ -100,6 +100,7 @@
   import { Direction } from './src/Entity.js';
   import { Level } from './src/Level.js';
   import { World } from './src/World.js';
+  import * as TileMap from './src/TileMap.js';
   import * as Entity from './src/Entity.js';
   import * as Utility from './src/common/Utility.js';
   
@@ -286,7 +287,7 @@
     canvas.ctx.scaleVal = height / 16;   // TODO: Account for width < height?
     canvas.setSize( width, height );
 
-    // TODO: Reset level rasterized
+    TileMap.Rasterized.image = null;
 
     for ( const type in Entity.Rasterized ) {
       Entity.Rasterized[ type ] = null;
