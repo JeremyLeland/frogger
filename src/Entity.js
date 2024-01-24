@@ -15,11 +15,15 @@ export const Dir = [
 
 export const Rasterized = {};
 
+// TODO: Tack scale onto context (so we can look it up there)
+//        - Actually, can we use the scale/rotation from existing transform matrix? (just ignore translate)
+// TODO: Don't use {} for parameter here (save heap?)
+
 export function draw( entity, ctx, { dir, action, time } = {} ) {
   let rasterized = Rasterized[ entity.type ];
 
   if ( !rasterized ) {
-    const image = new OffscreenCanvas( 48 * devicePixelRatio, 48 * devicePixelRatio );
+    const image = new OffscreenCanvas( ctx.scaleVal * devicePixelRatio, ctx.scaleVal * devicePixelRatio );
     const offscreenCtx = image.getContext( '2d' );
 
     offscreenCtx.scale( image.width, image.height );

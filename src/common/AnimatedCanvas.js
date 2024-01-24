@@ -1,8 +1,6 @@
 export class AnimatedCanvas {
   ShowFPS = true;
 
-  scale = 1;
-
   #reqId;
 
   #frameRates = [];
@@ -16,6 +14,7 @@ export class AnimatedCanvas {
     }
     
     this.ctx = this.canvas.getContext( '2d' /*, { alpha: false }*/ );
+    this.ctx.scaleVal = 1;
 
     if ( width && height ) {
       this.setSize( width, height );
@@ -38,7 +37,7 @@ export class AnimatedCanvas {
     this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
 
     // this.ctx.save();
-    this.ctx.setTransform( this.scale * devicePixelRatio, 0, 0, this.scale * devicePixelRatio, 0, 0 );
+    this.ctx.setTransform( this.ctx.scaleVal * devicePixelRatio, 0, 0, this.ctx.scaleVal * devicePixelRatio, 0, 0 );
     this.draw( this.ctx );
     // this.ctx.restore();
   }

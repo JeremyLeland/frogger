@@ -22,8 +22,6 @@ const COLORS = [
   'green',
 ];
 
-export let offscreen;
-
 export class TileMap {
   #layerPaths;
   #layerEdges = [];
@@ -31,7 +29,7 @@ export class TileMap {
   #sidewalkSquares = new Path2D();
   #lanesPath = new Path2D();
 
-  #offscreen;
+  #rasterized;
 
   constructor( level ) {
     this.level = level;
@@ -188,11 +186,11 @@ export class TileMap {
   }
 
   draw( ctx ) {
-    if ( !offscreen ) {
-      offscreen = new OffscreenCanvas( this.level.cols * 48 * devicePixelRatio, this.level.rows * 48 * devicePixelRatio );
-      const offscreenCtx = offscreen.getContext( '2d' );
+    if ( !this.#rasterized ) {
+      this.#rasterized = new OffscreenCanvas( this.level.cols * ctx.scaleVal * devicePixelRatio, this.level.rows * ctx.scaleVal * devicePixelRatio );
+      const offscreenCtx = this.#rasterized.getContext( '2d' );
 
-      offscreenCtx.scale( 48 * devicePixelRatio, 48 * devicePixelRatio );
+      offscreenCtx.scale( ctx.scaleVal * devicePixelRatio, ctx.scaleVal * devicePixelRatio );
       offscreenCtx.translate( 0.5, 0.5 );
 
       LAYERS.forEach( ( _, index ) => {
@@ -227,10 +225,11 @@ export class TileMap {
       offscreenCtx.restore();
     }
 
-    ctx.save();
     ctx.translate( -0.5, -0.5 );
-    ctx.scale( 1/48/devicePixelRatio, 1/48/devicePixelRatio );
-    ctx.drawImage( offscreen, 0, 0 );
-    ctx.restore();
+    ctx.scale( 1 / ( ctx.scaleVal * devicePixelRatio ), 1 / ( ctx.scaleVal * devicePixelRatio ) ); {
+      ctx.drawImage( this.#rasterized, 0, 0 );
+    }
+    ctx.scale( ctx.scaleVal * devicePixelRatio, ctx.scaleVal * devicePixelRatio );
+    ctx.translate( 0.5, 0.5 );
   }
 }

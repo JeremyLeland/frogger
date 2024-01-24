@@ -14,7 +14,7 @@
   const world = new World( level );
 
   const canvas = new AnimatedCanvas();
-  canvas.scale = 48;
+  canvas.ctx.scaleVal = 48;
 
   canvas.update = ( dt ) => {
     world.update( dt );

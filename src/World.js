@@ -309,7 +309,9 @@ export class World
 
       this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
 
-      Entity.Rasterized[ 'Turtle' ].needsRedraw = true;
+      if ( Entity.Rasterized.Turtle ) {
+        Entity.Rasterized.Turtle.needsRedraw = true;
+      }
 
       if ( this.player?.status == Frog.Status.Alive ) {
         Entity.draw( this.player, ctx );
@@ -371,6 +373,8 @@ export class World
         }
       // }
       // ctx.restore();
+
+      ctx.translate( -15.5, -15.5 );
     }
 
     if ( this.paused ) {
