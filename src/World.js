@@ -309,13 +309,17 @@ export class World
 
       this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
 
+      if ( this.player?.status == Frog.Status.Alive ) {
+        Entity.draw( this.player, ctx );
+      }
+
+      if ( Entity.Rasterized.Player ) {
+        Entity.Rasterized.Player.needsRedraw = true;
+      }
       if ( Entity.Rasterized.Turtle ) {
         Entity.Rasterized.Turtle.needsRedraw = true;
       }
 
-      if ( this.player?.status == Frog.Status.Alive ) {
-        Entity.draw( this.player, ctx );
-      }
     // }
     // ctx.restore();
 
