@@ -1,0 +1,43 @@
+<title>Turtle tests (ThreeJS)</title>
+<link rel="stylesheet" href="../grid.css">
+
+<label for="count">Count:</label>
+<input type="range" id="count" name="count" min="1" max="2000" value="100"/>
+<span id="count_text"></span>
+
+<script type="module">
+  import * as THREE from '../lib/three.module.js';
+  import { ThreeGame } from '../src/common/ThreeGame.js';
+  import * as Turtle from './Turtle.js';
+  
+  const game = new ThreeGame();
+  game.scene.background = new THREE.Color( 0x000088 );
+  game.camera.position.set( 0, 0, 5 );
+
+  const entities = [];
+  
+  const countUI = document.getElementById( 'count' );
+  const countText = document.getElementById( 'count_text' );
+  countUI.addEventListener( 'input', _ => setCount( countUI.valueAsNumber ) );
+  countUI.dispatchEvent( new Event( 'input' ) );
+
+  function setCount( count ) {
+    entities.splice( count ).forEach( removed => game.scene.remove( removed ) );
+
+    for ( let i = entities.length; i < count; i ++ ) {
+      const turtle = Turtle.TurtleGroup.clone();
+      turtle.position.set( 6 * ( Math.random() - 0.5 ), 6 * ( Math.random() - 0.5 ), 0 );
+      turtle.rotation.z = Math.random() * 6;
+
+      entities.push( turtle );
+      game.scene.add( turtle );
+    }
+
+    countText.innerHTML = count;
+  }
+
+  game.start( ( dt ) => {
+    entities.forEach( e => e.rotation.z += dt / 1000 );
+  } );
+
+</script>

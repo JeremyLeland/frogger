@@ -1,6 +1,6 @@
 import * as THREE from '../lib/three.module.js';
 
-export function meshDemo( meshes ) {
+export function meshDemo( mesh ) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color( 0x000088 );
 
@@ -10,7 +10,7 @@ export function meshDemo( meshes ) {
   const uniforms = {
   };
 
-  scene.add( ...meshes );
+  scene.add( mesh );
 
   const renderer = new THREE.WebGLRenderer();
   renderer.setPixelRatio( window.devicePixelRatio );
