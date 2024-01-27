@@ -323,10 +323,6 @@ export class World
     // }
     // ctx.restore();
 
-    // Victory/defeat banner
-    if ( this.defeat )    drawBanner( ctx, 'Defeat!' );
-    if ( this.victory )   drawBanner( ctx, 'Victory!' );
-
     // UI
     if ( showUI ) {
       // ctx.save(); {
@@ -379,6 +375,10 @@ export class World
       // ctx.restore();
 
       ctx.translate( -15.5, -15.5 );
+
+      // Victory/defeat banner
+      if ( this.defeat )    drawBanner( ctx, 'Defeat!' );
+      if ( this.victory )   drawBanner( ctx, 'Victory!' );
     }
 
     if ( this.paused ) {
