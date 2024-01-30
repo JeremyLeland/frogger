@@ -15,19 +15,19 @@ export const Dir = [
 
 export const Rasterized = {};
 
-// TODO: Tack scale onto context (so we can look it up there)
-//        - Actually, can we use the scale/rotation from existing transform matrix? (just ignore translate)
 // TODO: Don't use {} for parameter here (save heap?)
+
+// NOTE: Using 1.5 to give extra space for log center, animated frog legs, etc
 
 export function draw( entity, ctx, { dir, action, time } = {} ) {
   let rasterized = Rasterized[ entity.type ];
 
   if ( !rasterized ) {
-    const image = new OffscreenCanvas( ctx.scaleVal * devicePixelRatio, ctx.scaleVal * devicePixelRatio );
+    const image = new OffscreenCanvas( 1.5 * ctx.scaleVal * devicePixelRatio, 1.5 * ctx.scaleVal * devicePixelRatio );
     const offscreenCtx = image.getContext( '2d' );
 
-    offscreenCtx.scale( image.width, image.height );
-    offscreenCtx.translate( 0.5, 0.5 );
+    offscreenCtx.scale( image.width / 1.5, image.height / 1.5 );
+    offscreenCtx.translate( 0.75, 0.75 );
 
     offscreenCtx.strokeStyle = 'black';
     offscreenCtx.lineWidth = 0.02;
@@ -40,7 +40,7 @@ export function draw( entity, ctx, { dir, action, time } = {} ) {
   }
 
   if ( rasterized.needsRedraw ) {
-    rasterized.ctx.clearRect( -0.5, -0.5, 1, 1 );
+    rasterized.ctx.clearRect( -0.75, -0.75, 1.5, 1.5 );
 
     Entities[ entity.type ].draw( rasterized.ctx, action ?? entity.animationAction, time ?? entity.animationTime ?? 0 );
 
@@ -53,12 +53,13 @@ export function draw( entity, ctx, { dir, action, time } = {} ) {
   
   ctx.translate( entity.x, entity.y );
   ctx.rotate( rotate );
-  ctx.translate( -0.5, -0.5 );
-  ctx.scale( 1 / rasterized.image.width, 1 / rasterized.image.height ); {
+  ctx.translate( -0.75, -0.75 );
+  ctx.scale( 1.5 / rasterized.image.width, 1.5 / rasterized.image.height ); 
+  {
     ctx.drawImage( Rasterized[ entity.type ].image, 0, 0 );
   }
-  ctx.scale( rasterized.image.width, rasterized.image.height );
-  ctx.translate( 0.5, 0.5 );
+  ctx.scale( rasterized.image.width / 1.5, rasterized.image.height / 1.5 );
+  ctx.translate( 0.75, 0.75 );
   ctx.rotate( -rotate );
   ctx.translate( -entity.x, -entity.y );
 
