@@ -6,16 +6,22 @@
   </head>
 
   <body>
-    <canvas id="glcanvas" width="640" height="480"></canvas>
+    <canvas id="glcanvas"></canvas>
   </body>
 </html>
 
 <script type="module">
   import { mat4 } from '../lib/gl-matrix.js';
 
+  const width = 800, height = 600;
   const canvas = document.querySelector("#glcanvas");
+  canvas.width = width * devicePixelRatio;
+  canvas.height = height * devicePixelRatio;
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+
   // Initialize the GL context
-  const gl = canvas.getContext("webgl");
+  const gl = canvas.getContext("webgl2");
 
   // Only continue if WebGL is available and working
   if (gl === null) {
@@ -30,18 +36,28 @@
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   // Vertex shader program
-  const vsSource = `
-    attribute vec4 aVertexPosition;
+  const vsSource = /*glsl*/`# version 300 es
+
+    in vec4 aVertexPosition;
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
+
+    out vec4 vPos;
+
     void main() {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+      vPos = aVertexPosition;
     }
   `;
 
-  const fsSource = `
+  const fsSource = /*glsl*/`# version 300 es
+    precision mediump float;
+
+    in vec4 vPos;
+    out vec4 fragColor;
+
     void main() {
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      fragColor = vPos;
     }
   `;
 
