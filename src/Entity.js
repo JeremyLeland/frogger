@@ -19,15 +19,17 @@ export const Rasterized = {};
 
 // NOTE: Using 1.5 to give extra space for log center, animated frog legs, etc
 
+const SIZE = 1.5;
+
 export function draw( entity, ctx, { dir, action, time } = {} ) {
   let rasterized = Rasterized[ entity.type ];
 
   if ( !rasterized ) {
-    const image = new OffscreenCanvas( 1.5 * ctx.scaleVal * devicePixelRatio, 1.5 * ctx.scaleVal * devicePixelRatio );
+    const image = new OffscreenCanvas( SIZE * ctx.scaleVal * devicePixelRatio, SIZE * ctx.scaleVal * devicePixelRatio );
     const offscreenCtx = image.getContext( '2d' );
 
-    offscreenCtx.scale( image.width / 1.5, image.height / 1.5 );
-    offscreenCtx.translate( 0.75, 0.75 );
+    offscreenCtx.scale( image.width / SIZE, image.height / SIZE );
+    offscreenCtx.translate( SIZE / 2, SIZE / 2 );
 
     offscreenCtx.strokeStyle = 'black';
     offscreenCtx.lineWidth = 0.02;
@@ -40,7 +42,7 @@ export function draw( entity, ctx, { dir, action, time } = {} ) {
   }
 
   if ( rasterized.needsRedraw ) {
-    rasterized.ctx.clearRect( -0.75, -0.75, 1.5, 1.5 );
+    rasterized.ctx.clearRect( -SIZE / 2, -SIZE / 2, SIZE, SIZE );
 
     Entities[ entity.type ].draw( rasterized.ctx, action ?? entity.animationAction, time ?? entity.animationTime ?? 0 );
 
@@ -53,13 +55,13 @@ export function draw( entity, ctx, { dir, action, time } = {} ) {
   
   ctx.translate( entity.x, entity.y );
   ctx.rotate( rotate );
-  ctx.translate( -0.75, -0.75 );
-  ctx.scale( 1.5 / rasterized.image.width, 1.5 / rasterized.image.height ); 
+  ctx.translate( -SIZE / 2, -SIZE / 2 );
+  ctx.scale( SIZE / rasterized.image.width, SIZE / rasterized.image.height ); 
   {
     ctx.drawImage( Rasterized[ entity.type ].image, 0, 0 );
   }
-  ctx.scale( rasterized.image.width / 1.5, rasterized.image.height / 1.5 );
-  ctx.translate( 0.75, 0.75 );
+  ctx.scale( rasterized.image.width / SIZE, rasterized.image.height / SIZE );
+  ctx.translate( SIZE / 2, SIZE / 2 );
   ctx.rotate( -rotate );
   ctx.translate( -entity.x, -entity.y );
 
