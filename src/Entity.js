@@ -13,18 +13,53 @@ export const Dir = [
   /*Right:*/  { x:  1, y:  0, angle:  0          , dist: ( x, y ) => Math.floor( x + 1 ) - x },
 ];
 
-export class Entity {
-  static draw( entity, ctx, { dir, action, time } = {} ) {
-    ctx.save();
-    ctx.translate( entity.x, entity.y );
-    ctx.rotate( Dir[ ( dir > 0 ? dir : null ) ?? entity.dir ]?.angle ?? 0 );
-    // ctx.scale( entity.size, entity.size );   // nothing changes size for now
-  
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 0.02;
-  
-    Entities[ entity.type ].draw( ctx, action ?? entity.animationAction, time ?? entity.animationTime ?? 0 );
-  
-    ctx.restore();
+export const Rasterized = {};
+
+// TODO: Don't use {} for parameter here (save heap?)
+
+// NOTE: Using 1.5 to give extra space for log center, animated frog legs, etc
+const SIZE = 1.5;
+
+export function draw( entity, ctx, { dir, action, time } = {} ) {
+  let rasterized = Rasterized[ entity.type ];
+
+  if ( !rasterized ) {
+    const image = new OffscreenCanvas( SIZE * ctx.scaleVal * devicePixelRatio, SIZE * ctx.scaleVal * devicePixelRatio );
+    const offscreenCtx = image.getContext( '2d' );
+
+    offscreenCtx.scale( image.width / SIZE, image.height / SIZE );
+    offscreenCtx.translate( SIZE / 2, SIZE / 2 );
+
+    offscreenCtx.strokeStyle = 'black';
+    offscreenCtx.lineWidth = 0.02;
+
+    rasterized = Rasterized[ entity.type ] = {
+      image: image,
+      ctx: offscreenCtx,
+      needsRedraw: true,
+    }
   }
+
+  if ( rasterized.needsRedraw ) {
+    rasterized.ctx.clearRect( -SIZE / 2, -SIZE / 2, SIZE, SIZE );
+
+    Entities[ entity.type ].draw( rasterized.ctx, action ?? entity.animationAction, time ?? entity.animationTime ?? 0 );
+
+    rasterized.needsRedraw = false;
+  }
+
+  const rotate = Dir[ ( dir > 0 ? dir : null ) ?? entity.dir ]?.angle ?? 0;
+  
+  ctx.translate( entity.x, entity.y );
+  ctx.rotate( rotate );
+  ctx.translate( -SIZE / 2, -SIZE / 2 );
+  ctx.scale( SIZE / rasterized.image.width, SIZE / rasterized.image.height ); 
+  {
+    ctx.drawImage( Rasterized[ entity.type ].image, 0, 0 );
+  }
+  ctx.scale( rasterized.image.width / SIZE, rasterized.image.height / SIZE );
+  ctx.translate( SIZE / 2, SIZE / 2 );
+  ctx.rotate( -rotate );
+  ctx.translate( -entity.x, -entity.y );
+
 }

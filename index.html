@@ -100,6 +100,8 @@
   import { Direction } from './src/Entity.js';
   import { Level } from './src/Level.js';
   import { World } from './src/World.js';
+  import * as TileMap from './src/TileMap.js';
+  import * as Entity from './src/Entity.js';
   import * as Utility from './src/common/Utility.js';
   
   import { FroggerCanvas } from './src/FroggerCanvas.js';
@@ -277,12 +279,28 @@
     }
   } );
 
+  // TODO: Remind me why AnimatedCanvas couldn't handle this directly?
   const wrapper = document.getElementById( 'wrapper' );
   window.onresize = ( e ) => {
     const width = Math.floor( wrapper.clientWidth );
     const height = Math.floor( wrapper.clientHeight );
+    canvas.ctx.scaleVal = height / 16;   // TODO: Account for width < height?
     canvas.setSize( width, height );
-    canvas.scale = height / 16;
+
+    TileMap.Rasterized.image = null;
+
+    for ( const type in Entity.Rasterized ) {
+      Entity.Rasterized[ type ] = null;
+      // const imgWidth = canvas.ctx.scaleVal * devicePixelRatio;
+      // const imgHeight = canvas.ctx.scaleVal * devicePixelRatio;
+
+      // Entity.Rasterized[ type ].image.width = imgWidth;
+      // Entity.Rasterized[ type ].image.height = imgHeight;
+      // Entity.Rasterized[ type ].needsRedraw = true;
+
+      // Entity.Rasterized[ type ].ctx.scale( imgWidth, imgHeight );
+      // Entity.Rasterized[ type ].ctx.translate( 0.5, 0.5 );
+    }
   };
   window.onresize();
 

@@ -1,5 +1,4 @@
 import { Tiles } from './Tiles.js';
-import { Props } from './Props.js';
 import { TileMap } from './TileMap.js';
 
 export class Level
@@ -118,28 +117,5 @@ export class Level
     }
 
     this.#tileMap.draw( ctx );
-
-    ctx.save();
-
-    for ( let row = 0; row < this.rows; row ++ ) {
-      ctx.save();
-      
-      for ( let col = 0; col < this.cols; col ++ ) {
-    
-        const prop = Props[ this.tileInfoKeys[ this.tiles[ col + row * this.cols ] ] ];
-        prop?.draw( ctx );
-
-        if ( this.spawn.x == col && this.spawn.y == row ) {
-          Props[ 'Bullseye' ].draw( ctx );
-        }
-
-        ctx.translate( 1, 0 );
-      }
-
-      ctx.restore();
-      ctx.translate( 0, 1 );
-    }
-
-    ctx.restore();
   }
 }

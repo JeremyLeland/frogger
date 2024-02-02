@@ -1,4 +1,5 @@
 import { Direction } from '../src/Entity.js';
+import { Props } from './Props.js';
 import * as Utility from '../src/common/Utility.js';
 
 const DirIndex = {
@@ -21,6 +22,10 @@ const COLORS = [
   'green',
 ];
 
+export const Rasterized = {
+  image: null,
+}
+
 export class TileMap {
   #layerPaths;
   #layerEdges = [];
@@ -29,6 +34,10 @@ export class TileMap {
   #lanesPath = new Path2D();
 
   constructor( level ) {
+    this.level = level;
+
+    Rasterized.image = null;
+
     this.#layerPaths = LAYERS.map( layerName => {
       // Store the edges coming from each corner, indexed by direction
       const edges = Array.from( 
@@ -181,15 +190,50 @@ export class TileMap {
   }
 
   draw( ctx ) {
-    LAYERS.forEach( ( _, index ) => {
-      ctx.fillStyle = COLORS[ index ];
-      ctx.fill( this.#layerPaths[ index ], 'evenodd' );
-    } );
+    if ( !Rasterized.image ) {
+      Rasterized.image = new OffscreenCanvas( this.level.cols * ctx.scaleVal * devicePixelRatio, this.level.rows * ctx.scaleVal * devicePixelRatio );
+      const offscreenCtx = Rasterized.image.getContext( '2d' );
 
-    ctx.fillStyle = 'yellow';
-    ctx.fill( this.#lanesPath );
+      offscreenCtx.scale( ctx.scaleVal * devicePixelRatio, ctx.scaleVal * devicePixelRatio );
+      offscreenCtx.translate( 0.5, 0.5 );
 
-    ctx.fillStyle = 'gray';
-    ctx.fill( this.#sidewalkSquares );
+      LAYERS.forEach( ( _, index ) => {
+        offscreenCtx.fillStyle = COLORS[ index ];
+        offscreenCtx.fill( this.#layerPaths[ index ], 'evenodd' );
+      } );
+      
+      offscreenCtx.fillStyle = 'yellow';
+      offscreenCtx.fill( this.#lanesPath );
+      
+      offscreenCtx.fillStyle = 'gray';
+      offscreenCtx.fill( this.#sidewalkSquares );
+
+      offscreenCtx.save(); {
+        for ( let row = 0; row < this.level.rows; row ++ ) {
+          offscreenCtx.save(); { 
+            for ( let col = 0; col < this.level.cols; col ++ ) {
+              const prop = Props[ this.level.tileInfoKeys[ this.level.tiles[ col + row * this.level.cols ] ] ];
+              prop?.draw( offscreenCtx );
+
+              if ( this.level.spawn.x == col && this.level.spawn.y == row ) {
+                Props[ 'Bullseye' ].draw( offscreenCtx );
+              }
+
+              offscreenCtx.translate( 1, 0 );
+            }
+          }
+          offscreenCtx.restore();
+          offscreenCtx.translate( 0, 1 );
+        }
+      }
+      offscreenCtx.restore();
+    }
+
+    ctx.translate( -0.5, -0.5 );
+    ctx.scale( 1 / ( ctx.scaleVal * devicePixelRatio ), 1 / ( ctx.scaleVal * devicePixelRatio ) ); {
+      ctx.drawImage( Rasterized.image, 0, 0 );
+    }
+    ctx.scale( ctx.scaleVal * devicePixelRatio, ctx.scaleVal * devicePixelRatio );
+    ctx.translate( 0.5, 0.5 );
   }
 }

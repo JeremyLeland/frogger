@@ -29,15 +29,6 @@ pupils.ellipse( PUPIL_OFFSET_X, -PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI
 pupils.moveTo(  PUPIL_OFFSET_X, PUPIL_OFFSET_Y + PUPIL_H );
 pupils.ellipse( PUPIL_OFFSET_X,  PUPIL_OFFSET_Y, PUPIL_W, PUPIL_H, 0, 0, Math.PI * 2 );
 
-const exes = new Path2D();
-exes.moveTo( EYE_OFFSET_X - EYE_SIZE, -EYE_OFFSET_Y - EYE_SIZE );
-exes.lineTo( EYE_OFFSET_X + EYE_SIZE, -EYE_OFFSET_Y + EYE_SIZE );
-exes.moveTo( EYE_OFFSET_X + EYE_SIZE, -EYE_OFFSET_Y - EYE_SIZE );
-exes.lineTo( EYE_OFFSET_X - EYE_SIZE, -EYE_OFFSET_Y + EYE_SIZE );
-exes.moveTo( EYE_OFFSET_X - EYE_SIZE, EYE_OFFSET_Y - EYE_SIZE );
-exes.lineTo( EYE_OFFSET_X + EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
-exes.moveTo( EYE_OFFSET_X + EYE_SIZE, EYE_OFFSET_Y - EYE_SIZE );
-exes.lineTo( EYE_OFFSET_X - EYE_SIZE, EYE_OFFSET_Y + EYE_SIZE );
 
 export class Frog {
   static Status = {
@@ -121,9 +112,29 @@ export class Frog {
     }
       
     if ( animationAction && animationAction != Frog.Status.Alive ) {
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = EYE_SIZE / 2;
-      ctx.stroke( exes );
+      ctx.fillStyle = 'black';
+      
+      ctx.translate( EYE_OFFSET_X, -EYE_OFFSET_Y );
+      ctx.scale( EYE_SIZE, EYE_SIZE ); {
+        ctx.rotate( Math.PI / 4 );
+        ctx.fillRect( -1, -1 / 4, 2, 1 / 2 );
+        ctx.rotate( Math.PI / 2 );
+        ctx.fillRect( -1, -1 / 4, 2, 1 / 2 );
+        ctx.rotate( -3 * Math.PI / 4 );
+      }
+      ctx.scale( 1 / EYE_SIZE, 1 / EYE_SIZE );
+      ctx.translate( -EYE_OFFSET_X, EYE_OFFSET_Y );
+      
+      ctx.translate( EYE_OFFSET_X, EYE_OFFSET_Y );
+      ctx.scale( EYE_SIZE, EYE_SIZE ); {
+        ctx.rotate( Math.PI / 4 );
+        ctx.fillRect( -1, -1 / 4, 2, 1 / 2 );
+        ctx.rotate( Math.PI / 2 );
+        ctx.fillRect( -1, -1 / 4, 2, 1 / 2 );
+        ctx.rotate( -3 * Math.PI / 4 );
+      }
+      ctx.scale( 1 / EYE_SIZE, 1 / EYE_SIZE );
+      ctx.translate( -EYE_OFFSET_X, -EYE_OFFSET_Y );
     }
     else {
       ctx.fillStyle = 'white';

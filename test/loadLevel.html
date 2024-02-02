@@ -9,23 +9,19 @@
 
   Level.DebugGrid = true;
 
-  const level = Object.assign( new Level(), await ( await fetch( '../levels/classic/superhighway.json' ) ).json() );
+  const level = Object.assign( new Level(), await ( await fetch( '../levels/classic/retro.json' ) ).json() );
 
   const world = new World( level );
 
   const canvas = new AnimatedCanvas();
+  canvas.ctx.scaleVal = 48;
 
   canvas.update = ( dt ) => {
     world.update( dt );
   }
   
   canvas.draw = ( ctx ) => {
-    ctx.save();
-    ctx.scale( 48, 48 );
-
     world.draw( ctx );
-
-    ctx.restore();
   };
 
   canvas.start();

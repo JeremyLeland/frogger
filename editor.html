@@ -72,7 +72,7 @@
   import { Tiles } from './src/Tiles.js';
   import { Direction, Dir } from './src/Entity.js';
   import { Entities } from './src/Entities.js';
-  import { Entity } from './src/Entity.js';
+  import * as Entity from './src/Entity.js';
   import { Froggy } from './src/Froggy.js';
   import { Level } from './src/Level.js';
   import { World } from './src/World.js';
@@ -85,6 +85,77 @@
 
   let DebugGrid = true;
 
+  //
+  // UI
+  //
+  
+  const worldDiv = document.getElementById( 'world' );
+
+  const uiDiv = document.getElementById( 'ui' );
+
+  const tilesDiv = document.getElementById( 'tiles' );
+  for ( const tile in Tiles ) {
+    tilesDiv.appendChild( getCanvasButton( Tiles[ tile ].draw, tile, 'Tiles' ) );
+  }
+
+  const entitiesDiv = document.getElementById( 'entities' );
+  for ( const id in Entities ) {
+    entitiesDiv.appendChild( getCanvasButton( Entities[ id ].draw, id, 'Entities' ) );
+  }
+
+  function getCanvasButton( drawFunc, brush, type ) {
+    const button = document.createElement( 'button' );
+
+    // TODO: Use AnimatedCanvas for these, and just don't start it?
+    const icon = new Canvas( 48, 48 );
+    icon.ctx.scale( 48, 48 );
+    icon.ctx.translate( 0.5, 0.5 );
+    icon.ctx.lineWidth = 1 / 48;          // TODO: Can we set this once and not deal with it anymore? bug #38
+    drawFunc( icon.ctx );
+    button.appendChild( icon.canvas );
+    button.appendChild( document.createElement( 'br' ) );
+
+    const text = document.createElement( 'div' );
+    text.innerHTML = brush;
+    button.appendChild( text );
+
+    button.dataset.brush = brush;
+    button.dataset.type = type;
+
+    return button;
+  }
+
+  tilesDiv.addEventListener( 'click', brushClick );
+  entitiesDiv.addEventListener( 'click', brushClick );
+  
+  function brushClick( e ) {
+    const button = e.target.closest( 'button' );
+
+    if ( button ) {
+      activeBrush = button.dataset.brush;
+      activeType = button.dataset.type;
+    }
+  }
+
+  const timeUI = document.getElementById( 'time' );
+  timeUI.addEventListener( 'input', e => level.time = parseInt( e.target.value ) );
+  
+
+  const buttonFuncs = {
+    'path': _ => activeType = EditType.Directions,
+    'clear': clearLevel,
+    'load': loadLevel,
+    'save': saveLevel,
+    'play': startPlay,
+    'pause': pausePlay,
+    'stop': stopPlay,
+  }
+
+  for ( const id in buttonFuncs ) {
+    document.getElementById( id ).addEventListener( 'click', buttonFuncs[ id ] );
+  }
+
+
   const Mode = { Edit: 0, Play: 1 };
   let mode = Mode.Edit;
 
@@ -94,7 +165,8 @@
   let level = Object.assign( getEmptyLevel(), JSON.parse( localStorage.getItem( EditorLevelKey ) ) );
   
   const canvas = new FroggerCanvas( document.getElementById( 'canvas' ) );
-  canvas.scale = TILE_SIZE;
+  canvas.ctx.scaleVal = TILE_SIZE;
+  levelResized();
 
 
   //
@@ -109,6 +181,8 @@
 
   function clearLevel() {
     level = getEmptyLevel();
+
+    timeUI.value = level.time;
     
     levelResized();
   }
@@ -200,7 +274,8 @@
     ctx.clearRect( 0, 0, ctx.canvas.width, ctx.canvas.height );
 
     ctx.save(); {
-      ctx.scale( TILE_SIZE, TILE_SIZE );
+      ctx.setTransform( ctx.scaleVal * devicePixelRatio, 0, 0, ctx.scaleVal * devicePixelRatio, 0, 0 );
+    
       ctx.translate( 0.5, 0.5 );
       level.draw( ctx );
       level.entities.forEach( entity =>
@@ -239,79 +314,6 @@
       }
     }
     ctx.restore();
-
-    timeUI.value = level.time;
-  }
-
-
-  //
-  // UI
-  //
-  
-  const worldDiv = document.getElementById( 'world' );
-
-  const uiDiv = document.getElementById( 'ui' );
-
-  const tilesDiv = document.getElementById( 'tiles' );
-  for ( const tile in Tiles ) {
-    tilesDiv.appendChild( getCanvasButton( Tiles[ tile ].draw, tile, 'Tiles' ) );
-  }
-
-  const entitiesDiv = document.getElementById( 'entities' );
-  for ( const id in Entities ) {
-    entitiesDiv.appendChild( getCanvasButton( Entities[ id ].draw, id, 'Entities' ) );
-  }
-
-  function getCanvasButton( drawFunc, brush, type ) {
-    const button = document.createElement( 'button' );
-
-    // TODO: Use AnimatedCanvas for these, and just don't start it?
-    const icon = new Canvas( 48, 48 );
-    icon.ctx.scale( 48, 48 );
-    icon.ctx.translate( 0.5, 0.5 );
-    icon.ctx.lineWidth = 1 / 48;          // TODO: Can we set this once and not deal with it anymore? bug #38
-    drawFunc( icon.ctx );
-    button.appendChild( icon.canvas );
-    button.appendChild( document.createElement( 'br' ) );
-
-    const text = document.createElement( 'div' );
-    text.innerHTML = brush;
-    button.appendChild( text );
-
-    button.dataset.brush = brush;
-    button.dataset.type = type;
-
-    return button;
-  }
-
-  tilesDiv.addEventListener( 'click', brushClick );
-  entitiesDiv.addEventListener( 'click', brushClick );
-  
-  function brushClick( e ) {
-    const button = e.target.closest( 'button' );
-
-    if ( button ) {
-      activeBrush = button.dataset.brush;
-      activeType = button.dataset.type;
-    }
-  }
-
-  const timeUI = document.getElementById( 'time' );
-  timeUI.addEventListener( 'input', e => level.time = parseInt( e.target.value ) );
-  
-
-  const buttonFuncs = {
-    'path': _ => activeType = EditType.Directions,
-    'clear': clearLevel,
-    'load': loadLevel,
-    'save': saveLevel,
-    'play': startPlay,
-    'pause': pausePlay,
-    'stop': stopPlay,
-  }
-
-  for ( const id in buttonFuncs ) {
-    document.getElementById( id ).addEventListener( 'click', buttonFuncs[ id ] );
   }
 
 
@@ -407,10 +409,6 @@
   };
 
   document.addEventListener( 'keydown', e => KeyBindings[ e.code ]?.() );
-
-
-  levelResized();
-  // redraw();
 
   window.addEventListener( 'beforeunload', ( e ) =>
     localStorage.setItem( EditorLevelKey, JSON.stringify( level ) )

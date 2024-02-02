@@ -1,5 +1,9 @@
 export class AnimatedCanvas {
+  ShowFPS = true;
+
   #reqId;
+
+  #frameRates = [];
 
   constructor( width, height, canvas ) {
     this.canvas = canvas ?? document.createElement( 'canvas' );
@@ -10,6 +14,7 @@ export class AnimatedCanvas {
     }
     
     this.ctx = this.canvas.getContext( '2d' /*, { alpha: false }*/ );
+    this.ctx.scaleVal = 1;
 
     if ( width && height ) {
       this.setSize( width, height );
@@ -25,17 +30,14 @@ export class AnimatedCanvas {
     this.canvas.height = height * devicePixelRatio;
     this.canvas.style.width = width + 'px';
     this.canvas.style.height = height + 'px';
-
-    this.ctx.scale( devicePixelRatio, devicePixelRatio );
   }
 
   redraw() {
     // Don't need this because we're drawing the level over everything
-    // this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
+    this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
 
-    this.ctx.save();
+    this.ctx.setTransform( this.ctx.scaleVal * devicePixelRatio, 0, 0, this.ctx.scaleVal * devicePixelRatio, 0, 0 );
     this.draw( this.ctx );
-    this.ctx.restore();
   }
 
   // TODO: Handle starts if already started, stops if already stopped...
@@ -45,10 +47,41 @@ export class AnimatedCanvas {
     let lastTime;
     const animate = ( now ) => {
       lastTime ??= now;  // for first call only
-      this.update( now - lastTime );
+      const dt = now - lastTime;
       lastTime = now;
-  
+      
+      this.update( dt );
       this.redraw();
+
+      if ( this.ShowFPS ) {
+        this.#frameRates.push( 1000 / dt );
+        if ( this.#frameRates.length > 60 ) {
+          this.#frameRates.shift();
+        }
+
+        this.ctx.setTransform( devicePixelRatio, 0, 0, devicePixelRatio, 0, 0 );
+        this.ctx.lineWidth = 1;
+
+        // this.ctx.save(); {
+          this.ctx.beginPath();
+          
+          this.ctx.rect( 0, 0, 60, 70 );
+          for ( let y = 10; y < 70; y += 10 ) {
+            this.ctx.moveTo(  0, y );
+            this.ctx.lineTo( 60, y );
+          }
+          
+          this.ctx.strokeStyle = 'yellow';
+          this.ctx.stroke();
+
+          this.ctx.beginPath();
+          this.#frameRates.forEach( ( rate, index ) => this.ctx.lineTo( index, 70 - rate ) );
+          
+          this.ctx.strokeStyle = 'orange';
+          this.ctx.stroke();
+        // }
+        // this.ctx.restore();
+      }
   
       this.#reqId = requestAnimationFrame( animate );
     };
