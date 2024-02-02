@@ -18,7 +18,6 @@ export const Rasterized = {};
 // TODO: Don't use {} for parameter here (save heap?)
 
 // NOTE: Using 1.5 to give extra space for log center, animated frog legs, etc
-
 const SIZE = 1.5;
 
 export function draw( entity, ctx, { dir, action, time } = {} ) {
@@ -49,8 +48,6 @@ export function draw( entity, ctx, { dir, action, time } = {} ) {
     rasterized.needsRedraw = false;
   }
 
-  // ctx.save();
-
   const rotate = Dir[ ( dir > 0 ? dir : null ) ?? entity.dir ]?.angle ?? 0;
   
   ctx.translate( entity.x, entity.y );
@@ -65,5 +62,4 @@ export function draw( entity, ctx, { dir, action, time } = {} ) {
   ctx.rotate( -rotate );
   ctx.translate( -entity.x, -entity.y );
 
-  // ctx.restore();
 }

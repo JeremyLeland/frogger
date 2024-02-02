@@ -286,93 +286,79 @@ export class World
   }
 
   draw( ctx, showUI = true ) {
-    // ctx.save(); {
-      ctx.translate( 0.5, 0.5 );
-      ctx.lineWidth = 0.02;
+    ctx.translate( 0.5, 0.5 );
+    ctx.lineWidth = 0.02;
 
-      // TODO: Do we need this? Double-tracking animationAction and status, it seems...
-      if ( this.player ) {
-        this.player.animationAction = this.player.status;
-      }
+    // TODO: Do we need this? Double-tracking animationAction and status, it seems...
+    if ( this.player ) {
+      this.player.animationAction = this.player.status;
+    }
 
-      if ( this.player?.status == Frog.Status.Drowned ) {
-        Entity.draw( this.player, ctx );
-      }
+    if ( this.player?.status == Frog.Status.Drowned ) {
+      Entity.draw( this.player, ctx );
+    }
 
-      this.#level.draw( ctx );
-      
-      if ( this.player?.status == Frog.Status.Expired ||
-           this.player?.status == Frog.Status.SquishedHorizontal ||
-           this.player?.status == Frog.Status.SquishedVertical ) {
-        Entity.draw( this.player, ctx );
-      }
+    this.#level.draw( ctx );
+    
+    if ( this.player?.status == Frog.Status.Expired ||
+          this.player?.status == Frog.Status.SquishedHorizontal ||
+          this.player?.status == Frog.Status.SquishedVertical ) {
+      Entity.draw( this.player, ctx );
+    }
 
-      this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
+    this.entities.forEach( entity => Entity.draw( entity, ctx, { time: animationTime } ) );
 
-      if ( this.player?.status == Frog.Status.Alive ) {
-        Entity.draw( this.player, ctx );
-      }
+    if ( this.player?.status == Frog.Status.Alive ) {
+      Entity.draw( this.player, ctx );
+    }
 
-      if ( Entity.Rasterized.Player ) {
-        Entity.Rasterized.Player.needsRedraw = true;
-      }
-      if ( Entity.Rasterized.Turtle ) {
-        Entity.Rasterized.Turtle.needsRedraw = true;
-      }
-
-    // }
-    // ctx.restore();
+    if ( Entity.Rasterized.Player ) {
+      Entity.Rasterized.Player.needsRedraw = true;
+    }
+    if ( Entity.Rasterized.Turtle ) {
+      Entity.Rasterized.Turtle.needsRedraw = true;
+    }
 
     // UI
     if ( showUI ) {
-      // ctx.save(); {
-        ctx.translate( 0, 15 );
-        ctx.fillStyle = 'gray';
-        ctx.strokeStyle = 'black';
-        ctx.fillRect( -0.5, -0.5, 15, 1 );
+      ctx.translate( 0, 15 );
+      ctx.fillStyle = 'gray';
+      ctx.strokeStyle = 'black';
+      ctx.fillRect( -0.5, -0.5, 15, 1 );
 
-        // ctx.translate( 0.5, 0.5 );
-        // ctx.lineWidth = 0.02;
-
-        // Froggies
-        for ( let i = 0; i < Constants.NumFroggies; i ++ ) {
-          if ( this.rescued.includes( i ) ) {
-            // ctx.save();
-            ctx.rotate( Math.PI / 2 );
-            Froggy.drawFroggy( ctx, i );
-            ctx.rotate( -Math.PI / 2 );
-            // ctx.restore();
-          }
-          ctx.translate( 1, 0 );
+      // Froggies
+      for ( let i = 0; i < Constants.NumFroggies; i ++ ) {
+        if ( this.rescued.includes( i ) ) {
+          ctx.rotate( Math.PI / 2 );
+          Froggy.drawFroggy( ctx, i );
+          ctx.rotate( -Math.PI / 2 );
         }
-        
-        // Timer
-        if ( !timerGrad ) {
-          timerGrad = ctx.createLinearGradient( 0, 0, 3, 0 );
-          timerGrad.addColorStop( 0, 'red' );
-          timerGrad.addColorStop( 0.5, 'yellow' );
-          timerGrad.addColorStop( 1, 'green' );
+        ctx.translate( 1, 0 );
+      }
+      
+      // Timer
+      if ( !timerGrad ) {
+        timerGrad = ctx.createLinearGradient( 0, 0, 3, 0 );
+        timerGrad.addColorStop( 0, 'red' );
+        timerGrad.addColorStop( 0.5, 'yellow' );
+        timerGrad.addColorStop( 1, 'green' );
+      }
+
+      ctx.fillStyle = timerGrad;
+      ctx.fillRect( 0, -0.15, 4 * ( this.timeLeft / this.#level.time ), 0.3 );
+      ctx.strokeRect( 0, -0.15, 4, 0.3 );
+
+      ctx.translate( 5, 0 );
+
+      // Lives
+      for ( let i = 4; i > 0; i -- ) {
+        if ( i <= this.lives ) {
+          ctx.rotate( -Math.PI / 2 );
+          Player.drawPlayer( ctx );
+          ctx.rotate( Math.PI / 2 );
         }
-
-        ctx.fillStyle = timerGrad;
-        ctx.fillRect( 0, -0.15, 4 * ( this.timeLeft / this.#level.time ), 0.3 );
-        ctx.strokeRect( 0, -0.15, 4, 0.3 );
-
-        ctx.translate( 5, 0 );
-
-        // Lives
-        for ( let i = 4; i > 0; i -- ) {
-          if ( i <= this.lives ) {
-            // ctx.save();
-            ctx.rotate( -Math.PI / 2 );
-            Player.drawPlayer( ctx );
-            ctx.rotate( Math.PI / 2 );
-            // ctx.restore();
-          }
-          ctx.translate( 1, 0 );
-        }
-      // }
-      // ctx.restore();
+        ctx.translate( 1, 0 );
+      }
 
       ctx.translate( -15.5, -15.5 );
 
@@ -395,19 +381,15 @@ export class World
 }
 
 function drawBanner( ctx, text ) {
-  // ctx.save(); {
-    ctx.fillStyle = '#000b';
-    ctx.fillRect( 0, 6.5, 15, 2 );
+  ctx.fillStyle = '#000b';
+  ctx.fillRect( 0, 6.5, 15, 2 );
 
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 0.05;
-    ctx.strokeRect( -1, 6.5, 17, 2 );
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 0.05;
+  ctx.strokeRect( -1, 6.5, 17, 2 );
 
-    // TODO: Can text be part of a Path2D? Does that help anything?
-    ctx.textAlign = 'center';
-    ctx.font = '1px Silly';
-    ctx.fillStyle = 'white';
-    ctx.fillText( text, 15 / 2, 7.8 );
-  // }
-  // ctx.restore();
+  ctx.textAlign = 'center';
+  ctx.font = '1px Silly';
+  ctx.fillStyle = 'white';
+  ctx.fillText( text, 15 / 2, 7.8 );
 }

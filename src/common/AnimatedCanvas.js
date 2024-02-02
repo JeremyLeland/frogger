@@ -36,10 +36,8 @@ export class AnimatedCanvas {
     // Don't need this because we're drawing the level over everything
     this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
 
-    // this.ctx.save();
     this.ctx.setTransform( this.ctx.scaleVal * devicePixelRatio, 0, 0, this.ctx.scaleVal * devicePixelRatio, 0, 0 );
     this.draw( this.ctx );
-    // this.ctx.restore();
   }
 
   // TODO: Handle starts if already started, stops if already stopped...

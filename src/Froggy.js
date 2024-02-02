@@ -15,7 +15,6 @@ export class Froggy extends Frog {
   }
 
   static drawFroggy( ctx, colorIndex ) {
-    // ctx.save();
     ctx.scale( Froggy.Size, Froggy.Size );
 
     bodyGrad[ colorIndex ] ??= Frog.getFrogGradient( ctx, colors[ colorIndex ] );
@@ -23,7 +22,5 @@ export class Froggy extends Frog {
     Frog.drawFrog( ctx, bodyGrad[ colorIndex ] );
 
     ctx.scale( 1 / Froggy.Size, 1 / Froggy.Size );
-
-    // ctx.restore();
   }
 }
