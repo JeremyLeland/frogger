@@ -58,6 +58,8 @@
       
       fragColor = vec4( 2.0 * min( dist2 - 0.8, 1.0 - dist ), 0.0, 0.0, 1.0 );
 
+      // TODO: Find val between start 0 and end 1, and color as sin() of that?
+
       if ( 1.0 - dist < 0.0 || dist2 - 0.8 < 0.0 ) {
         discard;
       }
