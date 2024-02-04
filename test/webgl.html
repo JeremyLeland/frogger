@@ -52,15 +52,16 @@
     out vec4 fragColor;
 
     void main() {
-      float dist = sqrt( pow( vPos.x, 2.0 ) + pow( vPos.y, 2.0 ) );
-
-      float dist2 = sqrt( pow( vPos.x, 2.0 ) + pow( vPos.y - 0.25, 2.0 ) );
+      float fromEnd = 1.0 - sqrt( pow( vPos.x, 2.0 ) + pow( vPos.y, 2.0 ) );
+      float fromStart = sqrt( pow( vPos.x, 2.0 ) + pow( vPos.y - 0.25, 2.0 ) ) - 0.8;
       
-      fragColor = vec4( 2.0 * min( dist2 - 0.8, 1.0 - dist ), 0.0, 0.0, 1.0 );
+      float val = fromStart / ( fromStart + fromEnd );
 
-      // TODO: Find val between start 0 and end 1, and color as sin() of that?
-
-      if ( 1.0 - dist < 0.0 || dist2 - 0.8 < 0.0 ) {
+      if ( 0.0 <= val && val <= 1.0 ) {
+        float height = sin( 3.1415926 * val );
+        fragColor = mix( vec4( 0.0, 0.0, 0.0, 1.0 ), vec4( 0.0, 0.8, 0.0, 1.0 ), height );
+      }
+      else {
         discard;
       }
     }
