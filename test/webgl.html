@@ -89,9 +89,7 @@
   // objects we'll be drawing.
   const buffers = initBuffers(gl);
 
-  // Draw the scene
-  drawScene(gl, programInfo, buffers);
-
+  let animationTime = 0;
 
   function drawScene(gl, programInfo, buffers) {
     gl.clearColor(0.0, 0.0, 0.5, 1.0); // Clear to black, fully opaque
@@ -110,7 +108,7 @@
     // and we only want to see objects between 0.1 units
     // and 100 units away from the camera.
 
-    const fieldOfView = (45 * Math.PI) / 180; // in radians
+    const fieldOfView = 45 * Math.PI / 180; // in radians
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 100.0;
@@ -131,6 +129,12 @@
       modelViewMatrix, // matrix to translate
       [-0.0, 0.0, -6.0],
     ); // amount to translate
+
+    mat4.scale(
+      modelViewMatrix,
+      modelViewMatrix,
+      [ 1.0, 1.0 + 0.5 * Math.sin( animationTime ), 1.0 ],
+    );
 
     // Tell WebGL how to pull out the positions from the position
     // buffer into the vertexPosition attribute.
@@ -157,6 +161,24 @@
       gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
     }
   }
+
+  function update( dt ) {
+    animationTime += dt / 1000;
+  }
+
+  let lastTime;
+  function render( now ) {
+    lastTime ??= now;  // for first call only
+    update( now - lastTime );
+    lastTime = now;
+
+    // Draw the scene
+    drawScene(gl, programInfo, buffers);
+
+    requestAnimationFrame( render );
+  }
+
+  requestAnimationFrame( render );
 
   // Tell WebGL how to pull out the positions from the position
   // buffer into the vertexPosition attribute.
