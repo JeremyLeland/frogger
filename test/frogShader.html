@@ -200,7 +200,9 @@
         discard;
       }
     }
-  `
+  `;
+
+  const BODY_SIZE = 2;
 
   const body = new THREE.Mesh(
     new THREE.PlaneGeometry( 1, 1 ),
@@ -217,8 +219,51 @@
 
   body.scale.set( 2, 2, 2 );
 
+  const EYE_OFFSET_X = 0.5, EYE_OFFSET_Y = 0.5, EYE_SIZE = 0.5;
+  const PUPIL_OFFSET_X = 0.5, PUPIL_OFFSET_Y = 0.6, PUPIL_SIZE = 0.3;
+
+  const eyes = [ -1, 1 ].map( offsetX => {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry( 1, 1 ),
+      new THREE.ShaderMaterial( {
+        uniforms: {
+          color: { value: new THREE.Vector3( 1, 1, 1 ) },
+          strokeWidth: { value: 0.1 },
+        },
+        vertexShader: vert,
+        fragmentShader: circleFrag,
+        glslVersion: THREE.GLSL3,
+      } ),
+    );
+
+    mesh.position.set( offsetX * EYE_OFFSET_X, EYE_OFFSET_Y, 0 );
+    mesh.scale.set( EYE_SIZE, EYE_SIZE, EYE_SIZE );
+
+    return mesh;
+  } );
+
+  const pupils = [ -1, 1 ].map( offsetX => {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry( 1, 1 ),
+      new THREE.ShaderMaterial( {
+        uniforms: {
+          color: { value: new THREE.Vector3( 0, 0, 0 ) },
+          strokeWidth: { value: 0.03 },
+        },
+        vertexShader: vert,
+        fragmentShader: circleFrag,
+        glslVersion: THREE.GLSL3,
+      } ),
+    );
+
+    mesh.position.set( offsetX * PUPIL_OFFSET_X, PUPIL_OFFSET_Y, 0 );
+    mesh.scale.set( PUPIL_SIZE, PUPIL_SIZE, PUPIL_SIZE );
+
+    return mesh;
+  } );
+
   const group = new THREE.Group();
-  group.add( frontLegs, backLegs, body );
+  group.add( frontLegs, backLegs, body, ...eyes, ...pupils );
     
   MeshDemo.meshDemo( 
     group, 
