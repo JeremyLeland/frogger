@@ -1,0 +1,77 @@
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import * as THREE from '../lib/three.module.js';
+  import * as MeshDemo from './meshDemo.js';
+
+
+  const vert = /* glsl */ `
+    out vec2 v_pos;
+
+    void main() {
+      v_pos = position.xy;
+      
+      gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    }
+  `;
+
+  const frag = /* glsl */ `
+    #define PI 3.14159265359
+
+    in vec2 v_pos;
+
+    out vec3 outColor;
+
+    uniform vec3 color;
+    uniform float strokeWidth;
+
+    const float LOG_WIDTH = 0.4;
+
+    void main() {
+
+      float distY = abs( v_pos.y );
+      float distX = 0.5 - v_pos.y * v_pos.y - v_pos.x;
+     
+      if ( distY < LOG_WIDTH && distX > strokeWidth ) {
+        outColor = mix( vec3( 0.0 ), color, cos( PI * distY ) );
+      }
+      else if ( distY < LOG_WIDTH + strokeWidth && distX > 0.0 ) {
+        outColor = vec3( 0.0 );
+      }
+      else {
+        discard;
+      }
+    }
+  `;
+
+
+  let animationTime = 0;
+
+  const logUniforms = {
+    color: { value: new THREE.Vector3( 0.5, 0.25, 0.05 ) },
+    strokeWidth: { value: 0.02 },
+  };
+
+  const log = new THREE.Mesh(
+    new THREE.PlaneGeometry( 1, 1 ),
+    new THREE.ShaderMaterial( {
+      uniforms: logUniforms,
+      vertexShader: vert,
+      fragmentShader: frag,
+      glslVersion: THREE.GLSL3,
+    } )
+  );
+
+  const group = new THREE.Group();
+  group.add( log );
+    
+  MeshDemo.meshDemo( 
+    group, 
+    // ( dt ) => {
+    //   animationTime += dt / 500;
+
+    //   logUniforms.P1.value.set( 1 + Math.cos( animationTime ), 1 + Math.sin( animationTime ) );
+    // }
+  );
+
+</script>
