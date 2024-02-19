@@ -23,6 +23,13 @@
     out vec3 outColor;
 
     uniform int tiles[ 25 ];
+    uniform int layerIndex;
+
+    const vec3[ 3 ] colors = vec3[ 3 ](
+      vec3( 0.0 ),
+      vec3( 0.0, 0.5, 0.0 ),
+      vec3( 0.3 )
+    );
 
     void main() {
 
@@ -30,51 +37,40 @@
 
       int tile = tiles[ int( mapPos.x ) + int( mapPos.y ) * 5 ];
 
-      outColor = vec3( 0.0, 0.5, 0.0 );
+      outColor = colors[ layerIndex ];
 
       vec2 fromCenter = fract( mapPos ) - vec2( 0.5 );
       vec2 neighborPos = mapPos + sign( fromCenter );
-      
-      if ( tile == 1 ) {
-        if ( 0.0 < neighborPos.x && neighborPos.x < 5.0 &&
-            0.0 < neighborPos.y && neighborPos.y < 5.0 ) {
 
-          int neighbor_x = tiles[ int( neighborPos.x ) + int( mapPos.y ) * 5 ];
-          int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * 5 ];
-          int neighbor_xy = tiles[ int( neighborPos.x ) + int( neighborPos.y ) * 5 ];
+      if ( 0.0 < neighborPos.x && neighborPos.x < 5.0 &&
+           0.0 < neighborPos.y && neighborPos.y < 5.0 ) {
 
-          if ( neighbor_x == 0 && neighbor_y == 0 ) {
-            float dist = length( fromCenter );
+        int neighbor_x = tiles[ int( neighborPos.x ) + int( mapPos.y ) * 5 ];
+        int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * 5 ];
+        int neighbor_xy = tiles[ int( neighborPos.x ) + int( neighborPos.y ) * 5 ];
 
-            if ( dist > 0.5 ) {
-              discard;
-            }
-          }
-        }
-      }
-      else { 
-        if ( 0.0 < neighborPos.x && neighborPos.x < 5.0 &&
-            0.0 < neighborPos.y && neighborPos.y < 5.0 ) {
+        if ( tile >= layerIndex && neighbor_x < layerIndex && neighbor_y < layerIndex ) {
+          float dist = length( fromCenter );
 
-          int neighbor_x = tiles[ int( neighborPos.x ) + int( mapPos.y ) * 5 ];
-          int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * 5 ];
-          int neighbor_xy = tiles[ int( neighborPos.x ) + int( neighborPos.y ) * 5 ];
-
-          if ( neighbor_x == 1 && neighbor_y == 1 ) {
-            float dist = length( fromCenter );
-
-            if ( dist < 0.5 ) {
-              discard;
-            }
-          }
-
-          if ( neighbor_xy == 0 || ( neighbor_x == 0 || neighbor_y == 0 ) ) {
+          if ( dist > 0.5 ) {
             discard;
           }
         }
-        else {
+
+        if ( tile < layerIndex && neighbor_x >= layerIndex && neighbor_y >= layerIndex ) {
+          float dist = length( fromCenter );
+
+          if ( dist < 0.5 ) {
+            discard;
+          }
+        }
+
+        if ( tile < layerIndex && ( neighbor_xy < layerIndex || neighbor_x < layerIndex || neighbor_y < layerIndex ) ) {
           discard;
         }
+      }
+      else if ( tile < layerIndex ) {
+        discard;
       }
     }
   `;
@@ -82,30 +78,32 @@
 
   let animationTime = 0;
 
-  const map = new THREE.Mesh(
+  const layers = [ 1, 2 ].map( layerIndex => new THREE.Mesh(
     new THREE.PlaneGeometry( 1, 1 ),
     new THREE.ShaderMaterial( {
       uniforms: {
         tiles: { value: [
-          1, 0, 1, 1, 1,
+          1, 0, 2, 2, 1,
           1, 1, 1, 0, 1,
           1, 1, 0, 0, 0,
           0, 0, 1, 1, 1,
           1, 0, 1, 1, 0
         ] },
+        layerIndex: { value: layerIndex },
       },
       vertexShader: vert,
       fragmentShader: frag,
       glslVersion: THREE.GLSL3,
     } ),
-  );
+  ) );
 
-  map.scale.set( 5, 5, 5 );   // make it easier to see
+  layers[ 0 ].scale.set( 5, 5, 5 );   // make it easier to see
+  layers[ 1 ].scale.set( 5, 5, 5 );   // make it easier to see
   
   // NOTE: Will need to flip camera or projection or whatever in final version so 0,0 is upper left (for my sanity)
 
   const group = new THREE.Group();
-  group.add( map );
+  group.add( ...layers );
     
   MeshDemo.meshDemo( 
     group, 
