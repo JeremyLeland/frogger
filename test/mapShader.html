@@ -30,18 +30,52 @@
 
       int tile = tiles[ int( mapPos.x ) + int( mapPos.y ) * 5 ];
 
-      switch ( tile ) {
-        case 0: outColor = vec3( 0.0, 1.0, 0.0 ); break;
-        case 1: outColor = vec3( 0.0, 0.0, 1.0 ); break;
-        case 2: outColor = vec3( 0.3, 0.3, 0.3 ); break;
+      outColor = vec3( 0.0, 0.5, 0.0 );
+
+      vec2 fromCenter = fract( mapPos ) - vec2( 0.5 );
+      vec2 neighborPos = mapPos + sign( fromCenter );
+      
+      if ( tile == 1 ) {
+        if ( 0.0 < neighborPos.x && neighborPos.x < 5.0 &&
+            0.0 < neighborPos.y && neighborPos.y < 5.0 ) {
+
+          int neighbor_x = tiles[ int( neighborPos.x ) + int( mapPos.y ) * 5 ];
+          int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * 5 ];
+          int neighbor_xy = tiles[ int( neighborPos.x ) + int( neighborPos.y ) * 5 ];
+
+          if ( neighbor_x == 0 && neighbor_y == 0 ) {
+            float dist = length( fromCenter );
+
+            if ( dist > 0.5 ) {
+              discard;
+            }
+          }
+        }
       }
+      else { 
+        if ( 0.0 < neighborPos.x && neighborPos.x < 5.0 &&
+            0.0 < neighborPos.y && neighborPos.y < 5.0 ) {
 
-      float fromCenter = distance( vec2( 0.5 ), fract( mapPos ) );
+          int neighbor_x = tiles[ int( neighborPos.x ) + int( mapPos.y ) * 5 ];
+          int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * 5 ];
+          int neighbor_xy = tiles[ int( neighborPos.x ) + int( neighborPos.y ) * 5 ];
 
-      if ( fromCenter > 0.5 ) {
-        discard;
+          if ( neighbor_x == 1 && neighbor_y == 1 ) {
+            float dist = length( fromCenter );
+
+            if ( dist < 0.5 ) {
+              discard;
+            }
+          }
+
+          if ( neighbor_xy == 0 || ( neighbor_x == 0 || neighbor_y == 0 ) ) {
+            discard;
+          }
+        }
+        else {
+          discard;
+        }
       }
-
     }
   `;
 
@@ -53,11 +87,11 @@
     new THREE.ShaderMaterial( {
       uniforms: {
         tiles: { value: [
-          0, 1, 1, 1, 1,
-          2, 0, 2, 1, 0,
-          2, 2, 0, 2, 2,
-          2, 1, 2, 0, 0,
-          2, 0, 2, 0, 0
+          1, 0, 1, 1, 1,
+          1, 1, 1, 0, 1,
+          1, 1, 0, 0, 0,
+          0, 0, 1, 1, 1,
+          1, 0, 1, 1, 0
         ] },
       },
       vertexShader: vert,
