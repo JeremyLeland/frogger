@@ -49,24 +49,19 @@
         int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * 5 ];
         int neighbor_xy = tiles[ int( neighborPos.x ) + int( neighborPos.y ) * 5 ];
 
-        if ( tile >= layerIndex && neighbor_x < layerIndex && neighbor_y < layerIndex ) {
-          float dist = length( fromCenter );
-
-          if ( dist > 0.5 ) {
+        if ( tile >= layerIndex ) {
+          if ( neighbor_x < layerIndex && neighbor_y < layerIndex && length( fromCenter ) > 0.5 ) {
             discard;
           }
         }
-
-        if ( tile < layerIndex && neighbor_x >= layerIndex && neighbor_y >= layerIndex ) {
-          float dist = length( fromCenter );
-
-          if ( dist < 0.5 ) {
+        else {
+          if ( neighbor_x >= layerIndex && neighbor_y >= layerIndex && length( fromCenter ) < 0.5 ) {
             discard;
           }
-        }
 
-        if ( tile < layerIndex && ( neighbor_xy < layerIndex || neighbor_x < layerIndex || neighbor_y < layerIndex ) ) {
-          discard;
+          if ( neighbor_xy < layerIndex || neighbor_x < layerIndex || neighbor_y < layerIndex ) {
+            discard;
+          }
         }
       }
       else if ( tile < layerIndex ) {
