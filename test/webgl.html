@@ -144,30 +144,12 @@
 
     for ( let row = 0; row < 5; row ++ ) {
       for ( let col = 0; col < 6; col ++ ) {
-        // Set the drawing position to the "identity" point, which is
-        // the center of the scene.
-        const modelViewMatrix = mat4.create();
-
-        // Now move the drawing position a bit to where we want to
-        // start drawing the square.
-        mat4.translate(
-          modelViewMatrix, // destination matrix
-          modelViewMatrix, // matrix to translate
-          [-2.5 + col, -2 + row, -6.0],
-        ); // amount to translate
-
-        mat4.rotate(
-          modelViewMatrix,
-          modelViewMatrix,
-          animationTime, 
-          [ 0, 0, 1 ],
-        );
-
-        mat4.scale(
-          modelViewMatrix,
-          modelViewMatrix,
+        const modelViewMatrix = mat4.fromRotationTranslationScale( 
+          mat4.create(), 
+          [ Math.cos( animationTime / 2 ), Math.sin( animationTime / 2 ), 0, 0 ],
+          [ -2.5 + col, -2 + row, -6 ],
           [ 0.4, 0.4, 0.4 ],
-        )
+        );
 
         gl.uniformMatrix4fv(
           programInfo.uniformLocations.modelViewMatrix,
