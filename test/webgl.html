@@ -118,24 +118,6 @@
     // as the destination to receive the result.
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
-    // Set the drawing position to the "identity" point, which is
-    // the center of the scene.
-    const modelViewMatrix = mat4.create();
-
-    // Now move the drawing position a bit to where we want to
-    // start drawing the square.
-    mat4.translate(
-      modelViewMatrix, // destination matrix
-      modelViewMatrix, // matrix to translate
-      [-0.0, 0.0, -6.0],
-    ); // amount to translate
-
-    mat4.scale(
-      modelViewMatrix,
-      modelViewMatrix,
-      [ 1.0, 1.0 + 0.5 * Math.sin( animationTime ), 1.0 ],
-    );
-
     // Tell WebGL how to pull out the positions from the position
     // buffer into the vertexPosition attribute.
     setPositionAttribute(gl, buffers, programInfo);
@@ -149,16 +131,42 @@
       false,
       projectionMatrix,
     );
-    gl.uniformMatrix4fv(
-      programInfo.uniformLocations.modelViewMatrix,
-      false,
-      modelViewMatrix,
-    );
 
-    {
-      const offset = 0;
-      const vertexCount = 4;
-      gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
+    for ( let row = 0; row < 4; row ++ ) {
+      for ( let col = 0; col < 4; col ++ ) {
+        // Set the drawing position to the "identity" point, which is
+        // the center of the scene.
+        const modelViewMatrix = mat4.create();
+
+        // Now move the drawing position a bit to where we want to
+        // start drawing the square.
+        mat4.translate(
+          modelViewMatrix, // destination matrix
+          modelViewMatrix, // matrix to translate
+          [-2 + col, -2 + row, -6.0],
+        ); // amount to translate
+
+        mat4.rotate(
+          modelViewMatrix,
+          modelViewMatrix,
+          animationTime, 
+          [ 0, 0, 1 ],
+        );
+
+        mat4.scale(
+          modelViewMatrix,
+          modelViewMatrix,
+          [ 0.4, 0.4, 0.4 ],
+        )
+
+        gl.uniformMatrix4fv(
+          programInfo.uniformLocations.modelViewMatrix,
+          false,
+          modelViewMatrix,
+        );
+
+        gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 4 /* count */ );
+      }
     }
   }
 
@@ -274,7 +282,12 @@
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
     // Now create an array of positions for the square.
-    const positions = [1.0, 0.0, -1.0, 0.0, 1.0, -1.0, -1.0, -1.0];
+    const positions = [
+       1.0,  0.0, 
+      -1.0,  0.0, 
+       1.0, -1.0, 
+      -1.0, -1.0
+    ];
 
     // Now pass the list of positions into WebGL to build the
     // shape. We do this by creating a Float32Array from the
