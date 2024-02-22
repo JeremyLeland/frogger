@@ -37,29 +37,37 @@
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
 
-    out vec4 vPos;
+    out vec2 v_pos;
 
     void main() {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vPos = aVertexPosition;
+      v_pos = aVertexPosition.xy;
     }
   `;
 
-  const fsSource = /*glsl*/`# version 300 es
+  const circleFrag = /*glsl*/ `# version 300 es
     precision mediump float;
 
-    in vec4 vPos;
-    out vec4 fragColor;
+    #define PI 3.14159265359
+
+    in vec2 v_pos;
+
+    uniform vec3 color;
+    uniform float strokeWidth;
+
+    const vec3 BLACK = vec3( 0.0 );
+
+    out vec3 outColor;
 
     void main() {
-      float fromEnd = 1.0 - sqrt( pow( vPos.x, 2.0 ) + pow( vPos.y, 2.0 ) );
-      float fromStart = sqrt( pow( vPos.x, 2.0 ) + pow( vPos.y - 0.25, 2.0 ) ) - 0.8;
-      
-      float val = fromStart / ( fromStart + fromEnd );
+      float dist = distance( vec2( 0.0, 0.0 ), v_pos.xy );
 
-      if ( 0.0 <= val && val <= 1.0 ) {
-        float height = sin( 3.1415926 * val );
-        fragColor = mix( vec4( 0.0, 0.0, 0.0, 1.0 ), vec4( 0.0, 0.8, 0.0, 1.0 ), height );
+      // NOTE: We're covering darker shading with the stroke if we do it this way...need to fix for legs, too
+      if ( dist < 0.5 - strokeWidth ) {
+        outColor = mix( BLACK, color, cos( 0.8 * PI * dist ) );
+      }
+      else if ( dist < 0.5 ) {
+        outColor = BLACK;
       }
       else {
         discard;
@@ -69,19 +77,21 @@
 
   // Initialize a shader program; this is where all the lighting
   // for the vertices and so forth is established.
-  const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+  const circleShader = initShaderProgram( gl, vsSource, circleFrag );
 
   // Collect all the info needed to use the shader program.
   // Look up which attribute our shader program is using
   // for aVertexPosition and look up uniform locations.
   const programInfo = {
-    program: shaderProgram,
+    program: circleShader,
     attribLocations: {
-      vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+      vertexPosition: gl.getAttribLocation(circleShader, "aVertexPosition"),
     },
     uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
+      projectionMatrix: gl.getUniformLocation(circleShader, "uProjectionMatrix"),
+      modelViewMatrix: gl.getUniformLocation(circleShader, "uModelViewMatrix"),
+      color: gl.getUniformLocation( circleShader, "color" ),
+      strokeWidth: gl.getUniformLocation( circleShader, "strokeWidth" ),
     },
   };
 
@@ -132,8 +142,8 @@
       projectionMatrix,
     );
 
-    for ( let row = 0; row < 4; row ++ ) {
-      for ( let col = 0; col < 4; col ++ ) {
+    for ( let row = 0; row < 5; row ++ ) {
+      for ( let col = 0; col < 6; col ++ ) {
         // Set the drawing position to the "identity" point, which is
         // the center of the scene.
         const modelViewMatrix = mat4.create();
@@ -143,7 +153,7 @@
         mat4.translate(
           modelViewMatrix, // destination matrix
           modelViewMatrix, // matrix to translate
-          [-2 + col, -2 + row, -6.0],
+          [-2.5 + col, -2 + row, -6.0],
         ); // amount to translate
 
         mat4.rotate(
@@ -164,6 +174,35 @@
           false,
           modelViewMatrix,
         );
+
+        const shellColor = new Float32Array( [ 0.25, 0.5, 0.25 ] );
+        gl.uniform3fv( programInfo.uniformLocations.color, shellColor );
+        gl.uniform1f( programInfo.uniformLocations.strokeWidth, 0.05 );
+
+        gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 4 /* count */ );
+
+        mat4.translate(
+          modelViewMatrix, // destination matrix
+          modelViewMatrix, // matrix to translate
+          [ 0.5, 0, 0 ],
+        );
+
+        mat4.scale(
+          modelViewMatrix, // destination matrix
+          modelViewMatrix, // matrix to translate
+          [ 0.5, 0.5, 0.5 ],
+        );
+
+        gl.uniformMatrix4fv(
+          programInfo.uniformLocations.modelViewMatrix,
+          false,
+          modelViewMatrix,
+        );
+
+        const headColor = new Float32Array( [ 0.0, 0.5, 0 ] );
+        gl.uniform3fv( programInfo.uniformLocations.color, headColor );
+        gl.uniform1f( programInfo.uniformLocations.strokeWidth, 0.1 );
+
 
         gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 4 /* count */ );
       }
@@ -283,8 +322,8 @@
 
     // Now create an array of positions for the square.
     const positions = [
-       1.0,  0.0, 
-      -1.0,  0.0, 
+       1.0,  1.0, 
+      -1.0,  1.0, 
        1.0, -1.0, 
       -1.0, -1.0
     ];
