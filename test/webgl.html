@@ -91,7 +91,7 @@
       float dist = v_pos.x - abs( v_pos.y );
 
       if ( dist > strokeWidth && v_pos.x < 1.0 - strokeWidth / 2.0 ) {
-        outColor = vec4( mix( vec3( 0.0 ), color, dist ), 1.0 );
+        outColor = vec4( mix( vec3( 0.0 ), color, sin( PI / 2.0 * dist ) ), 1.0 );
       }
       else {
         outColor = vec4( 0.0, 0.0, 0.0, 1.0 );
@@ -169,61 +169,18 @@
     // as the destination to receive the result.
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
+    const bodyColor = new Float32Array( [ 0.0, 0.5, 0 ] );
+
 
     for ( let row = 0; row < 5; row ++ ) {
       for ( let col = 0; col < 6; col ++ ) {
-        // Tell WebGL to use our program when drawing
-        gl.useProgram(circleProgramInfo.program);
-
-        // Tell WebGL how to pull out the positions from the position
-        // buffer into the vertexPosition attribute.
-        setPositionAttribute(gl, buffers.circlePositions, circleProgramInfo);
-
-        // Set the shader uniforms
-        gl.uniformMatrix4fv(
-          circleProgramInfo.uniformLocations.projectionMatrix,
-          false,
-          projectionMatrix,
-        );
-
         const modelViewMatrix = mat4.fromRotationTranslationScale( 
           mat4.create(), 
-          [ Math.cos( animationTime / 2 ), Math.sin( animationTime / 2 ), 0, 0 ],
-          [ -2.5 + col, -2 + row, -6 ],
-          [ 0.8, 0.8, 0.8 ],
-        );
-
-        gl.uniformMatrix4fv(
-          circleProgramInfo.uniformLocations.modelViewMatrix,
-          false,
-          modelViewMatrix,
-        );
-
-        const shellColor = new Float32Array( [ 0.25, 0.5, 0.25 ] );
-        gl.uniform3fv( circleProgramInfo.uniformLocations.color, shellColor );
-        gl.uniform1f( circleProgramInfo.uniformLocations.strokeWidth, 0.05 );
-
-        gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 4 /* count */ );
-
-        const headMatrix = mat4.fromRotationTranslationScale( 
-          mat4.create(), 
+          // [ Math.cos( animationTime / 2 ), Math.sin( animationTime / 2 ), 0, 0 ],
           [ 0, 0, 0, 0 ],
-          [ 0.5, 0, 0 ],
-          [ 0.5, 0.5, 0.5 ],
+          [ -2.5 + col, -2 + row, -6 ],
+          [ 1, 1, 1 ],
         );
-
-        gl.uniformMatrix4fv(
-          circleProgramInfo.uniformLocations.modelViewMatrix,
-          false,
-          mat4.multiply( mat4.create(), modelViewMatrix, headMatrix ),
-        );
-
-        const bodyColor = new Float32Array( [ 0.0, 0.5, 0 ] );
-        gl.uniform3fv( circleProgramInfo.uniformLocations.color, bodyColor );
-        gl.uniform1f( circleProgramInfo.uniformLocations.strokeWidth, 0.1 );
-
-
-        gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 4 /* count */ );
 
         // Legs
 
@@ -239,25 +196,81 @@
           projectionMatrix,
         );
 
-        const legMatrix = mat4.fromRotationTranslationScale( 
-          mat4.create(), 
-          [ Math.cos( animationTime / 2 ), Math.sin( animationTime / 2 ), 0, 0 ],
-          [ 0, 0, 0 ],
-          [ 0.5, 0.25, 0.5 ],
-        );
-
-        gl.uniformMatrix4fv(
-          triangleProgramInfo.uniformLocations.modelViewMatrix,
-          false,
-          mat4.multiply( mat4.create(), modelViewMatrix, legMatrix ),
-        );
-
         gl.uniform3fv( triangleProgramInfo.uniformLocations.color, bodyColor );
         gl.uniform1f( triangleProgramInfo.uniformLocations.strokeWidth, 0.1 );
 
+        [ -1, 1 ].forEach( side => {
+          for ( let i = 0; i < 2; i ++ ) {
+            const angle = side * ( Math.PI / 4.0 * ( i + 0.5 ) + 0.1 * ( 1 + Math.sin( animationTime * 4 ) ) );
+            const legMatrix = mat4.fromRotationTranslationScale( 
+              mat4.create(), 
+              [ Math.cos( angle ), Math.sin( angle ), 0, 0 ],
+              [ 0, 0, 0 ],
+              [ 0.4, 0.125, 1.0 ],
+            );
+              
+            gl.uniformMatrix4fv(
+              triangleProgramInfo.uniformLocations.modelViewMatrix,
+              false,
+              mat4.multiply( mat4.create(), modelViewMatrix, legMatrix ),
+            ); 
+            
+            gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 3 /* count */ );
+          }
+        } );
 
-        gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 3 /* count */ );
+        // Tell WebGL to use our program when drawing
+        gl.useProgram(circleProgramInfo.program);
 
+        // Tell WebGL how to pull out the positions from the position
+        // buffer into the vertexPosition attribute.
+        setPositionAttribute(gl, buffers.circlePositions, circleProgramInfo);
+
+        // Set the shader uniforms
+        gl.uniformMatrix4fv(
+          circleProgramInfo.uniformLocations.projectionMatrix,
+          false,
+          projectionMatrix,
+        );
+
+        const headMatrix = mat4.fromRotationTranslationScale( 
+          mat4.create(), 
+          [ 0, 0, 0, 0 ],
+          [ 0.35, 0, 0 ],
+          [ 0.3, 0.3, 0.3 ],
+        );
+
+        gl.uniformMatrix4fv(
+          circleProgramInfo.uniformLocations.modelViewMatrix,
+          false,
+          mat4.multiply( mat4.create(), modelViewMatrix, headMatrix ),
+        );
+
+        
+        gl.uniform3fv( circleProgramInfo.uniformLocations.color, bodyColor );
+        gl.uniform1f( circleProgramInfo.uniformLocations.strokeWidth, 0.1 );
+
+
+        gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 4 /* count */ );
+
+        const shellColor = new Float32Array( [ 0.25, 0.5, 0.25 ] );
+        gl.uniform3fv( circleProgramInfo.uniformLocations.color, shellColor );
+        gl.uniform1f( circleProgramInfo.uniformLocations.strokeWidth, 0.05 );
+
+        const shellMatrix = mat4.fromRotationTranslationScale( 
+          mat4.create(), 
+          [ 0, 0, 0, 0 ],
+          [ 0, 0, 0 ],
+          [ 0.6, 0.6, 0.6 ],
+        );
+
+        gl.uniformMatrix4fv(
+          circleProgramInfo.uniformLocations.modelViewMatrix,
+          false,
+          mat4.multiply( mat4.create(), modelViewMatrix, shellMatrix ),
+        );
+
+        gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 4 /* count */ );
       }
     }
   }
