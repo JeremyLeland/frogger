@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Organizing WebGL demo into common code</title>
+  </head>
+
+  <body>
+    <canvas id="glcanvas"></canvas>
+  </body>
+</html>
+
+<script type="module">
+  import { mat4 } from '../lib/gl-matrix.js';
+  import * as ShaderCommon from '../src/ShaderCommon.js';
+
+  const width = 800, height = 600;
+  const canvas = document.querySelector("#glcanvas");
+  canvas.width = width * devicePixelRatio;
+  canvas.height = height * devicePixelRatio;
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+
+  // Initialize the GL context
+  const gl = canvas.getContext("webgl2");
+
+  // Only continue if WebGL is available and working
+  if (gl === null) {
+    alert(
+      "Unable to initialize WebGL. Your browser or machine may not support it.",
+    );
+  }
+
+  const circleProgramInfo = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.Circle );
+  const triangleProgramInfo = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.Triangle );
+
+
+  // Here's where we call the routine that builds all the
+  // objects we'll be drawing.
+  const buffers = initBuffers(gl);
+
+  // TODO: Create buffer for triangles
+
+  let animationTime = 0;
+
+  function drawScene(gl, buffers) {
+    gl.clearColor(0.0, 0.0, 0.5, 1.0);
+    gl.clearDepth(1.0); // Clear everything
+    gl.enable(gl.DEPTH_TEST); // Enable depth testing
+    gl.depthFunc(gl.LEQUAL); // Near things obscure far things
+
+    // Clear the canvas before we start drawing on it.
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // Create a perspective matrix, a special matrix that is
+    // used to simulate the distortion of perspective in a camera.
+    // Our field of view is 45 degrees, with a width/height
+    // ratio that matches the display size of the canvas
+    // and we only want to see objects between 0.1 units
+    // and 100 units away from the camera.
+
+    const fieldOfView = 45 * Math.PI / 180; // in radians
+    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    const zNear = 0.1;
+    const zFar = 100.0;
+    const projectionMatrix = mat4.create();
+
+    // note: glmatrix.js always has the first argument
+    // as the destination to receive the result.
+    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+
+    const bodyColor = new Float32Array( [ 0.0, 0.5, 0 ] );
+
+
+    for ( let row = 0; row < 5; row ++ ) {
+      for ( let col = 0; col < 6; col ++ ) {
+        const modelViewMatrix = mat4.fromRotationTranslationScale( 
+          mat4.create(), 
+          // [ Math.cos( animationTime / 2 ), Math.sin( animationTime / 2 ), 0, 0 ],
+          [ 0, 0, 0, 0 ],
+          [ -2.5 + col, -2 + row, -6 ],
+          [ 1, 1, 1 ],
+        );
+
+        // Legs
+
+        // Tell WebGL to use our program when drawing
+        gl.useProgram(triangleProgramInfo.program);
+        
+        setPositionAttribute(gl, buffers.trianglePositions, triangleProgramInfo);
+
+        // Set the shader uniforms
+        gl.uniformMatrix4fv(
+          triangleProgramInfo.uniformLocations.projectionMatrix,
+          false,
+          projectionMatrix,
+        );
+
+        gl.uniform3fv( triangleProgramInfo.uniformLocations.color, bodyColor );
+        gl.uniform1f( triangleProgramInfo.uniformLocations.strokeWidth, 0.1 );
+
+        [ -1, 1 ].forEach( side => {
+          for ( let i = 0; i < 2; i ++ ) {
+            const angle = side * ( Math.PI / 4.0 * ( i + 0.5 ) + 0.1 * ( 1 + Math.sin( animationTime * 4 ) ) );
+            const legMatrix = mat4.fromRotationTranslationScale( 
+              mat4.create(), 
+              [ Math.cos( angle ), Math.sin( angle ), 0, 0 ],
+              [ 0, 0, 0 ],
+              [ 0.4, 0.125, 1.0 ],
+            );
+              
+            gl.uniformMatrix4fv(
+              triangleProgramInfo.uniformLocations.modelViewMatrix,
+              false,
+              mat4.multiply( mat4.create(), modelViewMatrix, legMatrix ),
+            ); 
+            
+            gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 3 /* count */ );
+          }
+        } );
+
+        // Tell WebGL to use our program when drawing
+        gl.useProgram(circleProgramInfo.program);
+
+        // Tell WebGL how to pull out the positions from the position
+        // buffer into the vertexPosition attribute.
+        setPositionAttribute(gl, buffers.circlePositions, circleProgramInfo);
+
+        // Set the shader uniforms
+        gl.uniformMatrix4fv(
+          circleProgramInfo.uniformLocations.projectionMatrix,
+          false,
+          projectionMatrix,
+        );
+
+        const headMatrix = mat4.fromRotationTranslationScale( 
+          mat4.create(), 
+          [ 0, 0, 0, 0 ],
+          [ 0.35, 0, 0 ],
+          [ 0.3, 0.3, 0.3 ],
+        );
+
+        gl.uniformMatrix4fv(
+          circleProgramInfo.uniformLocations.modelViewMatrix,
+          false,
+          mat4.multiply( mat4.create(), modelViewMatrix, headMatrix ),
+        );
+
+        
+        gl.uniform3fv( circleProgramInfo.uniformLocations.color, bodyColor );
+        gl.uniform1f( circleProgramInfo.uniformLocations.strokeWidth, 0.1 );
+
+
+        gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 4 /* count */ );
+
+        const shellColor = new Float32Array( [ 0.25, 0.5, 0.25 ] );
+        gl.uniform3fv( circleProgramInfo.uniformLocations.color, shellColor );
+        gl.uniform1f( circleProgramInfo.uniformLocations.strokeWidth, 0.05 );
+
+        const shellMatrix = mat4.fromRotationTranslationScale( 
+          mat4.create(), 
+          [ 0, 0, 0, 0 ],
+          [ 0, 0, 0 ],
+          [ 0.6, 0.6, 0.6 ],
+        );
+
+        gl.uniformMatrix4fv(
+          circleProgramInfo.uniformLocations.modelViewMatrix,
+          false,
+          mat4.multiply( mat4.create(), modelViewMatrix, shellMatrix ),
+        );
+
+        gl.drawArrays( gl.TRIANGLE_STRIP, 0 /* first */, 4 /* count */ );
+      }
+    }
+  }
+
+  function update( dt ) {
+    animationTime += dt / 1000;
+  }
+
+  let lastTime;
+  function render( now ) {
+    lastTime ??= now;  // for first call only
+    update( now - lastTime );
+    lastTime = now;
+
+    // Draw the scene
+    drawScene(gl, buffers);
+
+    requestAnimationFrame( render );
+  }
+
+  requestAnimationFrame( render );
+
+  // Tell WebGL how to pull out the positions from the position
+  // buffer into the vertexPosition attribute.
+  function setPositionAttribute( gl, buffer, programInfo ) {
+    gl.bindBuffer( gl.ARRAY_BUFFER, buffer );
+    gl.vertexAttribPointer( programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( programInfo.attribLocations.vertexPosition );
+  }
+
+
+  function initBuffers(gl) {
+    return {
+      circlePositions: initBuffer( gl, [
+         0.5,  0.5, 
+        -0.5,  0.5, 
+         0.5, -0.5, 
+        -0.5, -0.5,
+      ] ),
+      trianglePositions: initBuffer( gl, [
+         0.0,  0.0,
+         1, -1,
+         1,  1,
+      ] ),
+    };
+  }
+
+  function initBuffer( gl, positions ) {
+    const buffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, buffer );
+    gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( positions ), gl.STATIC_DRAW );
+    return buffer;
+  }
+
+
+</script>
