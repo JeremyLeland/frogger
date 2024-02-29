@@ -108,7 +108,15 @@ export function getShader( gl, shaderInfo ) {
   }
 }
 
-export function drawShader( gl, shader ) {
+export function drawShader( gl, shader, uniforms ) {
+  gl.useProgram( shader.program );
+
+  gl.uniformMatrix4fv( shader.uniformLocations.projectionMatrix, false, uniforms.projectionMatrix );
+  gl.uniformMatrix4fv( shader.uniformLocations.modelViewMatrix, false, uniforms.modelViewMatrix );
+
+  gl.uniform3fv( shader.uniformLocations.color, uniforms.color );
+  gl.uniform1f( shader.uniformLocations.strokeWidth, uniforms.strokeWidth );
+
   gl.bindBuffer( gl.ARRAY_BUFFER, shader.buffer );
   gl.vertexAttribPointer( shader.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( shader.attribLocations.vertexPosition );

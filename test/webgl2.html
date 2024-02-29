@@ -34,6 +34,8 @@
   const circleProgramInfo = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.Circle );
   const triangleProgramInfo = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.Triangle );
 
+  const bodyColor = new Float32Array( [ 0.0, 0.5, 0 ] );
+  const shellColor = new Float32Array( [ 0.25, 0.5, 0.25 ] );
 
   // TODO: Create buffer for triangles
 
@@ -66,35 +68,16 @@
     // as the destination to receive the result.
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
-    const bodyColor = new Float32Array( [ 0.0, 0.5, 0 ] );
-
-
     for ( let row = 0; row < 5; row ++ ) {
       for ( let col = 0; col < 6; col ++ ) {
         const modelViewMatrix = mat4.fromRotationTranslationScale( 
           mat4.create(), 
-          // [ Math.cos( animationTime / 2 ), Math.sin( animationTime / 2 ), 0, 0 ],
           [ 0, 0, 0, 0 ],
           [ -2.5 + col, -2 + row, -6 ],
           [ 1, 1, 1 ],
         );
 
         // Legs
-
-        // Tell WebGL to use our program when drawing
-        gl.useProgram(triangleProgramInfo.program);
-        
-
-        // Set the shader uniforms
-        gl.uniformMatrix4fv(
-          triangleProgramInfo.uniformLocations.projectionMatrix,
-          false,
-          projectionMatrix,
-        );
-
-        gl.uniform3fv( triangleProgramInfo.uniformLocations.color, bodyColor );
-        gl.uniform1f( triangleProgramInfo.uniformLocations.strokeWidth, 0.1 );
-
         [ -1, 1 ].forEach( side => {
           for ( let i = 0; i < 2; i ++ ) {
             const angle = side * ( Math.PI / 4.0 * ( i + 0.5 ) + 0.1 * ( 1 + Math.sin( animationTime * 4 ) ) );
@@ -104,27 +87,15 @@
               [ 0, 0, 0 ],
               [ 0.4, 0.125, 1.0 ],
             );
-              
-            gl.uniformMatrix4fv(
-              triangleProgramInfo.uniformLocations.modelViewMatrix,
-              false,
-              mat4.multiply( mat4.create(), modelViewMatrix, legMatrix ),
-            );
 
-            ShaderCommon.drawShader( gl, triangleProgramInfo );
+            ShaderCommon.drawShader( gl, triangleProgramInfo, {
+              projectionMatrix: projectionMatrix,
+              modelViewMatrix: mat4.multiply( mat4.create(), modelViewMatrix, legMatrix ),
+              color: bodyColor,
+              strokeWidth: 0.1,
+            } );
           }
         } );
-
-        // Tell WebGL to use our program when drawing
-        gl.useProgram(circleProgramInfo.program);
-
-
-        // Set the shader uniforms
-        gl.uniformMatrix4fv(
-          circleProgramInfo.uniformLocations.projectionMatrix,
-          false,
-          projectionMatrix,
-        );
 
         const headMatrix = mat4.fromRotationTranslationScale( 
           mat4.create(), 
@@ -133,20 +104,12 @@
           [ 0.3, 0.3, 0.3 ],
         );
 
-        gl.uniformMatrix4fv(
-          circleProgramInfo.uniformLocations.modelViewMatrix,
-          false,
-          mat4.multiply( mat4.create(), modelViewMatrix, headMatrix ),
-        );
-        
-        gl.uniform3fv( circleProgramInfo.uniformLocations.color, bodyColor );
-        gl.uniform1f( circleProgramInfo.uniformLocations.strokeWidth, 0.1 );
-
-        ShaderCommon.drawShader( gl, circleProgramInfo );
-
-        const shellColor = new Float32Array( [ 0.25, 0.5, 0.25 ] );
-        gl.uniform3fv( circleProgramInfo.uniformLocations.color, shellColor );
-        gl.uniform1f( circleProgramInfo.uniformLocations.strokeWidth, 0.05 );
+        ShaderCommon.drawShader( gl, circleProgramInfo, {
+          projectionMatrix: projectionMatrix,
+          modelViewMatrix: mat4.multiply( mat4.create(), modelViewMatrix, headMatrix ),
+          color: bodyColor,
+          strokeWidth: 0.1,
+        } );
 
         const shellMatrix = mat4.fromRotationTranslationScale( 
           mat4.create(), 
@@ -155,13 +118,12 @@
           [ 0.6, 0.6, 0.6 ],
         );
 
-        gl.uniformMatrix4fv(
-          circleProgramInfo.uniformLocations.modelViewMatrix,
-          false,
-          mat4.multiply( mat4.create(), modelViewMatrix, shellMatrix ),
-        );
-
-        ShaderCommon.drawShader( gl, circleProgramInfo );
+        ShaderCommon.drawShader( gl, circleProgramInfo, {
+          projectionMatrix: projectionMatrix,
+          modelViewMatrix: mat4.multiply( mat4.create(), modelViewMatrix, shellMatrix ),
+          color: shellColor,
+          strokeWidth: 0.05,
+        } );
       }
     }
   }
