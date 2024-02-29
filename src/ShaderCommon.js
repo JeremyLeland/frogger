@@ -66,12 +66,23 @@ export const ShaderInfo = {
     fragmentShader: circleFrag,
     attributes: commonAttributes,
     uniforms: commonUniforms,
+    points: [
+       0.5,  0.5, 
+      -0.5,  0.5, 
+       0.5, -0.5, 
+      -0.5, -0.5,
+    ],
   },
   Triangle: {
     vertexShader: vsSource,
     fragmentShader: triangleFrag,
     attributes: commonAttributes,
     uniforms: commonUniforms,
+    points: [
+      0,  0,
+      1, -1,
+      1,  1,
+    ],
   },
 };
 
@@ -92,7 +103,17 @@ export function getShader( gl, shaderInfo ) {
     program: program,
     attribLocations: attribLocations,
     uniformLocations: uniformLocations,
+    buffer: initBuffer( gl, shaderInfo.points ),
+    bufferLength: shaderInfo.points.length / 2,
   }
+}
+
+export function drawShader( gl, shader ) {
+  gl.bindBuffer( gl.ARRAY_BUFFER, shader.buffer );
+  gl.vertexAttribPointer( shader.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( shader.attribLocations.vertexPosition );
+
+  gl.drawArrays( gl.TRIANGLE_STRIP, 0, shader.bufferLength );
 }
 
 function initShaderProgram( gl, vsSource, fsSource ) {
@@ -127,4 +148,11 @@ function loadShader( gl, type, source ) {
   else {
     return shader;
   }
+}
+
+function initBuffer( gl, positions ) {
+  const buffer = gl.createBuffer();
+  gl.bindBuffer( gl.ARRAY_BUFFER, buffer );
+  gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( positions ), gl.STATIC_DRAW );
+  return buffer;
 }
