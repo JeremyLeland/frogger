@@ -37,27 +37,17 @@
   const circleProgramInfo = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.Circle );
   const triangleProgramInfo = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.Triangle );
 
-  const logFrag = ShaderCommon.FragCommon + /*glsl*/`
-    uniform int logType;
-    const float LOG_WIDTH = 0.4;
+  const LOG_WIDTH = 0.4;
 
+  const logStartFrag = ShaderCommon.FragCommon + /*glsl*/`
     void main() {
       float distY = abs( v_pos.y );
       float leftDistX = -0.5 + v_pos.y * v_pos.y - v_pos.x;
-      float rightDistX = 0.5 - v_pos.y * v_pos.y - v_pos.x;
      
-      if ( distY < LOG_WIDTH && (
-           ( logType == 0 && leftDistX < -strokeWidth ) || 
-           ( logType == 1 ) || 
-           ( logType == 2 && rightDistX > strokeWidth )
-         ) ) {
-        outColor = vec4( mix( vec3( 0.0 ), color, cos( PI * distY ) ), 1.0 );
+      if ( distY < ${ LOG_WIDTH } && leftDistX < -strokeWidth ) {
+        outColor = vec4( mix( BLACK, color, cos( PI * distY ) ), 1.0 );
       }
-      else if ( distY < LOG_WIDTH + strokeWidth && (
-           ( logType == 0 && leftDistX < 0.0 ) || 
-           ( logType == 1 ) || 
-           ( logType == 2 && rightDistX > 0.0 )
-        ) ) {
+      else if ( distY < ${ LOG_WIDTH } + strokeWidth && leftDistX < 0.0 ) {
         outColor = vec4( BLACK, 1.0 );
       }
       else {
@@ -66,11 +56,60 @@
     }
   `;
 
-  const logProgramInfo = ShaderCommon.getShader( gl, {
+  const logMiddleFrag = ShaderCommon.FragCommon + /*glsl*/`
+    void main() {
+      float distY = abs( v_pos.y );
+     
+      if ( distY < ${ LOG_WIDTH } ) {
+        outColor = vec4( mix( BLACK, color, cos( PI * distY ) ), 1.0 );
+      }
+      else if ( distY < ${ LOG_WIDTH } + strokeWidth ) {
+        outColor = vec4( BLACK, 1.0 );
+      }
+      else {
+        discard;
+      }
+    }
+  `;
+
+  const logEndFrag = ShaderCommon.FragCommon + /*glsl*/`
+    void main() {
+      float distY = abs( v_pos.y );
+      float rightDistX = 0.5 - v_pos.y * v_pos.y - v_pos.x;
+     
+      if ( distY < ${ LOG_WIDTH } && rightDistX > strokeWidth ) {
+        outColor = vec4( mix( BLACK, color, cos( PI * distY ) ), 1.0 );
+      }
+      else if ( distY < ${ LOG_WIDTH } + strokeWidth && rightDistX > 0.0 ) {
+        outColor = vec4( BLACK, 1.0 );
+      }
+      else {
+        discard;
+      }
+    }
+  `;
+
+  const logStartProgramInfo = ShaderCommon.getShader( gl, {
     vertexShader: ShaderCommon.CommonVertexShader,
-    fragmentShader: logFrag,
+    fragmentShader: logStartFrag,
     attributes: ShaderCommon.CommonAttributes,
-    uniforms: ShaderCommon.CommonUniforms.concat( 'logType' ),
+    uniforms: ShaderCommon.CommonUniforms,
+    points: ShaderCommon.SquarePoints,
+  } );
+
+  const logMiddleProgramInfo = ShaderCommon.getShader( gl, {
+    vertexShader: ShaderCommon.CommonVertexShader,
+    fragmentShader: logMiddleFrag,
+    attributes: ShaderCommon.CommonAttributes,
+    uniforms: ShaderCommon.CommonUniforms,
+    points: ShaderCommon.SquarePoints,
+  } );
+
+  const logEndProgramInfo = ShaderCommon.getShader( gl, {
+    vertexShader: ShaderCommon.CommonVertexShader,
+    fragmentShader: logEndFrag,
+    attributes: ShaderCommon.CommonAttributes,
+    uniforms: ShaderCommon.CommonUniforms,
     points: ShaderCommon.SquarePoints,
   } );
 
@@ -111,15 +150,22 @@
 
     for ( let row = 0; row < 5; row ++ ) {
       for ( let col = 0; col < 6; col ++ ) {
+
+        const angle = ( ( col / 2 ) % 2 == 0 ? 1 : -1 ) *  Math.PI / 4;
+
         const modelViewMatrix = mat4.fromRotationTranslationScale( 
           mat4.create(), 
-          [ 0, 0, 0, 0 ],
+          [ Math.cos( angle ), Math.sin( angle ), 0, 0 ],
           [ -2.5 + col, -2 + row, -6 ],
           [ 1, 1, 1 ],
         );
 
-        // drawTurtle( projectionMatrix, modelViewMatrix );
-        drawLog( projectionMatrix, modelViewMatrix, ( col + row ) % 3 );
+        if ( col % 2 == 0 ) {
+          drawTurtle( projectionMatrix, modelViewMatrix );
+        }
+        else {
+          drawLog( projectionMatrix, modelViewMatrix, ( col + 5 - row ) % 3 );
+        }
       }
     }
   }
@@ -196,10 +242,14 @@
 
   const logColor = new Float32Array( [ 0.5, 0.25, 0.05 ] );
 
-  function drawLog( projectionMatrix, modelViewMatrix, logType ) {
-    gl.uniform1i( logProgramInfo.uniformLocations.logType, logType );
+  const logProgramInfos = [
+    logStartProgramInfo,
+    logMiddleProgramInfo,
+    logEndProgramInfo,
+  ];
 
-    ShaderCommon.drawShader( gl, logProgramInfo, {
+  function drawLog( projectionMatrix, modelViewMatrix, logType ) {
+    ShaderCommon.drawShader( gl, logProgramInfos[ logType ], {
       projectionMatrix: projectionMatrix,
       modelViewMatrix: modelViewMatrix,
       color: logColor,
