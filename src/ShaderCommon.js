@@ -1,4 +1,4 @@
-const vsSource = /*glsl*/`# version 300 es
+export const CommonVertexShader = /*glsl*/`# version 300 es
   in vec4 vertexPosition;
 
   uniform mat4 modelViewMatrix;
@@ -12,7 +12,7 @@ const vsSource = /*glsl*/`# version 300 es
   }
 `;
 
-const fragCommon = /*glsl*/ `# version 300 es
+export const FragCommon = /*glsl*/ `# version 300 es
   precision mediump float;
 
   #define PI 3.14159265359
@@ -27,7 +27,7 @@ const fragCommon = /*glsl*/ `# version 300 es
   out vec4 outColor;
 `;
 
-const circleFrag = fragCommon + /*glsl*/ `
+const circleFrag = FragCommon + /*glsl*/ `
   void main() {
     float dist = distance( vec2( 0.0, 0.0 ), v_pos.xy );
 
@@ -44,7 +44,7 @@ const circleFrag = fragCommon + /*glsl*/ `
   }
 `;
 
-const triangleFrag = fragCommon + /*glsl*/ `
+const triangleFrag = FragCommon + /*glsl*/ `
   void main() {
     float dist = v_pos.x - abs( v_pos.y );
 
@@ -57,27 +57,29 @@ const triangleFrag = fragCommon + /*glsl*/ `
   }
 `;
 
-const commonAttributes = [ 'vertexPosition' ];
-const commonUniforms = [ 'projectionMatrix', 'modelViewMatrix', 'color', 'strokeWidth' ];
+export const CommonAttributes = [ 'vertexPosition' ];
+export const CommonUniforms = [ 'projectionMatrix', 'modelViewMatrix', 'color', 'strokeWidth' ];
+
+export const SquarePoints = [
+  0.5,  0.5, 
+ -0.5,  0.5, 
+  0.5, -0.5, 
+ -0.5, -0.5,
+];
 
 export const ShaderInfo = {
   Circle: {
-    vertexShader: vsSource,
+    vertexShader: CommonVertexShader,
     fragmentShader: circleFrag,
-    attributes: commonAttributes,
-    uniforms: commonUniforms,
-    points: [
-       0.5,  0.5, 
-      -0.5,  0.5, 
-       0.5, -0.5, 
-      -0.5, -0.5,
-    ],
+    attributes: CommonAttributes,
+    uniforms: CommonUniforms,
+    points: SquarePoints,
   },
   Triangle: {
-    vertexShader: vsSource,
+    vertexShader: CommonVertexShader,
     fragmentShader: triangleFrag,
-    attributes: commonAttributes,
-    uniforms: commonUniforms,
+    attributes: CommonAttributes,
+    uniforms: CommonUniforms,
     points: [
       0,  0,
       1, -1,
