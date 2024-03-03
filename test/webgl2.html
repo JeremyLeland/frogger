@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Organizing WebGL demo into common code</title>
+    <link rel="stylesheet" href="../grid.css">
   </head>
 
   <body>
@@ -14,7 +15,7 @@
   import { mat4 } from '../lib/gl-matrix.js';
   import * as ShaderCommon from '../src/ShaderCommon.js';
 
-  const width = 800, height = 600;
+  const width = 15 * 48, height = 15 * 48;
   const canvas = document.querySelector("#glcanvas");
   canvas.width = width * devicePixelRatio;
   canvas.height = height * devicePixelRatio;
@@ -122,7 +123,7 @@
   let animationTime = 0;
 
   function drawScene( gl ) {
-    gl.clearColor(0.0, 0.0, 0.5, 1.0);
+    gl.clearColor(0.0, 0.5, 0.75, 1.0);
     gl.clearDepth(1.0); // Clear everything
     gl.enable(gl.DEPTH_TEST); // Enable depth testing
     gl.depthFunc(gl.LEQUAL); // Near things obscure far things
@@ -146,26 +147,29 @@
 
     // note: glmatrix.js always has the first argument
     // as the destination to receive the result.
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+    // mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
-    for ( let row = 0; row < 5; row ++ ) {
-      for ( let col = 0; col < 6; col ++ ) {
+    // 15x15 2D view with y axis going down
+    mat4.ortho( projectionMatrix, -0.5, 14.5, 14.5, -0.5, 1, -1 );
 
-        const angle = ( ( col / 2 ) % 2 == 0 ? 1 : -1 ) *  Math.PI / 4;
+    for ( let row = 0; row < 15; row ++ ) {
+      for ( let col = 0; col < 15; col ++ ) {
+
+        const angle = 0;//( col + row ) * Math.PI / 2;
 
         const modelViewMatrix = mat4.fromRotationTranslationScale( 
           mat4.create(), 
-          [ Math.cos( angle ), Math.sin( angle ), 0, 0 ],
-          [ -2.5 + col, -2 + row, -6 ],
+          [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
+          [ col, row, -1 ],
           [ 1, 1, 1 ],
         );
 
-        if ( col % 2 == 0 ) {
+        // if ( col % 2 == 0 ) {
           drawTurtle( projectionMatrix, modelViewMatrix );
-        }
-        else {
-          drawLog( projectionMatrix, modelViewMatrix, ( col + 5 - row ) % 3 );
-        }
+        // }
+        // else {
+          // drawLog( projectionMatrix, modelViewMatrix, ( col + 5 - row ) % 3 );
+        // }
       }
     }
   }
@@ -188,16 +192,23 @@
 
   requestAnimationFrame( render );
 
+  const LEG_L = 0.45, LEG_W = 0.12;
+  const HEAD_SIZE = 0.3;
+  const SHELL_SIZE = 0.6;
+
   function drawTurtle( projectionMatrix, modelViewMatrix ) {
     // Legs
+    const legAngleOffset = 0.3 * Math.sin( animationTime * 4 );
+
     [ -1, 1 ].forEach( side => {
-      for ( let i = 0; i < 2; i ++ ) {
-        const angle = side * ( Math.PI / 4.0 * ( i + 0.5 ) + 0.1 * ( 1 + Math.sin( animationTime * 4 ) ) );
+      [ 0.4, 0.75 ].forEach( legAngle => {
+        const angle = side * ( Math.PI * legAngle + legAngleOffset );
+
         const legMatrix = mat4.fromRotationTranslationScale( 
           mat4.create(), 
-          [ Math.cos( angle ), Math.sin( angle ), 0, 0 ],
-          [ 0, 0, 0 ],
-          [ 0.4, 0.125, 1.0 ],
+          [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
+          [ -0.05, 0, 0 ],
+          [ LEG_L, LEG_W, 1.0 ],
         );
 
         ShaderCommon.drawShader( gl, triangleProgramInfo, {
@@ -206,15 +217,15 @@
           color: bodyColor,
           strokeWidth: 0.1,
         } );
-      }
+      } );
     } );
 
     // Head
     const headMatrix = mat4.fromRotationTranslationScale( 
       mat4.create(), 
       [ 0, 0, 0, 0 ],
-      [ 0.35, 0, 0 ],
-      [ 0.3, 0.3, 0.3 ],
+      [ 0.3, 0, 0 ],
+      [ HEAD_SIZE, HEAD_SIZE, HEAD_SIZE ],
     );
 
     ShaderCommon.drawShader( gl, circleProgramInfo, {
@@ -228,8 +239,8 @@
     const shellMatrix = mat4.fromRotationTranslationScale( 
       mat4.create(), 
       [ 0, 0, 0, 0 ],
-      [ 0, 0, 0 ],
-      [ 0.6, 0.6, 0.6 ],
+      [ -0.05, 0, 0 ],
+      [ SHELL_SIZE, SHELL_SIZE, SHELL_SIZE ],
     );
 
     ShaderCommon.drawShader( gl, circleProgramInfo, {
