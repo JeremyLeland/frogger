@@ -104,8 +104,8 @@
 
     const vec4[ 3 ] colors = vec4[ 3 ](
       vec4( 0.0, 0.5, 0.0, 1.0 ),
-      vec4( 0.0, 0.5, 0.0, 1.0 ),
-      vec4( 0.3, 0.3, 0.3, 1.0 )
+      vec4( 0.3, 0.3, 0.3, 1.0 ),
+      vec4( 0.0, 0.5, 0.0, 1.0 )
     );
 
     void main() {
@@ -121,6 +121,8 @@
 
       if ( 0.0 < neighborPos.x && neighborPos.x < float( SIZE ) &&
            0.0 < neighborPos.y && neighborPos.y < float( SIZE ) ) {
+
+        // TODO: Custom edges for grass?
 
         int neighbor_x = tiles[ int( neighborPos.x ) + int( mapPos.y ) * SIZE ];
         int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * SIZE ];
@@ -203,22 +205,28 @@
   const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 14.5, 14.5, -0.5, 1, -1 );
 
   const tiles = [
-    1,1,0,2,0,0,1,1,3,0,0,3,1,1,3,
-    1,3,0,0,0,1,3,1,1,0,0,0,1,1,1,
-    1,1,1,0,0,1,1,1,3,0,2,0,3,1,1,
-    3,1,0,0,0,0,0,1,0,0,2,0,0,1,3,
-    0,0,0,2,2,2,0,0,0,2,2,2,0,0,0,
-    0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,
-    2,2,2,2,0,2,0,1,1,0,2,0,3,1,1,
-    0,2,0,0,0,0,0,1,3,0,2,0,1,1,3,
-    0,2,0,2,0,0,1,1,1,0,0,0,0,0,1,
-    0,0,0,2,2,0,3,1,1,1,3,0,2,0,0,
-    0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,
-    1,1,3,0,2,0,0,0,0,2,2,0,0,1,1,
-    1,1,1,0,2,0,3,1,0,0,2,0,3,1,3,
-    3,1,0,0,0,0,1,1,1,0,0,0,1,1,1,
-    1,1,0,0,0,1,1,1,3,0,0,1,3,1,3,
+    2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,
+    1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,
+    2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,
+    2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,1,2,1,2,2,2,2,2,2
   ];
+
+  // TODO: Bushes and lilipads should be separate from tiles -- they are props
+  //       Having them as tiles causes more problems than it solves
+  //       Only gameplay effect is on player, just check if there's a prop under
+  //       or infront of us at the relevent times.
+  //       Maybe lilipads should be treated like entities? (e.g. "rideable")
 
   const entities = [
     { type: 'Turtle', x: 0, y: 0, dir: 1 },
@@ -252,13 +260,12 @@
 
     gl.uniformMatrix4fv( mapProgramInfo.uniformLocations.projectionMatrix, false, projectionMatrix );
     gl.uniformMatrix4fv( mapProgramInfo.uniformLocations.modelViewMatrix, false, mapModelView );
-
     gl.uniform1iv( mapProgramInfo.uniformLocations.tiles, tiles );
-    gl.uniform1i( mapProgramInfo.uniformLocations.layerIndex, 1 );
 
-
-    ShaderCommon.drawPoints( gl, mapProgramInfo );
-
+    for ( let i = 1; i < 3; i ++ ) {
+      gl.uniform1i( mapProgramInfo.uniformLocations.layerIndex, i );
+      ShaderCommon.drawPoints( gl, mapProgramInfo );
+    }
   
     entities.forEach( entity => {
       const angle = -entity.dir * Math.PI / 2;
