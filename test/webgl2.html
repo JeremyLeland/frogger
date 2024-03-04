@@ -113,6 +113,13 @@
     uniforms: ShaderCommon.CommonUniforms,
     points: ShaderCommon.SquarePoints,
   } );
+  
+  const drawFunc = {
+    Turtle: drawTurtle,
+    LogStart: drawLogStart,
+    LogMiddle: drawLogMiddle,
+    LogEnd: drawLogEnd,
+  };
 
 
   const bodyColor = new Float32Array( [ 0.0, 0.5, 0 ] );
@@ -121,6 +128,24 @@
   // TODO: Create buffer for triangles
 
   let animationTime = 0;
+
+  // 15x15 2D view with y axis going down
+  const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 14.5, 14.5, -0.5, 1, -1 );
+
+  const entities = [
+    { type: 'Turtle', x: 0, y: 0, dir: 1 },
+    { type: 'Turtle', x: 1, y: 1, dir: 2 },
+    { type: 'Turtle', x: 2, y: 2, dir: 3 },
+    { type: 'Turtle', x: 3, y: 3, dir: 4 },
+
+    { type: 'LogStart',  x: 0, y: 3, dir: 4 },
+    { type: 'LogMiddle', x: 1, y: 3, dir: 4 },
+    { type: 'LogEnd',    x: 2, y: 3, dir: 4 },
+    { type: 'LogStart',  x: 3, y: 0, dir: 3 },
+    { type: 'LogMiddle', x: 3, y: 1, dir: 3 },
+    { type: 'LogEnd',    x: 3, y: 2, dir: 3 },
+  ];
+
 
   function drawScene( gl ) {
     gl.clearColor(0.0, 0.5, 0.75, 1.0);
@@ -132,46 +157,19 @@
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // Create a perspective matrix, a special matrix that is
-    // used to simulate the distortion of perspective in a camera.
-    // Our field of view is 45 degrees, with a width/height
-    // ratio that matches the display size of the canvas
-    // and we only want to see objects between 0.1 units
-    // and 100 units away from the camera.
+  
+    entities.forEach( entity => {
+      const angle = -entity.dir * Math.PI / 2;
 
-    const fieldOfView = 45 * Math.PI / 180; // in radians
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 100.0;
-    const projectionMatrix = mat4.create();
+      const modelViewMatrix = mat4.fromRotationTranslationScale( 
+        mat4.create(), 
+        [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
+        [ entity.x, entity.y, 0 ],
+        [ 1, 1, 1 ],
+      );
 
-    // note: glmatrix.js always has the first argument
-    // as the destination to receive the result.
-    // mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-    // 15x15 2D view with y axis going down
-    mat4.ortho( projectionMatrix, -0.5, 14.5, 14.5, -0.5, 1, -1 );
-
-    for ( let row = 0; row < 15; row ++ ) {
-      for ( let col = 0; col < 15; col ++ ) {
-
-        const angle = 0;//( col + row ) * Math.PI / 2;
-
-        const modelViewMatrix = mat4.fromRotationTranslationScale( 
-          mat4.create(), 
-          [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
-          [ col, row, -1 ],
-          [ 1, 1, 1 ],
-        );
-
-        // if ( col % 2 == 0 ) {
-          drawTurtle( projectionMatrix, modelViewMatrix );
-        // }
-        // else {
-          // drawLog( projectionMatrix, modelViewMatrix, ( col + 5 - row ) % 3 );
-        // }
-      }
-    }
+      drawFunc[ entity.type ]( projectionMatrix, modelViewMatrix );
+    } );
   }
 
   function update( dt ) {
@@ -253,14 +251,26 @@
 
   const logColor = new Float32Array( [ 0.5, 0.25, 0.05 ] );
 
-  const logProgramInfos = [
-    logStartProgramInfo,
-    logMiddleProgramInfo,
-    logEndProgramInfo,
-  ];
+  function drawLogStart( projectionMatrix, modelViewMatrix ) {
+    ShaderCommon.drawShader( gl, logStartProgramInfo, {
+      projectionMatrix: projectionMatrix,
+      modelViewMatrix: modelViewMatrix,
+      color: logColor,
+      strokeWidth: 0.05
+    } );
+  }
 
-  function drawLog( projectionMatrix, modelViewMatrix, logType ) {
-    ShaderCommon.drawShader( gl, logProgramInfos[ logType ], {
+  function drawLogMiddle( projectionMatrix, modelViewMatrix ) {
+    ShaderCommon.drawShader( gl, logMiddleProgramInfo, {
+      projectionMatrix: projectionMatrix,
+      modelViewMatrix: modelViewMatrix,
+      color: logColor,
+      strokeWidth: 0.05
+    } );
+  }
+
+  function drawLogEnd( projectionMatrix, modelViewMatrix ) {
+    ShaderCommon.drawShader( gl, logEndProgramInfo, {
       projectionMatrix: projectionMatrix,
       modelViewMatrix: modelViewMatrix,
       color: logColor,
