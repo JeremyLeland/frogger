@@ -90,6 +90,63 @@
     }
   `;
 
+  const mapFrag = /* glsl */ `# version 300 es
+    precision mediump float;
+    
+    in vec2 v_pos;
+
+    out vec4 outColor;
+
+    const int SIZE = 15;
+
+    uniform int tiles[ SIZE * SIZE ];
+    uniform int layerIndex;
+
+    const vec4[ 3 ] colors = vec4[ 3 ](
+      vec4( 0.0, 0.5, 0.0, 1.0 ),
+      vec4( 0.0, 0.5, 0.0, 1.0 ),
+      vec4( 0.3, 0.3, 0.3, 1.0 )
+    );
+
+    void main() {
+
+      vec2 mapPos = ( v_pos + 0.5 );
+
+      int tile = tiles[ int( mapPos.x ) + int( mapPos.y ) * SIZE ];
+
+      outColor = colors[ layerIndex ];
+
+      vec2 fromCenter = fract( mapPos ) - vec2( 0.5 );
+      vec2 neighborPos = mapPos + sign( fromCenter );
+
+      if ( 0.0 < neighborPos.x && neighborPos.x < float( SIZE ) &&
+           0.0 < neighborPos.y && neighborPos.y < float( SIZE ) ) {
+
+        int neighbor_x = tiles[ int( neighborPos.x ) + int( mapPos.y ) * SIZE ];
+        int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * SIZE ];
+        int neighbor_xy = tiles[ int( neighborPos.x ) + int( neighborPos.y ) * SIZE ];
+
+        if ( tile >= layerIndex ) {
+          if ( neighbor_x < layerIndex && neighbor_y < layerIndex && length( fromCenter ) > 0.5 ) {
+            discard;
+          }
+        }
+        else {
+          if ( neighbor_x >= layerIndex && neighbor_y >= layerIndex && length( fromCenter ) < 0.5 ) {
+            discard;
+          }
+
+          if ( neighbor_xy < layerIndex || neighbor_x < layerIndex || neighbor_y < layerIndex ) {
+            discard;
+          }
+        }
+      }
+      else if ( tile < layerIndex ) {
+        discard;
+      }
+    }
+  `;
+
   const logStartProgramInfo = ShaderCommon.getShader( gl, {
     vertexShader: ShaderCommon.CommonVertexShader,
     fragmentShader: logStartFrag,
@@ -113,6 +170,19 @@
     uniforms: ShaderCommon.CommonUniforms,
     points: ShaderCommon.SquarePoints,
   } );
+
+  const mapProgramInfo = ShaderCommon.getShader( gl, {
+    vertexShader: ShaderCommon.CommonVertexShader,
+    fragmentShader: mapFrag,
+    attributes: ShaderCommon.CommonAttributes,
+    uniforms: [ 'projectionMatrix', 'modelViewMatrix', 'tiles', 'layerIndex' ],
+    points: [
+      14.5,  14.5, 
+    -0.5,  14.5, 
+      14.5, -0.5, 
+    -0.5, -0.5,
+    ],
+  } );
   
   const drawFunc = {
     Turtle: drawTurtle,
@@ -132,6 +202,24 @@
   // 15x15 2D view with y axis going down
   const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 14.5, 14.5, -0.5, 1, -1 );
 
+  const tiles = [
+    1,1,0,2,0,0,1,1,3,0,0,3,1,1,3,
+    1,3,0,0,0,1,3,1,1,0,0,0,1,1,1,
+    1,1,1,0,0,1,1,1,3,0,2,0,3,1,1,
+    3,1,0,0,0,0,0,1,0,0,2,0,0,1,3,
+    0,0,0,2,2,2,0,0,0,2,2,2,0,0,0,
+    0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,
+    2,2,2,2,0,2,0,1,1,0,2,0,3,1,1,
+    0,2,0,0,0,0,0,1,3,0,2,0,1,1,3,
+    0,2,0,2,0,0,1,1,1,0,0,0,0,0,1,
+    0,0,0,2,2,0,3,1,1,1,3,0,2,0,0,
+    0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,
+    1,1,3,0,2,0,0,0,0,2,2,0,0,1,1,
+    1,1,1,0,2,0,3,1,0,0,2,0,3,1,3,
+    3,1,0,0,0,0,1,1,1,0,0,0,1,1,1,
+    1,1,0,0,0,1,1,1,3,0,0,1,3,1,3,
+  ];
+
   const entities = [
     { type: 'Turtle', x: 0, y: 0, dir: 1 },
     { type: 'Turtle', x: 1, y: 1, dir: 2 },
@@ -141,11 +229,13 @@
     { type: 'LogStart',  x: 0, y: 3, dir: 4 },
     { type: 'LogMiddle', x: 1, y: 3, dir: 4 },
     { type: 'LogEnd',    x: 2, y: 3, dir: 4 },
+
     { type: 'LogStart',  x: 3, y: 0, dir: 3 },
     { type: 'LogMiddle', x: 3, y: 1, dir: 3 },
     { type: 'LogEnd',    x: 3, y: 2, dir: 3 },
   ];
 
+  const mapModelView = mat4.create();
 
   function drawScene( gl ) {
     gl.clearColor(0.0, 0.5, 0.75, 1.0);
@@ -156,6 +246,18 @@
     // Clear the canvas before we start drawing on it.
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+
+    gl.useProgram( mapProgramInfo.program );
+
+    gl.uniformMatrix4fv( mapProgramInfo.uniformLocations.projectionMatrix, false, projectionMatrix );
+    gl.uniformMatrix4fv( mapProgramInfo.uniformLocations.modelViewMatrix, false, mapModelView );
+
+    gl.uniform1iv( mapProgramInfo.uniformLocations.tiles, tiles );
+    gl.uniform1i( mapProgramInfo.uniformLocations.layerIndex, 1 );
+
+
+    ShaderCommon.drawPoints( gl, mapProgramInfo );
 
   
     entities.forEach( entity => {

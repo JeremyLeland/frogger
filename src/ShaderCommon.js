@@ -119,6 +119,10 @@ export function drawShader( gl, shader, uniforms ) {
   gl.uniform3fv( shader.uniformLocations.color, uniforms.color );
   gl.uniform1f( shader.uniformLocations.strokeWidth, uniforms.strokeWidth );
 
+  drawPoints( gl, shader );
+}
+
+export function drawPoints( gl, shader ) {
   gl.bindBuffer( gl.ARRAY_BUFFER, shader.buffer );
   gl.vertexAttribPointer( shader.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0 );
   gl.enableVertexAttribArray( shader.attribLocations.vertexPosition );
