@@ -36,6 +36,7 @@
   //       Start with Log?
 
   const circleProgramInfo = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.Circle );
+  const roundRectProgramInfo = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.RoundRect );
   const triangleProgramInfo = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.Triangle );
 
   const LOG_WIDTH = 0.4;
@@ -202,7 +203,8 @@
   let animationTime = 0;
 
   // 15x15 2D view with y axis going down
-  const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 14.5, 14.5, -0.5, 1, -1 );
+  // const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 14.5, 14.5, -0.5, 1, -1 );
+  const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 0.5, 0.5, -0.5, 1, -1 );
 
   const tiles = [
     2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,
@@ -229,7 +231,7 @@
   //       Maybe lilipads should be treated like entities? (e.g. "rideable")
 
   const entities = [
-    { type: 'Turtle', x: 0, y: 0, dir: 1 },
+    { type: 'Turtle', x: 0, y: 0, dir: 4 },
     { type: 'Turtle', x: 1, y: 1, dir: 2 },
     { type: 'Turtle', x: 2, y: 2, dir: 3 },
     { type: 'Turtle', x: 3, y: 3, dir: 4 },
@@ -347,7 +349,7 @@
       [ SHELL_SIZE, SHELL_SIZE, SHELL_SIZE ],
     );
 
-    ShaderCommon.drawShader( gl, circleProgramInfo, {
+    ShaderCommon.drawShader( gl, roundRectProgramInfo, {
       mvp: mat4.multiply( mat4.create(), mvp, shellMatrix ),
       color: shellColor,
       strokeWidth: 0.05,

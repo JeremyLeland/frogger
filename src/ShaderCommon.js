@@ -19,7 +19,7 @@ export const FragCommon = /*glsl*/ `# version 300 es
   in vec2 v_pos;
 
   uniform vec3 color;
-  uniform float strokeWidth;
+  uniform float strokeWidth;    // TODO: Get this from mvp scale component
 
   const vec3 BLACK = vec3( 0.0 );
 
@@ -30,7 +30,6 @@ const circleFrag = FragCommon + /*glsl*/ `
   void main() {
     float dist = distance( vec2( 0.0, 0.0 ), v_pos.xy );
 
-    // NOTE: We're covering darker shading with the stroke if we do it this way...need to fix for legs, too
     if ( dist < 0.5 - strokeWidth ) {
       outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * dist ) ), 1.0 );
     }
@@ -40,6 +39,63 @@ const circleFrag = FragCommon + /*glsl*/ `
     else {
       discard;
     }
+  }
+`;
+
+// TODO: Round rect...how does this handle scaling? Is radius a percentage?
+
+const roundRectFrag = FragCommon + /*glsl*/ `
+  // uniform float radius;
+  const float radius = 0.3;
+
+  void main() {
+
+    // if ( abs( v_pos.x ) < 0.5 - radius || abs( v_pos.y ) < 0.5 - radius ) {
+    if ( abs( v_pos.x ) < 0.5 - radius ) {
+      float dist = abs( v_pos.y );
+
+      if ( abs( v_pos.y ) < 0.5 - strokeWidth ) {
+        outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * dist ) ), 1.0 );
+      }
+      else {
+        outColor = vec4( BLACK, 1.0 );
+      }
+    }
+    else if ( abs( v_pos.y ) < 0.5 - radius ) {
+      float dist = abs( v_pos.x );
+
+      if ( abs( v_pos.x ) < 0.5 - strokeWidth ) {
+        outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * dist ) ), 1.0 );
+      }
+      else {
+        outColor = vec4( BLACK, 1.0 );
+      }
+    }
+    else {
+      float dist = distance( vec2( 0.5 - radius, 0.5 - radius ), abs( v_pos.xy ) );
+
+      if ( dist < radius - strokeWidth ) {
+        outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * ( dist + 0.25 ) ) ), 1.0 );
+      }
+      else if ( dist < radius ) {
+        outColor = vec4( BLACK, 1.0 );
+      }
+      else {
+        discard;
+      }
+    }
+
+    // float dist = distance( vec2( 0.0, 0.0 ), v_pos.xy );
+
+    // if ( dist < 0.5 - strokeWidth ) {
+    //   outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * dist ) ), 1.0 );
+    // }
+    // else if ( dist < 0.5 ) {
+    //   outColor = vec4( BLACK, 1.0 );
+    // }
+    // else {
+    //   discard;
+    // }
   }
 `;
 
@@ -70,6 +126,13 @@ export const ShaderInfo = {
   Circle: {
     vertexShader: CommonVertexShader,
     fragmentShader: circleFrag,
+    attributes: CommonAttributes,
+    uniforms: CommonUniforms,
+    points: SquarePoints,
+  },
+  RoundRect: {
+    vertexShader: CommonVertexShader,
+    fragmentShader: roundRectFrag,
     attributes: CommonAttributes,
     uniforms: CommonUniforms,
     points: SquarePoints,
