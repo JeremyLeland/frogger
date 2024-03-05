@@ -1,13 +1,12 @@
 export const CommonVertexShader = /*glsl*/`# version 300 es
   in vec4 vertexPosition;
 
-  uniform mat4 modelViewMatrix;
-  uniform mat4 projectionMatrix;
+  uniform mat4 mvp;
 
   out vec2 v_pos;
 
   void main() {
-    gl_Position = projectionMatrix * modelViewMatrix * vertexPosition;
+    gl_Position = mvp * vertexPosition;
     v_pos = vertexPosition.xy;
   }
 `;
@@ -58,7 +57,7 @@ const triangleFrag = FragCommon + /*glsl*/ `
 `;
 
 export const CommonAttributes = [ 'vertexPosition' ];
-export const CommonUniforms = [ 'projectionMatrix', 'modelViewMatrix', 'color', 'strokeWidth' ];
+export const CommonUniforms = [ 'mvp', 'color', 'strokeWidth' ];
 
 export const SquarePoints = [
   0.5,  0.5, 
@@ -113,8 +112,7 @@ export function getShader( gl, shaderInfo ) {
 export function drawShader( gl, shader, uniforms ) {
   gl.useProgram( shader.program );
 
-  gl.uniformMatrix4fv( shader.uniformLocations.projectionMatrix, false, uniforms.projectionMatrix );
-  gl.uniformMatrix4fv( shader.uniformLocations.modelViewMatrix, false, uniforms.modelViewMatrix );
+  gl.uniformMatrix4fv( shader.uniformLocations.mvp, false, uniforms.mvp );
 
   gl.uniform3fv( shader.uniformLocations.color, uniforms.color );
   gl.uniform1f( shader.uniformLocations.strokeWidth, uniforms.strokeWidth );

@@ -177,12 +177,12 @@
     vertexShader: ShaderCommon.CommonVertexShader,
     fragmentShader: mapFrag,
     attributes: ShaderCommon.CommonAttributes,
-    uniforms: [ 'projectionMatrix', 'modelViewMatrix', 'tiles', 'layerIndex' ],
+    uniforms: [ 'mvp', 'tiles', 'layerIndex' ],
     points: [
-      14.5,  14.5, 
-    -0.5,  14.5, 
-      14.5, -0.5, 
-    -0.5, -0.5,
+     14.5, 14.5, 
+     -0.5, 14.5, 
+     14.5, -0.5, 
+     -0.5, -0.5,
     ],
   } );
   
@@ -243,7 +243,7 @@
     { type: 'LogEnd',    x: 3, y: 2, dir: 3 },
   ];
 
-  const mapModelView = mat4.create();
+  const mapMVP = projectionMatrix;
 
   function drawScene( gl ) {
     gl.clearColor(0.0, 0.5, 0.75, 1.0);
@@ -258,8 +258,7 @@
 
     gl.useProgram( mapProgramInfo.program );
 
-    gl.uniformMatrix4fv( mapProgramInfo.uniformLocations.projectionMatrix, false, projectionMatrix );
-    gl.uniformMatrix4fv( mapProgramInfo.uniformLocations.modelViewMatrix, false, mapModelView );
+    gl.uniformMatrix4fv( mapProgramInfo.uniformLocations.mvp, false, mapMVP );
     gl.uniform1iv( mapProgramInfo.uniformLocations.tiles, tiles );
 
     for ( let i = 1; i < 3; i ++ ) {
@@ -277,7 +276,7 @@
         [ 1, 1, 1 ],
       );
 
-      drawFunc[ entity.type ]( projectionMatrix, modelViewMatrix );
+      drawFunc[ entity.type ]( mat4.multiply( mat4.create(), projectionMatrix, modelViewMatrix ) );
     } );
   }
 
@@ -303,7 +302,7 @@
   const HEAD_SIZE = 0.3;
   const SHELL_SIZE = 0.6;
 
-  function drawTurtle( projectionMatrix, modelViewMatrix ) {
+  function drawTurtle( mvp ) {
     // Legs
     const legAngleOffset = 0.3 * Math.sin( animationTime * 4 );
 
@@ -319,8 +318,7 @@
         );
 
         ShaderCommon.drawShader( gl, triangleProgramInfo, {
-          projectionMatrix: projectionMatrix,
-          modelViewMatrix: mat4.multiply( mat4.create(), modelViewMatrix, legMatrix ),
+          mvp: mat4.multiply( mat4.create(), mvp, legMatrix ),
           color: bodyColor,
           strokeWidth: 0.1,
         } );
@@ -336,8 +334,7 @@
     );
 
     ShaderCommon.drawShader( gl, circleProgramInfo, {
-      projectionMatrix: projectionMatrix,
-      modelViewMatrix: mat4.multiply( mat4.create(), modelViewMatrix, headMatrix ),
+      mvp: mat4.multiply( mat4.create(), mvp, headMatrix ),
       color: bodyColor,
       strokeWidth: 0.1,
     } );
@@ -351,8 +348,7 @@
     );
 
     ShaderCommon.drawShader( gl, circleProgramInfo, {
-      projectionMatrix: projectionMatrix,
-      modelViewMatrix: mat4.multiply( mat4.create(), modelViewMatrix, shellMatrix ),
+      mvp: mat4.multiply( mat4.create(), mvp, shellMatrix ),
       color: shellColor,
       strokeWidth: 0.05,
     } );
@@ -360,28 +356,25 @@
 
   const logColor = new Float32Array( [ 0.5, 0.25, 0.05 ] );
 
-  function drawLogStart( projectionMatrix, modelViewMatrix ) {
+  function drawLogStart( mvp ) {
     ShaderCommon.drawShader( gl, logStartProgramInfo, {
-      projectionMatrix: projectionMatrix,
-      modelViewMatrix: modelViewMatrix,
+      mvp: mvp,
       color: logColor,
       strokeWidth: 0.05
     } );
   }
 
-  function drawLogMiddle( projectionMatrix, modelViewMatrix ) {
+  function drawLogMiddle( mvp ) {
     ShaderCommon.drawShader( gl, logMiddleProgramInfo, {
-      projectionMatrix: projectionMatrix,
-      modelViewMatrix: modelViewMatrix,
+      mvp: mvp,
       color: logColor,
       strokeWidth: 0.05
     } );
   }
 
-  function drawLogEnd( projectionMatrix, modelViewMatrix ) {
+  function drawLogEnd( mvp ) {
     ShaderCommon.drawShader( gl, logEndProgramInfo, {
-      projectionMatrix: projectionMatrix,
-      modelViewMatrix: modelViewMatrix,
+      mvp: mvp,
       color: logColor,
       strokeWidth: 0.05
     } );
