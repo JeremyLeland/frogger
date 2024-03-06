@@ -31,7 +31,7 @@ const circleFrag = FragCommon + /*glsl*/ `
     float dist = distance( vec2( 0.0, 0.0 ), v_pos.xy );
 
     if ( dist < 0.5 - strokeWidth ) {
-      outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * dist ) ), 1.0 );
+      outColor = vec4( mix( BLACK, color, cos( PI * dist ) ), 1.0 );
     }
     else if ( dist < 0.5 ) {
       outColor = vec4( BLACK, 1.0 );
@@ -50,52 +50,29 @@ const roundRectFrag = FragCommon + /*glsl*/ `
 
   void main() {
 
-    // if ( abs( v_pos.x ) < 0.5 - radius || abs( v_pos.y ) < 0.5 - radius ) {
-    if ( abs( v_pos.x ) < 0.5 - radius ) {
-      float dist = abs( v_pos.y );
+    float dist = 0.0;
 
-      if ( abs( v_pos.y ) < 0.5 - strokeWidth ) {
-        outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * dist ) ), 1.0 );
-      }
-      else {
-        outColor = vec4( BLACK, 1.0 );
-      }
+    float innerEdge = 0.5 - radius;
+
+    if ( abs( v_pos.x ) < innerEdge ) {
+      dist = max( 0.0, 0.5 * ( abs( v_pos.y ) - innerEdge ) / radius );
     }
-    else if ( abs( v_pos.y ) < 0.5 - radius ) {
-      float dist = abs( v_pos.x );
-
-      if ( abs( v_pos.x ) < 0.5 - strokeWidth ) {
-        outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * dist ) ), 1.0 );
-      }
-      else {
-        outColor = vec4( BLACK, 1.0 );
-      }
+    else if ( abs( v_pos.y ) < innerEdge ) {
+      dist = max( 0.0, 0.5 * ( abs( v_pos.x ) - innerEdge ) / radius );
     }
     else {
-      float dist = distance( vec2( 0.5 - radius, 0.5 - radius ), abs( v_pos.xy ) );
-
-      if ( dist < radius - strokeWidth ) {
-        outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * ( dist + 0.25 ) ) ), 1.0 );
-      }
-      else if ( dist < radius ) {
-        outColor = vec4( BLACK, 1.0 );
-      }
-      else {
-        discard;
-      }
+      dist = 0.5 * distance( vec2( innerEdge ), abs( v_pos.xy ) ) / radius;
     }
 
-    // float dist = distance( vec2( 0.0, 0.0 ), v_pos.xy );
-
-    // if ( dist < 0.5 - strokeWidth ) {
-    //   outColor = vec4( mix( BLACK, color, cos( 0.8 * PI * dist ) ), 1.0 );
-    // }
-    // else if ( dist < 0.5 ) {
-    //   outColor = vec4( BLACK, 1.0 );
-    // }
-    // else {
-    //   discard;
-    // }
+    if ( dist < 0.5 - strokeWidth ) {
+      outColor = vec4( mix( BLACK, color, cos( /* 1.1 * */ PI * dist ) ), 1.0 );
+    }
+    else if ( dist < 0.5 ) {
+      outColor = vec4( 0.5, 0.5, 0.5, 1.0 );
+    }
+    else {
+      discard;
+    }
   }
 `;
 
