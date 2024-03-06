@@ -68,7 +68,7 @@ const roundRectFrag = FragCommon + /*glsl*/ `
       outColor = vec4( mix( BLACK, color, cos( /* 1.1 * */ PI * dist ) ), 1.0 );
     }
     else if ( dist < 0.5 ) {
-      outColor = vec4( 0.5, 0.5, 0.5, 1.0 );
+      outColor = vec4( BLACK, 1.0 );
     }
     else {
       discard;
