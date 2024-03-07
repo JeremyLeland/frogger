@@ -322,7 +322,7 @@
         ShaderCommon.drawShader( gl, triangleProgramInfo, {
           mvp: mat4.multiply( mat4.create(), mvp, legMatrix ),
           color: bodyColor,
-          //strokeWidth: 0.1,
+          strokeWidth: 0.1,
         } );
       } );
     } );
@@ -338,7 +338,7 @@
     ShaderCommon.drawShader( gl, circleProgramInfo, {
       mvp: mat4.multiply( mat4.create(), mvp, headMatrix ),
       color: bodyColor,
-      //strokeWidth: 0.1,
+      strokeWidth: 0.1,
     } );
 
     // Shell
@@ -352,7 +352,7 @@
     ShaderCommon.drawShader( gl, circleProgramInfo, {
       mvp: mat4.multiply( mat4.create(), mvp, shellMatrix ),
       color: shellColor,
-      //strokeWidth: 0.05,
+      strokeWidth: 0.05,
     } );
   }
 
@@ -362,7 +362,7 @@
     ShaderCommon.drawShader( gl, logStartProgramInfo, {
       mvp: mvp,
       color: logColor,
-      //strokeWidth: 0.05
+      strokeWidth: 0.05
     } );
   }
 
@@ -370,7 +370,7 @@
     ShaderCommon.drawShader( gl, logMiddleProgramInfo, {
       mvp: mvp,
       color: logColor,
-      //strokeWidth: 0.05
+      strokeWidth: 0.05
     } );
   }
 
@@ -378,7 +378,7 @@
     ShaderCommon.drawShader( gl, logEndProgramInfo, {
       mvp: mvp,
       color: logColor,
-      //strokeWidth: 0.05
+      strokeWidth: 0.05
     } );
   }
 
