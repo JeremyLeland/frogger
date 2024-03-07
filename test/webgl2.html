@@ -204,7 +204,7 @@
 
   // 15x15 2D view with y axis going down
   // const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 14.5, 14.5, -0.5, 1, -1 );
-  const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 0.5, 0.5, -0.5, 1, -1 );
+  const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 4.5, 4.5, -0.5, 1, -1 );
 
   const tiles = [
     2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,
@@ -322,7 +322,7 @@
         ShaderCommon.drawShader( gl, triangleProgramInfo, {
           mvp: mat4.multiply( mat4.create(), mvp, legMatrix ),
           color: bodyColor,
-          strokeWidth: 0.1,
+          //strokeWidth: 0.1,
         } );
       } );
     } );
@@ -338,7 +338,7 @@
     ShaderCommon.drawShader( gl, circleProgramInfo, {
       mvp: mat4.multiply( mat4.create(), mvp, headMatrix ),
       color: bodyColor,
-      strokeWidth: 0.1,
+      //strokeWidth: 0.1,
     } );
 
     // Shell
@@ -349,10 +349,10 @@
       [ SHELL_SIZE, SHELL_SIZE, SHELL_SIZE ],
     );
 
-    ShaderCommon.drawShader( gl, roundRectProgramInfo, {
+    ShaderCommon.drawShader( gl, circleProgramInfo, {
       mvp: mat4.multiply( mat4.create(), mvp, shellMatrix ),
       color: shellColor,
-      strokeWidth: 0.05,
+      //strokeWidth: 0.05,
     } );
   }
 
@@ -362,7 +362,7 @@
     ShaderCommon.drawShader( gl, logStartProgramInfo, {
       mvp: mvp,
       color: logColor,
-      strokeWidth: 0.05
+      //strokeWidth: 0.05
     } );
   }
 
@@ -370,7 +370,7 @@
     ShaderCommon.drawShader( gl, logMiddleProgramInfo, {
       mvp: mvp,
       color: logColor,
-      strokeWidth: 0.05
+      //strokeWidth: 0.05
     } );
   }
 
@@ -378,7 +378,7 @@
     ShaderCommon.drawShader( gl, logEndProgramInfo, {
       mvp: mvp,
       color: logColor,
-      strokeWidth: 0.05
+      //strokeWidth: 0.05
     } );
   }
 

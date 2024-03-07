@@ -4,10 +4,32 @@ export const CommonVertexShader = /*glsl*/`# version 300 es
   uniform mat4 mvp;
 
   out vec2 v_pos;
+  out float strokeWidth;
 
   void main() {
     gl_Position = mvp * vertexPosition;
     v_pos = vertexPosition.xy;
+
+    // Modified from https://math.stackexchange.com/questions/13150/extracting-rotation-scale-values-from-2d-transformation-matrix/13165#13165
+    // float sx = sign( mvp[ 0 ][ 0 ] ) * length( vec2( mvp[ 0 ][ 0 ], mvp[ 0 ][ 1 ] ) );
+    // float sx = sign( mvp[ 0 ][ 0 ] ) * length( vec2( mvp[ 0 ][ 0 ], mvp[ 0 ][ 1 ] ) );
+
+    // See https://math.stackexchange.com/questions/237369/given-this-transformation-matrix-how-do-i-decompose-it-into-translation-rotati
+    // float a = mvp[ 0 ][ 0 ], b = mvp[ 1 ][ 0 ], c = mvp[ 2 ][ 0 ];
+    // float e = mvp[ 0 ][ 1 ], f = mvp[ 1 ][ 1 ], g = mvp[ 2 ][ 1 ];
+    // float i = mvp[ 0 ][ 2 ], j = mvp[ 1 ][ 2 ], k = mvp[ 2 ][ 2 ];
+
+    // float sx = length( a, e, i );
+    // float sy = length( b, f, j );
+    // float sz = length( c, g, k );
+
+    float sx = length( mvp[ 0 ] );
+    float sy = length( mvp[ 1 ] );
+    float sz = length( mvp[ 2 ] );
+
+    vec3 s = normalize( vec3( sx, sy, sz ) );
+    
+    strokeWidth = 0.1 / max( s.x, max( s.y, s.z ) );  // min? max?
   }
 `;
 
@@ -17,9 +39,9 @@ export const FragCommon = /*glsl*/ `# version 300 es
   #define PI 3.14159265359
 
   in vec2 v_pos;
+  in float strokeWidth;    // TODO: Get this from mvp scale component
 
   uniform vec3 color;
-  uniform float strokeWidth;    // TODO: Get this from mvp scale component
 
   const vec3 BLACK = vec3( 0.0 );
 
@@ -154,8 +176,14 @@ export function drawShader( gl, shader, uniforms ) {
 
   gl.uniformMatrix4fv( shader.uniformLocations.mvp, false, uniforms.mvp );
 
+  const sx = Math.hypot( uniforms.mvp[ 0 ], uniforms.mvp[ 4 ], uniforms.mvp[ 8 ] );
+  const sy = Math.hypot( uniforms.mvp[ 1 ], uniforms.mvp[ 5 ], uniforms.mvp[ 9 ] );
+
+  console.log( 'sx = ' + sx );
+  console.log( 'sy = ' + sy );
+
   gl.uniform3fv( shader.uniformLocations.color, uniforms.color );
-  gl.uniform1f( shader.uniformLocations.strokeWidth, uniforms.strokeWidth );
+  // gl.uniform1f( shader.uniformLocations.strokeWidth, uniforms.strokeWidth );
 
   drawPoints( gl, shader );
 }

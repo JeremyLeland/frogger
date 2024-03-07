@@ -91,8 +91,8 @@
   const LEG_L = 0.45, LEG_W = 0.12;
   const CAR_WIDTH = 0.7;
   const BODY_SIZE = 1.0;
-  const WINDOW_SIZE = 0.7;
-  const ROOF_SIZE = 0.5;
+  const WINDOW_SIZE = 0.7, WINDOW_OFFSET = -0.04;
+  const ROOF_SIZE = 0.5, ROOF_WIDTH = 0.65, ROOF_OFFSET = -0.06;
 
   function drawCar( mvp ) {
     
@@ -114,8 +114,8 @@
     const windowMatrix = mat4.fromRotationTranslationScale( 
       mat4.create(), 
       [ 0, 0, 0, 0 ],
-      [ -0.05, 0, 0 ],
-      [ WINDOW_SIZE, CAR_WIDTH, 1 ],
+      [ WINDOW_OFFSET, 0, 0 ],
+      [ WINDOW_SIZE, ROOF_WIDTH, 1 ],
     );
 
     ShaderCommon.drawShader( gl, roundRectProgramInfo, {
@@ -128,8 +128,8 @@
     const roofMatrix = mat4.fromRotationTranslationScale( 
       mat4.create(), 
       [ 0, 0, 0, 0 ],
-      [ -0.1, 0, 0 ],
-      [ ROOF_SIZE, CAR_WIDTH, ROOF_SIZE ],
+      [ ROOF_OFFSET, 0, 0 ],
+      [ ROOF_SIZE, ROOF_WIDTH, ROOF_SIZE ],
     );
 
     ShaderCommon.drawShader( gl, roundRectProgramInfo, {
