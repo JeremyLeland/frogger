@@ -1,0 +1,402 @@
+<title>More organizing</title>
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import { mat4 } from '../lib/gl-matrix.js';
+  import * as ShaderCommon from '../src/ShaderCommon.js';
+  import { GLCanvas } from '../src/common/GLCanvas.js';
+
+  const canvas = new GLCanvas( 15 * 48, 15 * 48 );
+
+
+  const circleProgramInfo = ShaderCommon.getShader( canvas.gl, ShaderCommon.ShaderInfo.Circle );
+  const roundRectProgramInfo = ShaderCommon.getShader( canvas.gl, ShaderCommon.ShaderInfo.RoundRect );
+  const triangleProgramInfo = ShaderCommon.getShader( canvas.gl, ShaderCommon.ShaderInfo.Triangle );
+
+  const LOG_WIDTH = 0.4;
+
+  const logStartFrag = ShaderCommon.FragCommon + /*glsl*/`
+    void main() {
+      float distY = abs( v_pos.y );
+      float leftDistX = -0.5 + v_pos.y * v_pos.y - v_pos.x;
+     
+      if ( distY < ${ LOG_WIDTH } && leftDistX < -strokeWidth ) {
+        outColor = vec4( mix( BLACK, color, cos( PI * distY ) ), 1.0 );
+      }
+      else if ( distY < ${ LOG_WIDTH } + strokeWidth && leftDistX < 0.0 ) {
+        outColor = vec4( BLACK, 1.0 );
+      }
+      else {
+        discard;
+      }
+    }
+  `;
+
+  const logMiddleFrag = ShaderCommon.FragCommon + /*glsl*/`
+    void main() {
+      float distY = abs( v_pos.y );
+     
+      if ( distY < ${ LOG_WIDTH } ) {
+        outColor = vec4( mix( BLACK, color, cos( PI * distY ) ), 1.0 );
+      }
+      else if ( distY < ${ LOG_WIDTH } + strokeWidth ) {
+        outColor = vec4( BLACK, 1.0 );
+      }
+      else {
+        discard;
+      }
+    }
+  `;
+
+  const logEndFrag = ShaderCommon.FragCommon + /*glsl*/`
+    void main() {
+      float distY = abs( v_pos.y );
+      float rightDistX = 0.5 - v_pos.y * v_pos.y - v_pos.x;
+     
+      if ( distY < ${ LOG_WIDTH } && rightDistX > strokeWidth ) {
+        outColor = vec4( mix( BLACK, color, cos( PI * distY ) ), 1.0 );
+      }
+      else if ( distY < ${ LOG_WIDTH } + strokeWidth && rightDistX > 0.0 ) {
+        outColor = vec4( BLACK, 1.0 );
+      }
+      else {
+        discard;
+      }
+    }
+  `;
+
+  const mapFrag = /* glsl */ `# version 300 es
+    precision mediump float;
+    
+    in vec2 v_pos;
+
+    out vec4 outColor;
+
+    const int SIZE = 15;
+
+    uniform int tiles[ SIZE * SIZE ];
+    uniform int layerIndex;
+
+    const vec4[ 3 ] colors = vec4[ 3 ](
+      vec4( 0.0, 0.5, 0.0, 1.0 ),
+      vec4( 0.3, 0.3, 0.3, 1.0 ),
+      vec4( 0.0, 0.5, 0.0, 1.0 )
+    );
+
+    void main() {
+
+      vec2 mapPos = ( v_pos + 0.5 );
+
+      int tile = tiles[ int( mapPos.x ) + int( mapPos.y ) * SIZE ];
+
+      outColor = colors[ layerIndex ];
+
+      vec2 fromCenter = fract( mapPos ) - vec2( 0.5 );
+      vec2 neighborPos = mapPos + sign( fromCenter );
+
+      if ( 0.0 < neighborPos.x && neighborPos.x < float( SIZE ) &&
+           0.0 < neighborPos.y && neighborPos.y < float( SIZE ) ) {
+
+        // TODO: Custom edges for grass?
+
+        int neighbor_x = tiles[ int( neighborPos.x ) + int( mapPos.y ) * SIZE ];
+        int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * SIZE ];
+        int neighbor_xy = tiles[ int( neighborPos.x ) + int( neighborPos.y ) * SIZE ];
+
+        if ( tile >= layerIndex ) {
+          if ( neighbor_x < layerIndex && neighbor_y < layerIndex && length( fromCenter ) > 0.5 ) {
+            discard;
+          }
+        }
+        else {
+          if ( neighbor_x >= layerIndex && neighbor_y >= layerIndex && length( fromCenter ) < 0.5 ) {
+            discard;
+          }
+
+          if ( neighbor_xy < layerIndex || neighbor_x < layerIndex || neighbor_y < layerIndex ) {
+            discard;
+          }
+        }
+      }
+      else if ( tile < layerIndex ) {
+        discard;
+      }
+    }
+  `;
+
+  const logStartProgramInfo = ShaderCommon.getShader( canvas.gl, {
+    vertexShader: ShaderCommon.CommonVertexShader,
+    fragmentShader: logStartFrag,
+    attributes: ShaderCommon.CommonAttributes,
+    uniforms: ShaderCommon.CommonUniforms,
+    points: ShaderCommon.SquarePoints,
+  } );
+
+  const logMiddleProgramInfo = ShaderCommon.getShader( canvas.gl, {
+    vertexShader: ShaderCommon.CommonVertexShader,
+    fragmentShader: logMiddleFrag,
+    attributes: ShaderCommon.CommonAttributes,
+    uniforms: ShaderCommon.CommonUniforms,
+    points: ShaderCommon.SquarePoints,
+  } );
+
+  const logEndProgramInfo = ShaderCommon.getShader( canvas.gl, {
+    vertexShader: ShaderCommon.CommonVertexShader,
+    fragmentShader: logEndFrag,
+    attributes: ShaderCommon.CommonAttributes,
+    uniforms: ShaderCommon.CommonUniforms,
+    points: ShaderCommon.SquarePoints,
+  } );
+
+  const mapProgramInfo = ShaderCommon.getShader( canvas.gl, {
+    vertexShader: ShaderCommon.CommonVertexShader,
+    fragmentShader: mapFrag,
+    attributes: ShaderCommon.CommonAttributes,
+    uniforms: [ 'mvp', 'tiles', 'layerIndex' ],
+    points: [
+     14.5, 14.5, 
+     -0.5, 14.5, 
+     14.5, -0.5, 
+     -0.5, -0.5,
+    ],
+  } );
+  
+  const drawFunc = {
+    Turtle: drawTurtle,
+    LogStart: drawLogStart,
+    LogMiddle: drawLogMiddle,
+    LogEnd: drawLogEnd,
+    RedCar:    ( gl, mvp ) => drawCar( gl, mvp, new Float32Array( [ 1.0, 0.0, 0.0 ] ) ),
+    YellowCar: ( gl, mvp ) => drawCar( gl, mvp, new Float32Array( [ 1.0, 1.0, 0.0 ] ) ),
+    GreenCar:  ( gl, mvp ) => drawCar( gl, mvp, new Float32Array( [ 0.0, 1.0, 0.0 ] ) ),
+    BlueCar:   ( gl, mvp ) => drawCar( gl, mvp, new Float32Array( [ 0.0, 0.5, 1.0 ] ) ),
+  };
+
+
+  const bodyColor = new Float32Array( [ 0.0, 0.5, 0 ] );
+  const shellColor = new Float32Array( [ 0.25, 0.5, 0.25 ] );
+
+  // TODO: Create buffer for triangles
+
+  let animationTime = 0;
+
+  // 15x15 2D view with y axis going down
+  // const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 14.5, 14.5, -0.5, 1, -1 );
+  const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 4.5, 4.5, -0.5, 1, -1 );
+
+  const tiles = [
+    2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,
+    1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,
+    2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,
+    2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,
+    2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,1,2,1,2,2,2,2,2,2
+  ];
+
+  // TODO: Bushes and lilipads should be separate from tiles -- they are props
+  //       Having them as tiles causes more problems than it solves
+  //       Only gameplay effect is on player, just check if there's a prop under
+  //       or infront of us at the relevent times.
+  //       Maybe lilipads should be treated like entities? (e.g. "rideable")
+
+  const entities = [
+    { type: 'Turtle', x: 0, y: 0, dir: 4 },
+    { type: 'Turtle', x: 1, y: 1, dir: 2 },
+    { type: 'Turtle', x: 2, y: 2, dir: 3 },
+    { type: 'Turtle', x: 3, y: 3, dir: 4 },
+
+    { type: 'RedCar',    x: 1, y: 0, dir: 4 },
+    { type: 'YellowCar', x: 2, y: 1, dir: 3 },
+    { type: 'GreenCar',  x: 1, y: 2, dir: 2 },
+    { type: 'BlueCar',   x: 0, y: 1, dir: 1 },
+
+    { type: 'LogStart',  x: 0, y: 3, dir: 4 },
+    { type: 'LogMiddle', x: 1, y: 3, dir: 4 },
+    { type: 'LogEnd',    x: 2, y: 3, dir: 4 },
+
+    { type: 'LogStart',  x: 3, y: 0, dir: 3 },
+    { type: 'LogMiddle', x: 3, y: 1, dir: 3 },
+    { type: 'LogEnd',    x: 3, y: 2, dir: 3 },
+  ];
+
+  const mapMVP = projectionMatrix;
+
+  canvas.update = ( dt ) => {
+    animationTime += dt / 1000;
+  }
+
+  canvas.draw = ( gl ) => {
+    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.useProgram( mapProgramInfo.program );
+
+    gl.uniformMatrix4fv( mapProgramInfo.uniformLocations.mvp, false, mapMVP );
+    gl.uniform1iv( mapProgramInfo.uniformLocations.tiles, tiles );
+
+    for ( let i = 1; i < 3; i ++ ) {
+      gl.uniform1i( mapProgramInfo.uniformLocations.layerIndex, i );
+      ShaderCommon.drawPoints( gl, mapProgramInfo );
+    }
+  
+    entities.forEach( entity => {
+      const angle = -entity.dir * Math.PI / 2;
+
+      const modelViewMatrix = mat4.fromRotationTranslationScale( 
+        mat4.create(), 
+        [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
+        [ entity.x, entity.y, 0 ],
+        [ 1, 1, 1 ],
+      );
+
+      drawFunc[ entity.type ]( gl, mat4.multiply( mat4.create(), projectionMatrix, modelViewMatrix ) );
+    } );
+  };
+
+  const LEG_L = 0.45, LEG_W = 0.12;
+  const HEAD_SIZE = 0.3;
+  const SHELL_SIZE = 0.6;
+
+  function drawTurtle( gl, mvp ) {
+    // Legs
+    const legAngleOffset = 0.3 * Math.sin( animationTime * 4 );
+
+    [ -1, 1 ].forEach( side => {
+      [ 0.4, 0.75 ].forEach( legAngle => {
+        const angle = side * ( Math.PI * legAngle + legAngleOffset );
+
+        const legMatrix = mat4.fromRotationTranslationScale( 
+          mat4.create(), 
+          [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
+          [ -0.05, 0, 0 ],
+          [ LEG_L, LEG_W, 1.0 ],
+        );
+
+        ShaderCommon.drawShader( gl, triangleProgramInfo, {
+          mvp: mat4.multiply( mat4.create(), mvp, legMatrix ),
+          color: bodyColor,
+          strokeWidth: 0.1,
+        } );
+      } );
+    } );
+
+    // Head
+    const headMatrix = mat4.fromRotationTranslationScale( 
+      mat4.create(), 
+      [ 0, 0, 0, 0 ],
+      [ 0.3, 0, 0 ],
+      [ HEAD_SIZE, HEAD_SIZE, HEAD_SIZE ],
+    );
+
+    ShaderCommon.drawShader( gl, circleProgramInfo, {
+      mvp: mat4.multiply( mat4.create(), mvp, headMatrix ),
+      color: bodyColor,
+      strokeWidth: 0.1,
+    } );
+
+    // Shell
+    const shellMatrix = mat4.fromRotationTranslationScale( 
+      mat4.create(), 
+      [ 0, 0, 0, 0 ],
+      [ -0.05, 0, 0 ],
+      [ SHELL_SIZE, SHELL_SIZE, SHELL_SIZE ],
+    );
+
+    ShaderCommon.drawShader( gl, circleProgramInfo, {
+      mvp: mat4.multiply( mat4.create(), mvp, shellMatrix ),
+      color: shellColor,
+      strokeWidth: 0.05,
+    } );
+  }
+
+  const logColor = new Float32Array( [ 0.5, 0.25, 0.05 ] );
+
+  function drawLogStart( gl, mvp ) {
+    ShaderCommon.drawShader( gl, logStartProgramInfo, {
+      mvp: mvp,
+      color: logColor,
+      strokeWidth: 0.05
+    } );
+  }
+
+  function drawLogMiddle( gl, mvp ) {
+    ShaderCommon.drawShader( gl, logMiddleProgramInfo, {
+      mvp: mvp,
+      color: logColor,
+      strokeWidth: 0.05
+    } );
+  }
+
+  function drawLogEnd( gl, mvp ) {
+    ShaderCommon.drawShader( gl, logEndProgramInfo, {
+      mvp: mvp,
+      color: logColor,
+      strokeWidth: 0.05
+    } );
+  }
+
+  const carColor = new Float32Array( [ 0.75, 0.1, 0 ] );
+  const windowColor = new Float32Array( [ 0.5, 0.5, 0.5 ] );
+
+  const CAR_WIDTH = 0.7;
+  const BODY_SIZE = 1.0;
+  const WINDOW_SIZE = 0.7, WINDOW_OFFSET = -0.04;
+  const ROOF_SIZE = 0.5, ROOF_WIDTH = 0.65, ROOF_OFFSET = -0.06;
+
+  function drawCar( gl, mvp, color ) {
+    
+    // Body
+    const bodyMatrix = mat4.fromRotationTranslationScale( 
+      mat4.create(), 
+      [ 0, 0, 0, 0 ],
+      [ 0, 0, 0 ],
+      [ BODY_SIZE, CAR_WIDTH, 1 ],
+    );
+
+    ShaderCommon.drawShader( gl, roundRectProgramInfo, {
+      mvp: mat4.multiply( mat4.create(), mvp, bodyMatrix ),
+      color: color,
+      strokeWidth: 0.05,
+    } );
+
+    // Windows
+    const windowMatrix = mat4.fromRotationTranslationScale( 
+      mat4.create(), 
+      [ 0, 0, 0, 0 ],
+      [ WINDOW_OFFSET, 0, 0 ],
+      [ WINDOW_SIZE, ROOF_WIDTH, 1 ],
+    );
+
+    ShaderCommon.drawShader( gl, roundRectProgramInfo, {
+      mvp: mat4.multiply( mat4.create(), mvp, windowMatrix ),
+      color: windowColor,
+      strokeWidth: 0.05,
+    } );
+
+    // Roof
+    const roofMatrix = mat4.fromRotationTranslationScale( 
+      mat4.create(), 
+      [ 0, 0, 0, 0 ],
+      [ ROOF_OFFSET, 0, 0 ],
+      [ ROOF_SIZE, ROOF_WIDTH, ROOF_SIZE ],
+    );
+
+    ShaderCommon.drawShader( gl, roundRectProgramInfo, {
+      mvp: mat4.multiply( mat4.create(), mvp, roofMatrix ),
+      color: color,
+      strokeWidth: 0.05,
+    } );
+  }
+
+
+  canvas.redraw();
+
+</script>
