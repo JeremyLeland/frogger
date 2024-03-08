@@ -124,6 +124,7 @@ export const SquarePoints = [
 
 export const ShaderInfo = {
   Circle: {
+    id: 'Circle',
     vertexShader: CommonVertexShader,
     fragmentShader: circleFrag,
     attributes: CommonAttributes,
@@ -131,6 +132,7 @@ export const ShaderInfo = {
     points: SquarePoints,
   },
   RoundRect: {
+    id: 'RoundRect',
     vertexShader: CommonVertexShader,
     fragmentShader: roundRectFrag,
     attributes: CommonAttributes,
@@ -138,6 +140,7 @@ export const ShaderInfo = {
     points: SquarePoints,
   },
   Triangle: {
+    id: 'Triangle',
     vertexShader: CommonVertexShader,
     fragmentShader: triangleFrag,
     attributes: CommonAttributes,
@@ -151,34 +154,44 @@ export const ShaderInfo = {
 };
 
 export function getShader( gl, shaderInfo ) {
-  const program = initShaderProgram( gl, shaderInfo.vertexShader, shaderInfo.fragmentShader );
-  
-  const attribLocations = {};
-  shaderInfo.attributes.forEach( attribName => 
-    attribLocations[ attribName ] = gl.getAttribLocation( program, attribName ) 
+  gl.shaders ??= new Map();
+
+  if ( !gl.shaders.has( shaderInfo.id ) )
+  {
+    const program = initShaderProgram( gl, shaderInfo.vertexShader, shaderInfo.fragmentShader );
+    
+    const attribLocations = {};
+    shaderInfo.attributes.forEach( attribName => 
+      attribLocations[ attribName ] = gl.getAttribLocation( program, attribName ) 
     );
     
-  const uniformLocations = {};
-  shaderInfo.uniforms.forEach( uniformName => 
-    uniformLocations[ uniformName ] = gl.getUniformLocation( program, uniformName ) 
-  );
-
-  return {
-    program: program,
-    attribLocations: attribLocations,
-    uniformLocations: uniformLocations,
-    buffer: initBuffer( gl, shaderInfo.points ),
-    bufferLength: shaderInfo.points.length / 2,
+    const uniformLocations = {};
+    shaderInfo.uniforms.forEach( uniformName => 
+      uniformLocations[ uniformName ] = gl.getUniformLocation( program, uniformName ) 
+    );
+    
+    gl.shaders.set( shaderInfo.id, {
+      program: program,
+      attribLocations: attribLocations,
+      uniformLocations: uniformLocations,
+      buffer: initBuffer( gl, shaderInfo.points ),
+      bufferLength: shaderInfo.points.length / 2,
+    } );
   }
+
+  return gl.shaders.get( shaderInfo.id );
 }
 
-export function drawShader( gl, shader, uniforms ) {
+export function drawShader( gl, shaderInfo, uniforms ) {
+
+  const shader = getShader( gl, shaderInfo );
+
   gl.useProgram( shader.program );
 
   gl.uniformMatrix4fv( shader.uniformLocations.mvp, false, uniforms.mvp );
 
-  const sx = Math.hypot( uniforms.mvp[ 0 ], uniforms.mvp[ 4 ], uniforms.mvp[ 8 ] );
-  const sy = Math.hypot( uniforms.mvp[ 1 ], uniforms.mvp[ 5 ], uniforms.mvp[ 9 ] );
+  // const sx = Math.hypot( uniforms.mvp[ 0 ], uniforms.mvp[ 4 ], uniforms.mvp[ 8 ] );
+  // const sy = Math.hypot( uniforms.mvp[ 1 ], uniforms.mvp[ 5 ], uniforms.mvp[ 9 ] );
 
   // console.log( 'sx = ' + sx );
   // console.log( 'sy = ' + sy );

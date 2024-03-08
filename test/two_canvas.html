@@ -1,0 +1,130 @@
+<title>Can we share resources between canvases?</title>
+<link rel="stylesheet" href="../grid.css">
+
+<script type="module">
+  import { mat4 } from '../lib/gl-matrix.js';
+  import * as ShaderCommon from '../src/ShaderCommon.js';
+  import { GLCanvas } from '../src/common/GLCanvas.js';
+
+  const canvas = new GLCanvas( 300, 300 );
+  const canvas2 = new GLCanvas( 300, 300 );
+
+  const circleProgramInfo = ShaderCommon.getShader( canvas.gl, ShaderCommon.ShaderInfo.Circle );
+  const roundRectProgramInfo = ShaderCommon.getShader( canvas.gl, ShaderCommon.ShaderInfo.RoundRect );
+  const triangleProgramInfo = ShaderCommon.getShader( canvas.gl, ShaderCommon.ShaderInfo.Triangle );
+
+  
+  const drawFunc = {
+    RedCar:    ( gl, mvp ) => drawCar( gl, mvp, new Float32Array( [ 1.0, 0.0, 0.0 ] ) ),
+    YellowCar: ( gl, mvp ) => drawCar( gl, mvp, new Float32Array( [ 1.0, 1.0, 0.0 ] ) ),
+    GreenCar:  ( gl, mvp ) => drawCar( gl, mvp, new Float32Array( [ 0.0, 1.0, 0.0 ] ) ),
+    BlueCar:   ( gl, mvp ) => drawCar( gl, mvp, new Float32Array( [ 0.0, 0.5, 1.0 ] ) ),
+  };
+
+
+  let animationTime = 0;
+
+  // 15x15 2D view with y axis going down
+  // const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 14.5, 14.5, -0.5, 1, -1 );
+  const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 4.5, 4.5, -0.5, 1, -1 );
+
+  const entities = [
+    { type: 'RedCar',    x: 1, y: 0, dir: 4 },
+    { type: 'YellowCar', x: 2, y: 1, dir: 3 },
+    { type: 'GreenCar',  x: 1, y: 2, dir: 2 },
+    { type: 'BlueCar',   x: 0, y: 1, dir: 1 },
+  ];
+
+
+  canvas.update = ( dt ) => {
+    animationTime += dt / 1000;
+  }
+
+  canvas.draw = ( gl ) => {
+    entities.forEach( entity => {
+      const angle = -entity.dir * Math.PI / 2;
+
+      const modelViewMatrix = mat4.fromRotationTranslationScale( 
+        mat4.create(), 
+        [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
+        [ entity.x, entity.y, 0 ],
+        [ 1, 1, 1 ],
+      );
+
+      drawFunc[ entity.type ]( gl, mat4.multiply( mat4.create(), projectionMatrix, modelViewMatrix ) );
+    } );
+  };
+
+  canvas2.draw = ( gl ) => {
+    entities.forEach( entity => {
+      const angle = -entity.dir * Math.PI / 2;
+
+      const modelViewMatrix = mat4.fromRotationTranslationScale( 
+        mat4.create(), 
+        [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
+        [ entity.x, entity.y, 0 ],
+        [ 1, 1, 1 ],
+      );
+
+      drawFunc[ entity.type ]( gl, mat4.multiply( mat4.create(), projectionMatrix, modelViewMatrix ) );
+    } );
+  };
+
+  const carColor = new Float32Array( [ 0.75, 0.1, 0 ] );
+  const windowColor = new Float32Array( [ 0.5, 0.5, 0.5 ] );
+
+  const CAR_WIDTH = 0.7;
+  const BODY_SIZE = 1.0;
+  const WINDOW_SIZE = 0.7, WINDOW_OFFSET = -0.04;
+  const ROOF_SIZE = 0.5, ROOF_WIDTH = 0.65, ROOF_OFFSET = -0.06;
+
+  function drawCar( gl, mvp, color ) {
+    
+    // Body
+    const bodyMatrix = mat4.fromRotationTranslationScale( 
+      mat4.create(), 
+      [ 0, 0, 0, 0 ],
+      [ 0, 0, 0 ],
+      [ BODY_SIZE, CAR_WIDTH, 1 ],
+    );
+
+    ShaderCommon.drawShader( gl, roundRectProgramInfo, {
+      mvp: mat4.multiply( mat4.create(), mvp, bodyMatrix ),
+      color: color,
+      strokeWidth: 0.05,
+    } );
+
+    // Windows
+    const windowMatrix = mat4.fromRotationTranslationScale( 
+      mat4.create(), 
+      [ 0, 0, 0, 0 ],
+      [ WINDOW_OFFSET, 0, 0 ],
+      [ WINDOW_SIZE, ROOF_WIDTH, 1 ],
+    );
+
+    ShaderCommon.drawShader( gl, roundRectProgramInfo, {
+      mvp: mat4.multiply( mat4.create(), mvp, windowMatrix ),
+      color: windowColor,
+      strokeWidth: 0.05,
+    } );
+
+    // Roof
+    const roofMatrix = mat4.fromRotationTranslationScale( 
+      mat4.create(), 
+      [ 0, 0, 0, 0 ],
+      [ ROOF_OFFSET, 0, 0 ],
+      [ ROOF_SIZE, ROOF_WIDTH, ROOF_SIZE ],
+    );
+
+    ShaderCommon.drawShader( gl, roundRectProgramInfo, {
+      mvp: mat4.multiply( mat4.create(), mvp, roofMatrix ),
+      color: color,
+      strokeWidth: 0.05,
+    } );
+  }
+
+
+  canvas.redraw();
+  canvas2.redraw();
+
+</script>
