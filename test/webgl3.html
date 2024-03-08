@@ -180,10 +180,10 @@
         [ 1, 1, 1 ],
       );
 
-      drawFunc[ entity.type ]( gl, mat4.multiply( mat4.create(), projectionMatrix, modelViewMatrix ) );
+      drawFunc[ entity.type ]( gl, mat4.multiply( mat4.create(), projectionMatrix, modelViewMatrix ), animationTime );
     } );
   };
 
-  canvas.redraw();
+  canvas.start();
 
 </script>

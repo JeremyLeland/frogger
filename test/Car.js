@@ -19,15 +19,30 @@ export function drawYellowCar( gl, mvp ) { drawCar( gl, mvp, YELLOW ) }
 export function drawGreenCar ( gl, mvp ) { drawCar( gl, mvp, GREEN )  }
 export function drawBlueCar  ( gl, mvp ) { drawCar( gl, mvp, BLUE )   }
 
+const bodyMatrix = mat4.fromRotationTranslationScale( 
+  mat4.create(), 
+  [ 0, 0, 0, 0 ],
+  [ 0, 0, 0 ],
+  [ BODY_SIZE, CAR_WIDTH, 1 ],
+);
+
+const windowMatrix = mat4.fromRotationTranslationScale( 
+  mat4.create(), 
+  [ 0, 0, 0, 0 ],
+  [ WINDOW_OFFSET, 0, 0 ],
+  [ WINDOW_SIZE, ROOF_WIDTH, 1 ],
+);
+
+const roofMatrix = mat4.fromRotationTranslationScale( 
+  mat4.create(), 
+  [ 0, 0, 0, 0 ],
+  [ ROOF_OFFSET, 0, 0 ],
+  [ ROOF_SIZE, ROOF_WIDTH, ROOF_SIZE ],
+);
+
+
 function drawCar( gl, mvp, color ) {
   // Body
-  const bodyMatrix = mat4.fromRotationTranslationScale( 
-    mat4.create(), 
-    [ 0, 0, 0, 0 ],
-    [ 0, 0, 0 ],
-    [ BODY_SIZE, CAR_WIDTH, 1 ],
-  );
-
   ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.RoundRect, {
     mvp: mat4.multiply( mat4.create(), mvp, bodyMatrix ),
     color: color,
@@ -35,13 +50,6 @@ function drawCar( gl, mvp, color ) {
   } );
 
   // Windows
-  const windowMatrix = mat4.fromRotationTranslationScale( 
-    mat4.create(), 
-    [ 0, 0, 0, 0 ],
-    [ WINDOW_OFFSET, 0, 0 ],
-    [ WINDOW_SIZE, ROOF_WIDTH, 1 ],
-  );
-
   ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.RoundRect, {
     mvp: mat4.multiply( mat4.create(), mvp, windowMatrix ),
     color: windowColor,
@@ -49,13 +57,6 @@ function drawCar( gl, mvp, color ) {
   } );
 
   // Roof
-  const roofMatrix = mat4.fromRotationTranslationScale( 
-    mat4.create(), 
-    [ 0, 0, 0, 0 ],
-    [ ROOF_OFFSET, 0, 0 ],
-    [ ROOF_SIZE, ROOF_WIDTH, ROOF_SIZE ],
-  );
-
   ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.RoundRect, {
     mvp: mat4.multiply( mat4.create(), mvp, roofMatrix ),
     color: color,
