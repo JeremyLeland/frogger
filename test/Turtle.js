@@ -5,7 +5,10 @@ const LEG_L = 0.45, LEG_W = 0.12;
 const HEAD_SIZE = 0.3;
 const SHELL_SIZE = 0.6;
 
-export function drawTurtle( gl, mvp, animationTime ) {
+const bodyColor = new Float32Array( [ 0.0, 0.5, 0 ] );
+const shellColor = new Float32Array( [ 0.25, 0.5, 0.25 ] );
+
+export function drawTurtle( gl, mvp, animationTime = 0 ) {
   // Legs
   const legAngleOffset = 0.3 * Math.sin( animationTime * 4 );
 
@@ -20,7 +23,7 @@ export function drawTurtle( gl, mvp, animationTime ) {
         [ LEG_L, LEG_W, 1.0 ],
       );
 
-      ShaderCommon.drawShader( gl, triangleProgramInfo, {
+      ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.Triangle, {
         mvp: mat4.multiply( mat4.create(), mvp, legMatrix ),
         color: bodyColor,
         strokeWidth: 0.1,
@@ -36,7 +39,7 @@ export function drawTurtle( gl, mvp, animationTime ) {
     [ HEAD_SIZE, HEAD_SIZE, HEAD_SIZE ],
   );
 
-  ShaderCommon.drawShader( gl, circleProgramInfo, {
+  ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.Circle, {
     mvp: mat4.multiply( mat4.create(), mvp, headMatrix ),
     color: bodyColor,
     strokeWidth: 0.1,
@@ -50,7 +53,7 @@ export function drawTurtle( gl, mvp, animationTime ) {
     [ SHELL_SIZE, SHELL_SIZE, SHELL_SIZE ],
   );
 
-  ShaderCommon.drawShader( gl, circleProgramInfo, {
+  ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.Circle, {
     mvp: mat4.multiply( mat4.create(), mvp, shellMatrix ),
     color: shellColor,
     strokeWidth: 0.05,
