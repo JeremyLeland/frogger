@@ -7,6 +7,7 @@
   import { GLCanvas } from '../src/common/GLCanvas.js';
 
   import * as TileMap from './TileMap.js';
+  import * as Props from './Props.js';
 
   import * as Car from './Car.js';
   import * as Log from './Log.js';
@@ -24,6 +25,7 @@
     YellowCar: Car.drawYellowCar,
     GreenCar: Car.drawGreenCar,
     BlueCar: Car.drawBlueCar,
+    Lilypad: Props.drawLilypad,
   };
 
 
@@ -60,6 +62,10 @@
   // NEXT: Bush and lilypad shaders, so I can try drawing a complete level,
   //       and then updating it with World update()
 
+  const props = [
+    { type: 'Lilypad', x: 4, y: 4 },
+  ]
+
   const entities = [
     { type: 'Turtle', x: 0, y: 0, dir: 4 },
     { type: 'Turtle', x: 1, y: 1, dir: 2 },
@@ -85,17 +91,24 @@
   }
 
   canvas.draw = ( gl ) => {
-
     TileMap.drawTileMap( gl, projectionMatrix, tiles );    
   
+    props.forEach( prop => {
+      const modelViewMatrix = mat4.fromTranslation( 
+        mat4.create(),
+        [ prop.x, prop.y, 0 ],
+      );
+
+      drawFunc[ prop.type ]( gl, mat4.multiply( mat4.create(), projectionMatrix, modelViewMatrix ) );
+    } );
+
     entities.forEach( entity => {
       const angle = -entity.dir * Math.PI / 2;
 
-      const modelViewMatrix = mat4.fromRotationTranslationScale( 
+      const modelViewMatrix = mat4.fromRotationTranslation( 
         mat4.create(), 
         [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
         [ entity.x, entity.y, 0 ],
-        [ 1, 1, 1 ],
       );
 
       drawFunc[ entity.type ]( gl, mat4.multiply( mat4.create(), projectionMatrix, modelViewMatrix ), animationTime );

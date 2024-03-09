@@ -238,7 +238,25 @@ function loadShader( gl, type, source ) {
   gl.compileShader( shader );
 
   if ( !gl.getShaderParameter( shader, gl.COMPILE_STATUS ) ) {
-    alert( `An error occurred compiling the shaders: ${ gl.getShaderInfoLog( shader ) }` );
+    const errorMsg = gl.getShaderInfoLog( shader );
+
+    const errorMatches = /ERROR: 0:(\d+)/.exec( errorMsg );
+    if ( errorMatches ) {
+      const errorLine = parseInt( errorMatches[ 1 ] );
+
+      const sourceLines = gl.getShaderSource( shader ).split( '\n' );
+      const outLines = [];
+
+      const from = Math.max( errorLine - 3, 0 );
+      const to   = Math.min( errorLine + 3, sourceLines.length );
+      for ( let i = from; i < to; i ++ ) {
+        const line = i + 1;
+        outLines.push( `${ line == errorLine ? '>' : ' ' }${ line }: ${ sourceLines[ i ] }` );
+      }
+
+      alert( 'An error occurred compiling the shaders:\n' + errorMsg + '\n' + outLines.join( '\n' ) );
+    }    
+
     gl.deleteShader( shader );
     return null;
   }
