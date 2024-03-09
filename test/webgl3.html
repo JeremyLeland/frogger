@@ -6,85 +6,14 @@
   import * as ShaderCommon from '../src/ShaderCommon.js';
   import { GLCanvas } from '../src/common/GLCanvas.js';
 
+  import * as TileMap from './TileMap.js';
+
   import * as Car from './Car.js';
   import * as Log from './Log.js';
   import * as Turtle from './Turtle.js';
 
   const canvas = new GLCanvas( 15 * 48, 15 * 48 );
 
-
-  const mapFrag = /* glsl */ `# version 300 es
-    precision mediump float;
-    
-    in vec2 v_pos;
-
-    out vec4 outColor;
-
-    const int SIZE = 15;
-
-    uniform int tiles[ SIZE * SIZE ];
-    uniform int layerIndex;
-
-    const vec4[ 3 ] colors = vec4[ 3 ](
-      vec4( 0.0, 0.5, 0.0, 1.0 ),
-      vec4( 0.3, 0.3, 0.3, 1.0 ),
-      vec4( 0.0, 0.5, 0.0, 1.0 )
-    );
-
-    void main() {
-
-      vec2 mapPos = ( v_pos + 0.5 );
-
-      int tile = tiles[ int( mapPos.x ) + int( mapPos.y ) * SIZE ];
-
-      outColor = colors[ layerIndex ];
-
-      vec2 fromCenter = fract( mapPos ) - vec2( 0.5 );
-      vec2 neighborPos = mapPos + sign( fromCenter );
-
-      if ( 0.0 < neighborPos.x && neighborPos.x < float( SIZE ) &&
-           0.0 < neighborPos.y && neighborPos.y < float( SIZE ) ) {
-
-        // TODO: Custom edges for grass?
-
-        int neighbor_x = tiles[ int( neighborPos.x ) + int( mapPos.y ) * SIZE ];
-        int neighbor_y = tiles[ int( mapPos.x ) + int( neighborPos.y ) * SIZE ];
-        int neighbor_xy = tiles[ int( neighborPos.x ) + int( neighborPos.y ) * SIZE ];
-
-        if ( tile >= layerIndex ) {
-          if ( neighbor_x < layerIndex && neighbor_y < layerIndex && length( fromCenter ) > 0.5 ) {
-            discard;
-          }
-        }
-        else {
-          if ( neighbor_x >= layerIndex && neighbor_y >= layerIndex && length( fromCenter ) < 0.5 ) {
-            discard;
-          }
-
-          if ( neighbor_xy < layerIndex || neighbor_x < layerIndex || neighbor_y < layerIndex ) {
-            discard;
-          }
-        }
-      }
-      else if ( tile < layerIndex ) {
-        discard;
-      }
-    }
-  `;
-
-
-  const mapProgramInfo = ShaderCommon.getShader( canvas.gl, {
-    vertexShader: ShaderCommon.CommonVertexShader,
-    fragmentShader: mapFrag,
-    attributes: ShaderCommon.CommonAttributes,
-    uniforms: [ 'mvp', 'tiles', 'layerIndex' ],
-    points: [
-     14.5, 14.5, 
-     -0.5, 14.5, 
-     14.5, -0.5, 
-     -0.5, -0.5,
-    ],
-  } );
   
   const drawFunc = {
     Turtle: Turtle.drawTurtle,
@@ -151,24 +80,13 @@
     { type: 'LogEnd',    x: 3, y: 2, dir: 3 },
   ];
 
-  const mapMVP = projectionMatrix;
-
   canvas.update = ( dt ) => {
     animationTime += dt / 1000;
   }
 
   canvas.draw = ( gl ) => {
-    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    gl.useProgram( mapProgramInfo.program );
-
-    gl.uniformMatrix4fv( mapProgramInfo.uniformLocations.mvp, false, mapMVP );
-    gl.uniform1iv( mapProgramInfo.uniformLocations.tiles, tiles );
-
-    for ( let i = 1; i < 3; i ++ ) {
-      gl.uniform1i( mapProgramInfo.uniformLocations.layerIndex, i );
-      ShaderCommon.drawPoints( gl, mapProgramInfo );
-    }
+    TileMap.drawTileMap( gl, projectionMatrix, tiles );    
   
     entities.forEach( entity => {
       const angle = -entity.dir * Math.PI / 2;
