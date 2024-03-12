@@ -62,7 +62,7 @@ const bushFrag = ShaderCommon.FragCommon + /*glsl*/`
 
     if ( fromCenter < OFFSET || fromEdge > strokeWidth / SIZE ) {
       // outColor = vec4( mix( BLACK, color, sin( PI / 2.0 * dist ) ), 1.0 );
-      outColor = vec4( mix( BLACK, color, cos( PI / 2.0 * fromCenter ) ), 1.0 );
+      outColor = vec4( mix( BLACK, color, cos( PI * fromCenter ) ), 1.0 );
     }
     else if ( fromEdge > 0.0 ) {
       outColor = vec4( BLACK, 1.0 );
