@@ -34,14 +34,16 @@ const bushFrag = ShaderCommon.FragCommon + /*glsl*/`
 
   void main() {
 
+    float fromCenter = distance( vec2( 0.0 ), v_pos );
    
-    float dist = 0.0;
+    float fromEdge = 0.0;
 
-    if ( distance( vec2( 0.0 ), v_pos ) < SIZE ) {
-      dist = ( SIZE - distance( vec2( 0.0 ), v_pos ) ) / SIZE;
-    }
+    // if ( distance( vec2( 0.0 ), v_pos ) < SIZE ) {
+    //   // dist = ( SIZE - distance( vec2( 0.0 ), v_pos ) ) / SIZE;
+    //   dist = 1.0;
+    // }
 
-    else {
+    // else {
       
       
       // TODO: Do another one of these for the middle, but smaller? Fewer sides?
@@ -50,18 +52,19 @@ const bushFrag = ShaderCommon.FragCommon + /*glsl*/`
         vec2 point = vec2( cos( angle ), sin( angle ) ) * OFFSET;
 
         // dist = min( dist, max( 0.0, SIZE - distance( point, v_pos ) ) );
-        dist = max( dist, ( SIZE - distance( point, v_pos ) ) / SIZE );
+        fromEdge = max( fromEdge, ( SIZE - distance( point, v_pos ) ) / SIZE );
       }
-    }
+    // }
 
     // dist = max( dist, ( SIZE - distance( vec2( 0.0 ), v_pos ) ) / SIZE );
 
     // outColor = vec4( dist, 0.0, 0.0, 1.0 );
 
-    if ( dist > strokeWidth ) {
-      outColor = vec4( mix( BLACK, color, sin( PI / 2.0 * dist ) ), 1.0 );
+    if ( fromCenter < OFFSET || fromEdge > strokeWidth / SIZE ) {
+      // outColor = vec4( mix( BLACK, color, sin( PI / 2.0 * dist ) ), 1.0 );
+      outColor = vec4( mix( BLACK, color, cos( PI / 2.0 * fromCenter ) ), 1.0 );
     }
-    else if ( dist > 0.0 ) {
+    else if ( fromEdge > 0.0 ) {
       outColor = vec4( BLACK, 1.0 );
     }
     else {
