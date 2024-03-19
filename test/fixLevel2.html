@@ -1,0 +1,60 @@
+<link rel="stylesheet" href="../grid.css">
+<style>
+  textarea {
+    width: 45%;
+    height: 95%
+  }
+</style>
+<textarea id="before"></textarea>
+<button onclick="fixLevel()">Fix</button>
+<textarea id="after"></textarea>
+
+<script>
+  const before = document.getElementById( 'before' );
+  const after = document.getElementById( 'after' );
+
+  const TileVals = {
+    'Water': 0,
+    'Lilypad': 0,
+    'Road': 1,
+    'Grass': 2,
+    'Bush': 2,
+  }
+
+  function fixLevel() {
+    const src = JSON.parse( before.value );
+
+    const props = [];
+
+    const tiles = src.tiles.map( ( e, index ) => {
+      const tileName = src.tileInfoKeys[ e ];
+
+      if ( tileName == 'Lilypad' || tileName == 'Bush' ) {
+        props.push( { 
+          type: tileName,
+          x: index % src.cols,
+          y: Math.floor( index / src.cols ), 
+        } );
+      }
+
+      return TileVals[ tileName ];
+    } );
+
+    const dest = {
+      cols: src.cols,
+      rows: src.rows,
+      tiles: tiles,
+      directions: src.directions,
+      props: props,
+      entities: src.entities,
+      spawn: src.spawn,
+      time: src.time,
+    };
+
+    const destStr = JSON.stringify( dest );
+
+    // TODO: Formatting here?
+
+    after.value = destStr;
+  }
+</script>

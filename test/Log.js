@@ -83,11 +83,11 @@ const ShaderInfo = {
   }
 }
 
-export function drawLogStart ( gl, mvp ) { drawLog( gl, mvp, ShaderInfo.LogStart  ) }
-export function drawLogMiddle( gl, mvp ) { drawLog( gl, mvp, ShaderInfo.LogMiddle ) }
-export function drawLogEnd   ( gl, mvp ) { drawLog( gl, mvp, ShaderInfo.LogEnd    ) }
+export function drawLogStart ( gl, mvp ) { drawLog( gl, mvp, 0, ShaderInfo.LogStart  ) }
+export function drawLogMiddle( gl, mvp ) { drawLog( gl, mvp, 0, ShaderInfo.LogMiddle ) }
+export function drawLogEnd   ( gl, mvp ) { drawLog( gl, mvp, 0, ShaderInfo.LogEnd    ) }
 
-function drawLog( gl, mvp, shaderInfo ) {
+function drawLog( gl, mvp, animationTime, shaderInfo ) {
   ShaderCommon.drawShader( gl, shaderInfo, {
     mvp: mvp,
     color: LOG_COLOR,

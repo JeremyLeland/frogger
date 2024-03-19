@@ -65,8 +65,6 @@ const circleFrag = FragCommon + /*glsl*/ `
   }
 `;
 
-// TODO: Round rect...how does this handle scaling? Is radius a percentage?
-
 const roundRectFrag = FragCommon + /*glsl*/ `
   // uniform float radius;
   const float radius = 0.3;
@@ -112,6 +110,106 @@ const triangleFrag = FragCommon + /*glsl*/ `
   }
 `;
 
+const quadraticBezierFrag = FragCommon + /* glsl */ `
+  uniform vec2 P0, P1, P2;
+  uniform float startWidth, endWidth;
+  
+  float cubeRoot( float val ) {
+    float fixNeg = val < 0.0 ? -1.0 : 1.0;
+    return fixNeg * pow( fixNeg * val, 1.0 / 3.0 );
+  }
+
+  vec2 getPos( float t ) {
+    float a = ( 1.0 - t ) * ( 1.0 - t );
+    float b = 2.0 * t * ( 1.0 - t );
+    float c = t * t;
+
+    return a * P0 + b * P1 + c * P2;
+  }
+
+  // See: https://blog.gludion.com/2009/08/distance-to-quadratic-bezier-curve.html
+  void main() {
+    vec2 A = P1 - P0;
+    vec2 B = P2 - P1 - A;
+
+    vec2 MP = P0 - v_pos;
+
+    float a1 = dot( B, B );
+    float b = 3.0 * dot( A, B );
+    float c = 2.0 * dot( A, A ) + dot( MP, B );
+    float d = dot( MP, A );
+
+    float a = b / a1;
+    b = c / a1;
+    c = d / a1;
+
+    float p = -( a * a / 3.0 ) + b;
+    float q = ( 2.0 / 27.0 ) * a * a * a  - ( a * b / 3.0 ) + c;
+    float disc = q * q + 4.0 * p * p * p / 27.0;
+    float offset = -a / 3.0;
+    
+    float root = 0.0;
+    float dist = 0.0;
+    // vec3 color;
+
+
+    if ( disc > 0.0 ) {
+      float u = cubeRoot( ( -q + sqrt( disc ) ) / 2.0 );
+      float v = cubeRoot( ( -q - sqrt( disc ) ) / 2.0 );
+
+      root = clamp( u + v + offset, 0.0, 1.0 );
+
+      dist = distance( getPos( root ), v_pos );
+      // color = vec3( 1.0, 0.0, 0.0 );
+    }
+
+    else if ( disc == 0.0 ) {
+      float u = cubeRoot( -q / 2.0 );
+
+      root = clamp( 2.0 * u + offset, 0.0, 1.0 );
+      
+      // TODO: wait, another root here? Need to do dist check loop here too?
+      //       seems like we never really hit this case anyway...
+      root = clamp( -u + offset, 0.0, 1.0 );
+
+      dist = distance( getPos( root ), v_pos );
+
+      // color = vec3( 0.0, 1.0, 0.0 );
+    }
+
+    else {
+      float u = 2.0 * sqrt( -p / 3.0 );
+      float v = acos( -sqrt( -27.0 / ( p * p * p ) ) * q / 2.0 ) / 3.0;
+
+      
+      for ( float i = 0.0; i <= 4.0; i += 2.0 ) {
+        float testRoot = clamp( u * cos( v + i * PI / 3.0 ) + offset, 0.0, 1.0 );
+        float testDist = distance( getPos( testRoot ), v_pos );
+
+        if ( i == 0.0 || testDist < dist ) {
+          root = testRoot;
+          dist = testDist;
+        }
+      }
+
+      // color = vec3( 0.0, 0.0, 1.0 );
+    }
+
+
+    float width = endWidth + ( 1.0 - root ) * ( startWidth - endWidth );
+    
+    if ( dist < width ) {
+      outColor = mix( vec3( 0.0 ), color, cos( PI / 2.0 * dist / width ) );
+    }
+    else if ( dist < width + strokeWidth ) {
+      outColor = vec3( 0.0 );
+    }
+    else {
+      discard;
+    }
+  }
+`;
+
 export const CommonAttributes = [ 'vertexPosition' ];
 export const CommonUniforms = [ 'mvp', 'color', 'strokeWidth' ];
 
@@ -151,7 +249,19 @@ export const ShaderInfo = {
       1,  1,
     ],
   },
+  QuadraticBezierFrag: {
+    id: 'QuadraticBezierFrag',
+    vertexShader: CommonVertexShader,
+    fragmentShader: roundRectFrag,
+    attributes: CommonAttributes,
+    uniforms: CommonUniforms,
+    points: SquarePoints,     // NOTE: If we do this, need to put everything in terms of -0.5 - 0.5
+  }
 };
+
+// TODO: Make file for Frog drawing code, do everything non-bezier for now just to get it running
+//       For limbs, use SquarePoints and offset by 0.5,0.5 to get to each quadrent
+//       Adjust the ABC points to be in -0.5 - 0.5 range
 
 export function getShader( gl, shaderInfo ) {
   gl.shaders ??= new Map();

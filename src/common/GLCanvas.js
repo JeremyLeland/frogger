@@ -15,7 +15,7 @@ export class GLCanvas {
       alert( "Unable to initialize WebGL. Your browser or machine may not support it." );
     }
 
-    this.gl.clearColor( 0.0, 0.5, 0.75, 1.0 );
+    this.gl.clearColor( 0.0, 0.0, 0.5, 1.0 );
     this.gl.clearDepth( 1.0 );
     this.gl.enable( this.gl.DEPTH_TEST );
     this.gl.depthFunc( this.gl.LEQUAL );

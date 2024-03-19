@@ -12,11 +12,19 @@
   import * as Car from './Car.js';
   import * as Log from './Log.js';
   import * as Turtle from './Turtle.js';
+  import * as Frog from './Frog.js';
 
   const canvas = new GLCanvas( 15 * 48, 15 * 48 );
 
   
   const drawFunc = {
+    Frog: Frog.drawFrog,
+    Froggy1: Frog.drawFroggy1,
+    Froggy2: Frog.drawFroggy2,
+    Froggy3: Frog.drawFroggy3,
+    Froggy4: Frog.drawFroggy4,
+    Froggy5: Frog.drawFroggy5,
+    Froggy6: Frog.drawFroggy6,
     Turtle: Turtle.drawTurtle,
     LogStart: Log.drawLogStart,
     LogMiddle: Log.drawLogMiddle,
@@ -86,6 +94,15 @@
     { type: 'LogStart',  x: 3, y: 0, dir: 3 },
     { type: 'LogMiddle', x: 3, y: 1, dir: 3 },
     { type: 'LogEnd',    x: 3, y: 2, dir: 3 },
+
+    // TODO: Froggies!
+    { type: 'Froggy1', x: 0, y: 4, dir: 0 },
+    { type: 'Froggy2', x: 1, y: 4, dir: 1 },
+    { type: 'Froggy3', x: 2, y: 4, dir: 2 },
+
+    { type: 'Froggy4', x: 4, y: 0, dir: 3 },
+    { type: 'Froggy5', x: 4, y: 1, dir: 2 },
+    { type: 'Froggy6', x: 4, y: 2, dir: 1 },
   ];
 
   canvas.update = ( dt ) => {

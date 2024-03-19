@@ -14,10 +14,10 @@ const YELLOW = new Float32Array( [ 1.0, 1.0, 0.0 ] );
 const GREEN  = new Float32Array( [ 0.0, 1.0, 0.0 ] );
 const BLUE   = new Float32Array( [ 0.0, 0.5, 1.0 ] );
 
-export function drawRedCar   ( gl, mvp ) { drawCar( gl, mvp, RED )    }
-export function drawYellowCar( gl, mvp ) { drawCar( gl, mvp, YELLOW ) }
-export function drawGreenCar ( gl, mvp ) { drawCar( gl, mvp, GREEN )  }
-export function drawBlueCar  ( gl, mvp ) { drawCar( gl, mvp, BLUE )   }
+export function drawRedCar   ( gl, mvp ) { drawCar( gl, mvp, 0, RED )    }
+export function drawYellowCar( gl, mvp ) { drawCar( gl, mvp, 0, YELLOW ) }
+export function drawGreenCar ( gl, mvp ) { drawCar( gl, mvp, 0, GREEN )  }
+export function drawBlueCar  ( gl, mvp ) { drawCar( gl, mvp, 0, BLUE )   }
 
 const bodyMatrix = mat4.fromRotationTranslationScale( 
   mat4.create(), 
@@ -41,7 +41,7 @@ const roofMatrix = mat4.fromRotationTranslationScale(
 );
 
 
-function drawCar( gl, mvp, color ) {
+function drawCar( gl, mvp, animationTime, color ) {
   // Body
   ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.RoundRect, {
     mvp: mat4.multiply( mat4.create(), mvp, bodyMatrix ),
