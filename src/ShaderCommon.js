@@ -199,10 +199,10 @@ const quadraticBezierFrag = FragCommon + /* glsl */ `
     float width = endWidth + ( 1.0 - root ) * ( startWidth - endWidth );
     
     if ( dist < width ) {
-      outColor = mix( vec3( 0.0 ), color, cos( PI / 2.0 * dist / width ) );
+      outColor = vec4( mix( vec3( 0.0 ), color, cos( PI / 2.0 * dist / width ) ), 1.0 );
     }
     else if ( dist < width + strokeWidth ) {
-      outColor = vec3( 0.0 );
+      outColor = vec4( BLACK, 1.0 );
     }
     else {
       discard;
@@ -252,9 +252,9 @@ export const ShaderInfo = {
   QuadraticBezierFrag: {
     id: 'QuadraticBezierFrag',
     vertexShader: CommonVertexShader,
-    fragmentShader: roundRectFrag,
+    fragmentShader: quadraticBezierFrag,
     attributes: CommonAttributes,
-    uniforms: CommonUniforms,
+    uniforms: CommonUniforms.concat( 'P0', 'P1', 'P2', 'startWidth', 'endWidth' ),
     points: SquarePoints,     // NOTE: If we do this, need to put everything in terms of -0.5 - 0.5
   }
 };

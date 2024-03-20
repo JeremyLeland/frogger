@@ -71,12 +71,32 @@ export function drawFroggy( gl, mvp, animationTime, color ) {
 
 export function drawFrog( gl, mvp, animationTime = 0, color ) {
 
+
+  const shader = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.QuadraticBezierFrag );
+  gl.useProgram( shader.program );
+
+  gl.uniformMatrix4fv( shader.uniformLocations.mvp, false, mvp );
+  gl.uniform2fv( shader.uniformLocations.P0, new Float32Array( [ -0.5, -0.5 ] ) );
+  gl.uniform2fv( shader.uniformLocations.P1, new Float32Array( [ 0.5, -0.5 ] ) );
+  gl.uniform2fv( shader.uniformLocations.P2, new Float32Array( [ 0.5, 0.5 ] ) );
+  gl.uniform1f( shader.uniformLocations.startWidth, 0.1 );
+  gl.uniform1f( shader.uniformLocations.endWidth, 0.05 );
+  
+  gl.uniform3fv( shader.uniformLocations.color, color );
+  gl.uniform1f( shader.uniformLocations.strokeWidth, 0.02 );
+
+  ShaderCommon.drawPoints( gl, shader );
+
+  // TODO1: Get this drawing at all
+  // TODO2: Have uniforms list track locations as well as setter function
+
+
   // Body
-  ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.Circle, {
-    mvp: mat4.multiply( mat4.create(), mvp, bodyMatrix ),
-    color: color,
-    strokeWidth: 0.05,
-  } );
+  // ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.Circle, {
+  //   mvp: mat4.multiply( mat4.create(), mvp, bodyMatrix ),
+  //   color: color,
+  //   strokeWidth: 0.05,
+  // } );
 
   // Eyes
   eyeMatrices.forEach( eyeMatrix => {
