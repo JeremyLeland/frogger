@@ -29,6 +29,12 @@ const froggyScaleMatrix = mat4.fromScaling(
   [ FROGGY_SIZE, FROGGY_SIZE, 1 ],
 );
 
+const legMatrices = Array.from( Array( 2 ), ( _, xIndex ) => 
+  Array.from( Array( 2 ), ( _, yIndex ) => 
+    mat4.fromTranslation( mat4.create(), [ xIndex - 0.5, yIndex - 0.5, 0 ] )
+  )
+);
+
 const bodyMatrix = mat4.fromRotationTranslationScale( 
   mat4.create(), 
   [ 0, 0, 0, 0 ],
@@ -71,23 +77,31 @@ export function drawFroggy( gl, mvp, animationTime, color ) {
 
 export function drawFrog( gl, mvp, animationTime = 0, color ) {
 
-
   const shader = ShaderCommon.getShader( gl, ShaderCommon.ShaderInfo.QuadraticBezierFrag );
   gl.useProgram( shader.program );
 
-  gl.uniformMatrix4fv( shader.uniformLocations.mvp, false, mvp );
-  gl.uniform2fv( shader.uniformLocations.P0, new Float32Array( [ -0.5, -0.5 ] ) );
-  gl.uniform2fv( shader.uniformLocations.P1, new Float32Array( [ 0.5, -0.5 ] ) );
-  gl.uniform2fv( shader.uniformLocations.P2, new Float32Array( [ 0.5, 0.5 ] ) );
-  gl.uniform1f( shader.uniformLocations.startWidth, 0.1 );
-  gl.uniform1f( shader.uniformLocations.endWidth, 0.05 );
-  
-  gl.uniform3fv( shader.uniformLocations.color, color );
-  gl.uniform1f( shader.uniformLocations.strokeWidth, 0.02 );
+  for ( let xIndex = 0; xIndex < 2; xIndex ++ ) {
+    for ( let yIndex = 0; yIndex < 2; yIndex ++ ) {
 
-  ShaderCommon.drawPoints( gl, shader );
+      const xOffset = 2 * xIndex - 1;
+      const yOffset = 2 * yIndex - 1;
+      
+      gl.uniformMatrix4fv( shader.uniformLocations.mvp, false, 
+        mat4.multiply( mat4.create(), mvp, legMatrices[ xIndex ][ yIndex ] )
+      );
+      gl.uniform2fv( shader.uniformLocations.P0, new Float32Array( [ FOOT_X * ( 1 - 2 * xIndex ), FOOT_Y * ( 1 - 2 * yIndex ) ] ) );
+      gl.uniform2fv( shader.uniformLocations.P1, new Float32Array( [ FOOT_X * ( 1 - 2 * xIndex ), FOOT_Y * ( 2 * yIndex - 1 ) ] ) );
+      gl.uniform2fv( shader.uniformLocations.P2, new Float32Array( [ FOOT_X * ( 2 * xIndex - 1 ), FOOT_Y * ( 2 * yIndex - 1 ) ] ) );
+      gl.uniform1f( shader.uniformLocations.startWidth, LEG_SIZE );
+      gl.uniform1f( shader.uniformLocations.endWidth, FOOT_SIZE );
+      
+      gl.uniform3fv( shader.uniformLocations.color, color );
+      gl.uniform1f( shader.uniformLocations.strokeWidth, 0.02 );
+    
+      ShaderCommon.drawPoints( gl, shader );
+    }
+  }
 
-  // TODO1: Get this drawing at all
   // TODO2: Have uniforms list track locations as well as setter function
 
 
