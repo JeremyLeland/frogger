@@ -3,8 +3,8 @@ import * as ShaderCommon from '../src/ShaderCommon.js';
 
 const FROGGY_SIZE = 0.75;
 
-const FOOT_X = 0.4, FOOT_Y = 0.4, FOOT_SIZE = 0.05;
-const LEG_X = 0.05, LEG_Y = 0.1, LEG_SIZE = 0.1;
+const FOOT_X = 0.4, FOOT_Y = 0.4, FOOT_SIZE = 0.07;
+const LEG_X = 0.05, LEG_Y = 0.1, LEG_SIZE = 0.14;
 
 const BODY_SIZE = 0.8;
 
@@ -31,7 +31,12 @@ const froggyScaleMatrix = mat4.fromScaling(
 
 const legMatrices = Array.from( Array( 2 ), ( _, xIndex ) => 
   Array.from( Array( 2 ), ( _, yIndex ) => 
-    mat4.fromTranslation( mat4.create(), [ xIndex - 0.5, yIndex - 0.5, 0 ] )
+    mat4.fromRotationTranslationScale( 
+      mat4.create(),
+      [ 0, 0, 0, 0 ],
+      [ 0.5 * ( xIndex - 0.5 ), 0.5 * ( yIndex - 0.5 ), 0 ],
+      [ 0.5, 0.5, 1 ],
+    )
   )
 );
 
@@ -106,11 +111,11 @@ export function drawFrog( gl, mvp, animationTime = 0, color ) {
 
 
   // Body
-  // ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.Circle, {
-  //   mvp: mat4.multiply( mat4.create(), mvp, bodyMatrix ),
-  //   color: color,
-  //   strokeWidth: 0.05,
-  // } );
+  ShaderCommon.drawShader( gl, ShaderCommon.ShaderInfo.Circle, {
+    mvp: mat4.multiply( mat4.create(), mvp, bodyMatrix ),
+    color: color,
+    strokeWidth: 0.02,
+  } );
 
   // Eyes
   eyeMatrices.forEach( eyeMatrix => {
