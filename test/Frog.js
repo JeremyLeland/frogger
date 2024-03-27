@@ -14,12 +14,12 @@ const EYE_SIZE = 0.2;
 const PUPIL_OFFSET_X = 0.23, PUPIL_OFFSET_Y = 0.17;
 const PUPIL_W = 0.1, PUPIL_H = 0.16;
 
-const RED    = new Float32Array( [ 1.0, 0.0, 0.0 ] );
-const ORANGE = new Float32Array( [ 1.0, 0.5, 0.0 ] );
-const YELLOW = new Float32Array( [ 1.0, 1.0, 0.0 ] );
-const GREEN  = new Float32Array( [ 0.0, 1.0, 0.0 ] );
-const BLUE   = new Float32Array( [ 0.0, 0.5, 1.0 ] );
-const PURPLE = new Float32Array( [ 0.5, 0.0, 1.0 ] );
+const RED    = new Float32Array( [ 1.0,  0.0,  0.0  ] );
+const ORANGE = new Float32Array( [ 1.0,  0.65, 0.0  ] );
+const YELLOW = new Float32Array( [ 1.0,  1.0,  0.0  ] );
+const GREEN  = new Float32Array( [ 0.0,  1.0,  0.0  ] );
+const BLUE   = new Float32Array( [ 0.12, 0.56, 1.0  ] );
+const PURPLE = new Float32Array( [ 0.54, 0.17, 0.88 ] );
 
 const eyeColor = new Float32Array( [ 1, 1, 1 ] );
 const pupilColor = new Float32Array( [ 0, 0, 0 ] );

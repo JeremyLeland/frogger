@@ -14,8 +14,8 @@ const mapFrag = /* glsl */ `# version 300 es
   uniform int layerIndex;
 
   const vec4[ 3 ] colors = vec4[ 3 ](
-    vec4( 0.0, 0.5, 0.0, 1.0 ),
-    vec4( 0.3, 0.3, 0.3, 1.0 ),
+    vec4( 0.0, 0.0, 0.0, 1.0 ),
+    vec4( 0.2, 0.2, 0.2, 1.0 ),
     vec4( 0.0, 0.5, 0.0, 1.0 )
   );
 

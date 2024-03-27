@@ -12,7 +12,7 @@ const ROOF_SIZE = 0.5, ROOF_WIDTH = 0.65, ROOF_OFFSET = -0.06;
 const RED    = new Float32Array( [ 1.0, 0.0, 0.0 ] );
 const YELLOW = new Float32Array( [ 1.0, 1.0, 0.0 ] );
 const GREEN  = new Float32Array( [ 0.0, 1.0, 0.0 ] );
-const BLUE   = new Float32Array( [ 0.0, 0.5, 1.0 ] );
+const BLUE   = new Float32Array( [ 0.12, 0.56, 1.0 ] );
 
 export function drawRedCar   ( gl, mvp ) { drawCar( gl, mvp, 0, RED )    }
 export function drawYellowCar( gl, mvp ) { drawCar( gl, mvp, 0, YELLOW ) }

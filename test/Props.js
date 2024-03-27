@@ -1,6 +1,6 @@
 import * as ShaderCommon from '../src/ShaderCommon.js';
 
-const LILYPAD_COLOR = new Float32Array( [ 0.0, 0.5, 0.0 ] );
+const LILYPAD_COLOR = new Float32Array( [ 0.0, 0.4, 0.0 ] );
 
 const lilypadFrag = ShaderCommon.FragCommon + /*glsl*/`
   const float LILYPAD_SIZE = 0.4, LILYPAD_ANGLE = 0.3, LILYPAD_OFFSET = 0.25;
@@ -26,11 +26,13 @@ const lilypadFrag = ShaderCommon.FragCommon + /*glsl*/`
   }
 `;
 
-const BUSH_COLOR = new Float32Array( [ 0.0, 0.35, 0.0 ] );
+const BUSH_COLOR = new Float32Array( [ 0.0, 0.4, 0.0 ] );
 
 const bushFrag = ShaderCommon.FragCommon + /*glsl*/`
   const int BUSH_SIDES = 7;
   const float OFFSET = 0.25, SIZE = 0.18;
+
+  const float FIX_SHADING = 0.7;
 
   void main() {
 
@@ -62,7 +64,7 @@ const bushFrag = ShaderCommon.FragCommon + /*glsl*/`
 
     if ( fromCenter < OFFSET || fromEdge > strokeWidth / SIZE ) {
       // outColor = vec4( mix( BLACK, color, sin( PI / 2.0 * dist ) ), 1.0 );
-      outColor = vec4( mix( BLACK, color, cos( PI * fromCenter ) ), 1.0 );
+      outColor = vec4( mix( BLACK, color, cos( PI * fromCenter * FIX_SHADING ) ), 1.0 );
     }
     else if ( fromEdge > 0.0 ) {
       outColor = vec4( BLACK, 1.0 );

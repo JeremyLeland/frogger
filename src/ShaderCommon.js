@@ -50,11 +50,13 @@ export const FragCommon = /*glsl*/ `# version 300 es
 `;
 
 const circleFrag = FragCommon + /*glsl*/ `
+  const float FIX_SHADING = 0.7;
+
   void main() {
     float dist = distance( vec2( 0.0, 0.0 ), v_pos.xy );
 
     if ( dist < 0.5 - strokeWidth ) {
-      outColor = vec4( mix( BLACK, color, cos( PI * dist ) ), 1.0 );
+      outColor = vec4( mix( BLACK, color, cos( PI * dist * FIX_SHADING ) ), 1.0 );
     }
     else if ( dist < 0.5 ) {
       outColor = vec4( BLACK, 1.0 );
@@ -68,6 +70,8 @@ const circleFrag = FragCommon + /*glsl*/ `
 const roundRectFrag = FragCommon + /*glsl*/ `
   // uniform float radius;
   const float radius = 0.3;
+
+  const float FIX_SHADING = 0.7;
 
   void main() {
 
@@ -86,7 +90,7 @@ const roundRectFrag = FragCommon + /*glsl*/ `
     }
 
     if ( dist < 0.5 - strokeWidth ) {
-      outColor = vec4( mix( BLACK, color, cos( /* 1.1 * */ PI * dist ) ), 1.0 );
+      outColor = vec4( mix( BLACK, color, cos( PI * dist * FIX_SHADING ) ), 1.0 );
     }
     else if ( dist < 0.5 ) {
       outColor = vec4( BLACK, 1.0 );
