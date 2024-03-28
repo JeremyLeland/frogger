@@ -14,6 +14,8 @@ const EYE_SIZE = 0.2;
 const PUPIL_OFFSET_X = 0.23, PUPIL_OFFSET_Y = 0.17;
 const PUPIL_W = 0.1, PUPIL_H = 0.16;
 
+const PLAYER_COLOR = new Float32Array( [ 0, 0.5, 0 ] );
+
 const RED    = new Float32Array( [ 1.0,  0.0,  0.0  ] );
 const ORANGE = new Float32Array( [ 1.0,  0.65, 0.0  ] );
 const YELLOW = new Float32Array( [ 1.0,  1.0,  0.0  ] );
@@ -64,6 +66,8 @@ const pupilMatrices = [ -1, 1 ].map( offsetY =>
     [ PUPIL_W, PUPIL_H, 1 ],
   )
 );
+
+export function drawPlayer( gl, mvp, animationTime ) { drawFrog( gl, mvp, animationTime, PLAYER_COLOR ) }
 
 export function drawFroggy1( gl, mvp, animationTime ) { drawFroggy( gl, mvp, animationTime, RED    ) }
 export function drawFroggy2( gl, mvp, animationTime ) { drawFroggy( gl, mvp, animationTime, ORANGE ) }

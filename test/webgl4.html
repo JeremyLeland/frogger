@@ -6,6 +6,8 @@
   import * as ShaderCommon from '../src/ShaderCommon.js';
   import { GLCanvas } from '../src/common/GLCanvas.js';
 
+  import { Direction } from '../src/Entity.js';
+  import { Level } from '../src/Level.js';
   import { World } from '../src/World.js';
 
   import * as TileMap from './TileMap.js';
@@ -46,7 +48,10 @@
   const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 14.5, 14.5, -0.5, 1, -1 );
   // const projectionMatrix = mat4.ortho( mat4.create(), -0.5, 4.5, 4.5, -0.5, 1, -1 );
 
-  const level = {"cols":15,"rows":15,"tiles":[2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2],"directions":[0,0,0,0,0,0,3,0,1,0,0,0,0,0,0,2,2,2,2,2,2,2,0,1,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,4,4,3,0,0,0,0,0,0,1,3,2,2,2,2,2,2,3,0,0,0,0,0,4,1,3,4,4,4,4,3,1,4,3,0,0,0,0,1,3,2,1,3,2,2,3,1,2,3,0,0,0,0,1,3,0,1,3,0,1,3,0,1,3,0,0,0,0,1,4,3,1,4,4,1,3,4,1,3,0,0,0,0,1,2,3,1,2,2,2,2,1,3,2,0,0,0,0,0,1,4,4,4,4,4,4,1,3,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,3,0,4,4,4,4,4,4,4,0,0,0,0,0,0,3,0,1,0,0,0,0,0,0],"props":[{"type":"Bush","x":5,"y":0},{"type":"Bush","x":7,"y":0},{"type":"Bush","x":9,"y":0},{"type":"Bush","x":4,"y":2},{"type":"Bush","x":10,"y":2},{"type":"Bush","x":0,"y":3},{"type":"Bush","x":14,"y":3},{"type":"Bush","x":12,"y":4},{"type":"Bush","x":13,"y":5},{"type":"Bush","x":0,"y":7},{"type":"Lilypad","x":4,"y":7},{"type":"Lilypad","x":7,"y":7},{"type":"Lilypad","x":10,"y":7},{"type":"Bush","x":14,"y":7},{"type":"Bush","x":13,"y":8},{"type":"Bush","x":1,"y":9},{"type":"Bush","x":12,"y":10},{"type":"Bush","x":14,"y":10},{"type":"Bush","x":1,"y":12},{"type":"Bush","x":4,"y":12},{"type":"Bush","x":10,"y":12},{"type":"Bush","x":13,"y":12},{"type":"Bush","x":5,"y":14},{"type":"Bush","x":7,"y":14},{"type":"Bush","x":9,"y":14}],"entities":[{"type":"Turtle","x":6,"y":3,"dir":4},{"type":"Turtle","x":10,"y":3,"dir":4},{"type":"Turtle","x":12,"y":6,"dir":3},{"type":"Turtle","x":11,"y":11,"dir":2},{"type":"Turtle","x":5,"y":11,"dir":2},{"type":"Turtle","x":9,"y":4,"dir":2},{"type":"Turtle","x":3,"y":5,"dir":1},{"type":"Turtle","x":4,"y":5,"dir":3},{"type":"Turtle","x":2,"y":6,"dir":1},{"type":"Turtle","x":5,"y":10,"dir":4},{"type":"Turtle","x":10,"y":9,"dir":1},{"type":"Turtle","x":5,"y":5,"dir":4},{"type":"Turtle","x":8,"y":6,"dir":2},{"type":"Turtle","x":9,"y":6,"dir":3},{"type":"Turtle","x":6,"y":7,"dir":3},{"type":"Turtle","x":7,"y":9,"dir":2},{"type":"Froggy4","x":10,"y":7,"dir":2},{"type":"Froggy3","x":4,"y":7,"dir":0},{"type":"Froggy1","x":0,"y":0,"dir":3},{"type":"Froggy2","x":14,"y":0,"dir":3},{"type":"Froggy6","x":14,"y":14,"dir":1},{"type":"Froggy5","x":0,"y":14,"dir":1},{"type":"BlueCar","x":1,"y":13,"dir":4},{"type":"BlueCar","x":4,"y":13,"dir":4},{"type":"GreenCar","x":8,"y":13,"dir":4},{"type":"GreenCar","x":13,"y":13,"dir":4},{"type":"YellowCar","x":13,"y":1,"dir":2},{"type":"YellowCar","x":8,"y":1,"dir":1},{"type":"RedCar","x":6,"y":1,"dir":2},{"type":"RedCar","x":1,"y":1,"dir":2}],"spawn":{"x":7,"y":7,"dir":3},"time":15000};
+  const level = Object.assign( 
+    new Level(), 
+    {"cols":15,"rows":15,"tiles":[2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2],"directions":[0,0,0,0,0,0,3,0,1,0,0,0,0,0,0,2,2,2,2,2,2,2,0,1,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,4,4,3,0,0,0,0,0,0,1,3,2,2,2,2,2,2,3,0,0,0,0,0,4,1,3,4,4,4,4,3,1,4,3,0,0,0,0,1,3,2,1,3,2,2,3,1,2,3,0,0,0,0,1,3,0,1,3,0,1,3,0,1,3,0,0,0,0,1,4,3,1,4,4,1,3,4,1,3,0,0,0,0,1,2,3,1,2,2,2,2,1,3,2,0,0,0,0,0,1,4,4,4,4,4,4,1,3,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,3,0,4,4,4,4,4,4,4,0,0,0,0,0,0,3,0,1,0,0,0,0,0,0],"props":[{"type":"Bush","x":5,"y":0},{"type":"Bush","x":7,"y":0},{"type":"Bush","x":9,"y":0},{"type":"Bush","x":4,"y":2},{"type":"Bush","x":10,"y":2},{"type":"Bush","x":0,"y":3},{"type":"Bush","x":14,"y":3},{"type":"Bush","x":12,"y":4},{"type":"Bush","x":13,"y":5},{"type":"Bush","x":0,"y":7},{"type":"Lilypad","x":4,"y":7},{"type":"Lilypad","x":7,"y":7},{"type":"Lilypad","x":10,"y":7},{"type":"Bush","x":14,"y":7},{"type":"Bush","x":13,"y":8},{"type":"Bush","x":1,"y":9},{"type":"Bush","x":12,"y":10},{"type":"Bush","x":14,"y":10},{"type":"Bush","x":1,"y":12},{"type":"Bush","x":4,"y":12},{"type":"Bush","x":10,"y":12},{"type":"Bush","x":13,"y":12},{"type":"Bush","x":5,"y":14},{"type":"Bush","x":7,"y":14},{"type":"Bush","x":9,"y":14}],"entities":[{"type":"Turtle","x":6,"y":3,"dir":4},{"type":"Turtle","x":10,"y":3,"dir":4},{"type":"Turtle","x":12,"y":6,"dir":3},{"type":"Turtle","x":11,"y":11,"dir":2},{"type":"Turtle","x":5,"y":11,"dir":2},{"type":"Turtle","x":9,"y":4,"dir":2},{"type":"Turtle","x":3,"y":5,"dir":1},{"type":"Turtle","x":4,"y":5,"dir":3},{"type":"Turtle","x":2,"y":6,"dir":1},{"type":"Turtle","x":5,"y":10,"dir":4},{"type":"Turtle","x":10,"y":9,"dir":1},{"type":"Turtle","x":5,"y":5,"dir":4},{"type":"Turtle","x":8,"y":6,"dir":2},{"type":"Turtle","x":9,"y":6,"dir":3},{"type":"Turtle","x":6,"y":7,"dir":3},{"type":"Turtle","x":7,"y":9,"dir":2},{"type":"Froggy4","x":10,"y":7,"dir":2},{"type":"Froggy3","x":4,"y":7,"dir":0},{"type":"Froggy1","x":0,"y":0,"dir":3},{"type":"Froggy2","x":14,"y":0,"dir":3},{"type":"Froggy6","x":14,"y":14,"dir":1},{"type":"Froggy5","x":0,"y":14,"dir":1},{"type":"BlueCar","x":1,"y":13,"dir":4},{"type":"BlueCar","x":4,"y":13,"dir":4},{"type":"GreenCar","x":8,"y":13,"dir":4},{"type":"GreenCar","x":13,"y":13,"dir":4},{"type":"YellowCar","x":13,"y":1,"dir":2},{"type":"YellowCar","x":8,"y":1,"dir":1},{"type":"RedCar","x":6,"y":1,"dir":2},{"type":"RedCar","x":1,"y":1,"dir":2}],"spawn":{"x":7,"y":7,"dir":3},"time":15000} 
+  );
 
   const world = new World( level );
 
@@ -69,19 +74,47 @@
     } );
 
     world.entities.forEach( entity => {
-      const angle = -entity.dir * Math.PI / 2;
-
-      const modelViewMatrix = mat4.fromRotationTranslation( 
-        mat4.create(), 
-        [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
-        [ entity.x, entity.y, 0 ],
+      drawFunc[ entity.type ](
+        gl,
+        mat4.multiply( mat4.create(), projectionMatrix, getEntityMatrix( entity ) ), 
+        animationTime 
       );
-
-      drawFunc[ entity.type ]( gl, mat4.multiply( mat4.create(), projectionMatrix, modelViewMatrix ), animationTime );
     } );
+
+    if ( world.player ) {
+      Frog.drawPlayer( gl, mat4.multiply( mat4.create(), projectionMatrix, getEntityMatrix( world.player ) ) );
+    }
   };
 
   // canvas.redraw();
   canvas.start();
+
+  function getEntityMatrix( entity ) {
+    const angle = -entity.dir * Math.PI / 2;
+
+    return mat4.fromRotationTranslation( 
+      mat4.create(), 
+      [ Math.cos( angle / 2 ), Math.sin( angle / 2 ), 0, 0 ],
+      [ entity.x, entity.y, 0 ],
+    );
+  }
+
+  const KeyDir = {
+    KeyW: Direction.Up,
+    KeyA: Direction.Left,
+    KeyS: Direction.Down,
+    KeyD: Direction.Right,
+    ArrowUp: Direction.Up,
+    ArrowLeft: Direction.Left,
+    ArrowDown: Direction.Down,
+    ArrowRight: Direction.Right,
+  };
+
+  document.addEventListener( 'keydown', ( e ) => {
+    const dir = KeyDir[ e.code ];
+    if ( dir != undefined ) {
+      world.requestPlayerMove( dir );
+    }
+  } );
 
 </script>
